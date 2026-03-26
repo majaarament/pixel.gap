@@ -11,6 +11,7 @@ export default function DialogOverlay({ dialog, anchor, onChoice, onAdvance, onS
   const [cardPosition, setCardPosition] = useState(null);
   const backdropRef = useRef(null);
   const cardRef = useRef(null);
+  const speechStackRef = useRef(null);
   const positionLockRef = useRef(null);
 
   useEffect(() => {
@@ -97,6 +98,18 @@ export default function DialogOverlay({ dialog, anchor, onChoice, onAdvance, onS
     setCardPosition(lockedPosition);
   }, [anchor, dialog, isReflection]);
 
+  useEffect(() => {
+    if (!dialog || isReflection) return;
+
+    const container = speechStackRef.current || cardRef.current;
+    if (!container) return;
+
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [dialog, isReflection, visibleSegments.length]);
+
   function handleSubmit(e) {
     e.preventDefault();
     if (!dialog.prompts?.every((prompt) => (values[prompt.id] || "").trim())) return;
@@ -140,7 +153,7 @@ export default function DialogOverlay({ dialog, anchor, onChoice, onAdvance, onS
         )}
 
         {!isReflection && visibleSegments.length > 0 && (
-          <div style={styles.speechStack}>
+          <div ref={speechStackRef} style={styles.speechStack}>
             {visibleSegments.map((segment, index) => {
               const isPlayerBubble = segment.variant === "player";
               const isNoteBubble = segment.variant === "note";
@@ -323,6 +336,8 @@ const styles = {
     flexDirection: "column",
     gap: 10,
     padding: 4,
+    overflowY: "auto",
+    minHeight: 0,
     borderRadius: 16,
     background: "rgba(255,255,255,0.4)",
     border: "1px solid rgba(95, 114, 97, 0.12)",
