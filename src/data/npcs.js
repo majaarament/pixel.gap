@@ -1,5 +1,7 @@
 // NPC definitions, quest content, and gameplay helpers for the Delaware sustainability experience.
 
+import { FRANK_SURVEY, OTIS_SURVEY, SUZY_SURVEY, HAZEL_SURVEY, getSurveySectionForNpc, convertSurveyToDialogSequence } from "./esgSurvey.js";
+
 const SCALE_CHOICES = [
   { key: "1", label: "1 — rarely or never" },
   { key: "2", label: "2 — occasionally" },
@@ -644,26 +646,34 @@ export function getNpcDialog(npcId, quest) {
   if (["frank", "otis", "suzy", "hazel"].includes(npcId)) {
     const beat = quest.pillarBeats?.[npcId] || 0;
 
-    const stepsMap = {
-      frank: FRANK_PILLAR_STEPS,
-      otis: OTIS_PILLAR_STEPS,
-      suzy: SUZY_PILLAR_STEPS,
-      hazel: HAZEL_PILLAR_STEPS,
-    };
-
-    if (beat === 0) {
+    // Use new ESG survey data
+    const surveyData = getSurveySectionForNpc(npcId);
+    
+    if (beat === 0 && surveyData) {
+      const dialogSequence = convertSurveyToDialogSequence(surveyData);
       return {
         type: "sequence",
-        steps: stepsMap[npcId],
-        reaction: PILLAR_REACTIONS[npcId],
-        pillarNpcId: npcId,
-        adaptiveGapStep: ADAPTIVE_GAP_STEPS[npcId],
+        steps: dialogSequence.steps,
+        reaction: dialogSequence.reaction,
+        pillarNpcId: dialogSequence.pillarNpcId,
       };
     }
 
+    // Fallback for repeat visits
+    const visitMessages = {
+      frank:
+        "Frank the Fish — Environmental Stewardship\n\nFrank nods toward the drainage channel. \"the readings don't change just because we've already talked about them. but your view is in the record.\"",
+      otis:
+        "Otis the Otter — People & Culture\n\nOtis glances back at the building. \"people situations don't resolve neatly. thanks for engaging with it honestly.\"",
+      suzy:
+        "Suzy the Sheep — Business Conduct\n\nSuzy taps her desk. \"policies exist. but the hardest part is keeping them alive under pressure. your view matters.\"",
+      hazel:
+        "Hazel the Hedgehog — Responsible Value Chain\n\nHazel looks at the supply chain logs. \"choices ripple outward. good that you're thinking about it.\"",
+    };
+    
     return {
       type: "info",
-      message: PILLAR_VISITED_MESSAGES[npcId],
+      message: visitMessages[npcId] || "You've already shared your perspective with this guide.",
     };
   }
 
