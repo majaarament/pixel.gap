@@ -42,6 +42,7 @@ export default function CouncilMeeting({ quest, onClose }) {
   const suppressEndRef  = useRef(false);
   const audioRef        = useRef(null);
   const audioUrlRef     = useRef("");
+  const restartListenTimeoutRef = useRef(0);
 
   const hasVoice = typeof window !== "undefined" &&
     ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
@@ -50,6 +51,10 @@ export default function CouncilMeeting({ quest, onClose }) {
 
   const submitConversationTextFromEffect = useEffectEvent((nextText) => {
     submitConversationText(nextText);
+  });
+  const startOpeningTurn = useEffectEvent(() => {
+    const opening = [{ role: "user", content: KICKSTART_MESSAGE }];
+    sendToAI(opening, opening, 0);
   });
 
   useEffect(() => {
@@ -79,7 +84,23 @@ export default function CouncilMeeting({ quest, onClose }) {
     listEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [displayMsgs, isLoading]);
 
+  function clearListeningRestart() {
+    if (restartListenTimeoutRef.current) {
+      window.clearTimeout(restartListenTimeoutRef.current);
+      restartListenTimeoutRef.current = 0;
+    }
+  }
+
+  function scheduleListeningRestart(delay = 280) {
+    clearListeningRestart();
+    restartListenTimeoutRef.current = window.setTimeout(() => {
+      restartListenTimeoutRef.current = 0;
+      startListening();
+    }, delay);
+  }
+
   function stopListening(useAbort = false) {
+    clearListeningRestart();
     if (!recognitionRef.current || !isListeningRef.current) return;
     suppressEndRef.current = true;
 
@@ -92,6 +113,7 @@ export default function CouncilMeeting({ quest, onClose }) {
   }
 
   function startListening() {
+    clearListeningRestart();
     if (!recognitionRef.current || isListeningRef.current || isLoadingRef.current || isSpeakingRef.current) {
       return;
     }
@@ -164,7 +186,7 @@ export default function CouncilMeeting({ quest, onClose }) {
         setError(reply.audioError);
       }
       if (!isLoadingRef.current) {
-        window.setTimeout(() => startListening(), 280);
+        scheduleListeningRestart();
       }
       return;
     }
@@ -181,14 +203,14 @@ export default function CouncilMeeting({ quest, onClose }) {
       audio.onended = () => {
         stopCouncilAudio();
         if (handsFreeRef.current && !isLoadingRef.current) {
-          window.setTimeout(() => startListening(), 280);
+          scheduleListeningRestart();
         }
       };
 
       audio.onerror = () => {
         stopCouncilAudio();
         if (handsFreeRef.current && !isLoadingRef.current) {
-          window.setTimeout(() => startListening(), 280);
+          scheduleListeningRestart();
         }
       };
 
@@ -199,7 +221,7 @@ export default function CouncilMeeting({ quest, onClose }) {
       stopCouncilAudio();
       setError(`AI voice playback failed: ${String(playbackError?.message || playbackError)}`);
       if (handsFreeRef.current && !isLoadingRef.current) {
-        window.setTimeout(() => startListening(), 280);
+        scheduleListeningRestart();
       }
     }
   }
@@ -255,13 +277,16 @@ export default function CouncilMeeting({ quest, onClose }) {
 
   // ── AI opening message on mount ─────────────────────────────────────────────
   useEffect(() => {
-    const opening = [{ role: "user", content: KICKSTART_MESSAGE }];
-    sendToAI(opening, opening, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const timeoutId = window.setTimeout(() => {
+      startOpeningTurn();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {
     return () => {
+      clearListeningRestart();
       if (recognitionRef.current) recognitionRef.current.abort();
       stopCouncilAudio();
     };
@@ -307,9 +332,9 @@ export default function CouncilMeeting({ quest, onClose }) {
       isLoadingRef.current = false;
       setIsLoading(false);
       if (!didReply && handsFreeRef.current && canHandsFree) {
-        window.setTimeout(() => startListening(), 280);
+        scheduleListeningRestart();
       } else if (didReply && handsFreeRef.current && canHandsFree && !isSpeakingRef.current && !isListeningRef.current) {
-        window.setTimeout(() => startListening(), 280);
+        scheduleListeningRestart();
       }
     }
   }
@@ -347,7 +372,7 @@ export default function CouncilMeeting({ quest, onClose }) {
         stopListening(true);
         stopCouncilAudio();
       } else if (canHandsFree && !isLoadingRef.current && !isSpeakingRef.current) {
-        window.setTimeout(() => startListening(), 180);
+        scheduleListeningRestart(180);
       }
 
       return next;
@@ -356,6 +381,7 @@ export default function CouncilMeeting({ quest, onClose }) {
 
   // ── Conclude ─────────────────────────────────────────────────────────────────
   function handleConclude() {
+    clearListeningRestart();
     if (recognitionRef.current) recognitionRef.current.abort();
     handsFreeRef.current = false;
     stopCouncilAudio();

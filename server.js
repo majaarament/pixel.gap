@@ -24,13 +24,13 @@ const OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech";
 const SHEETS_ENDPOINT = process.env.SHEETS_ENDPOINT || "";
 
 const COUNCIL_VOICES = {
-  olive: { voice: "sage", instructions: "warm, wise, reassuring, gentle moderator energy; calm pace; natural and conversational." },
-  frank: { voice: "marin", instructions: "grounded, practical, friendly, lightly curious; clear and steady." },
-  otis: { voice: "cedar", instructions: "empathetic, soft, encouraging, team-oriented; warm and human." },
-  suzy: { voice: "alloy", instructions: "clear-headed, principled, calm, precise; kind rather than stern." },
-  hazel: { voice: "ash", instructions: "thoughtful, measured, systems-minded, reflective; calm confidence." },
-  daisy: { voice: "coral", instructions: "curious, connective, bright, welcoming; lively but gentle." },
-  rowan: { voice: "verse", instructions: "reflective, slightly philosophical, calm closing energy; gentle pace." },
+  olive: { voice: "sage", instructions: "warm, wise, reassuring, lightly playful moderator energy; calm pace; gentle authority; natural and conversational." },
+  frank: { voice: "marin", instructions: "grounded, practical, mildly dry, operationally savvy; steady delivery with a hint of skeptical humor." },
+  otis: { voice: "cedar", instructions: "empathetic, perceptive, warm, human, emotionally intelligent; reassuring but not vague." },
+  suzy: { voice: "alloy", instructions: "clear-headed, principled, sharp, knowledgeable, slightly sassy; precise delivery with calm bite, never cruel." },
+  hazel: { voice: "ash", instructions: "thoughtful, exacting, systems-minded, incisive; calm confidence with analytical edge." },
+  daisy: { voice: "coral", instructions: "curious, bright, socially intuitive, playful, connective; lively but still grounded." },
+  rowan: { voice: "verse", instructions: "reflective, poetic, gently mischievous, calm closing energy; thoughtful pace." },
 };
 
 const server = createServer(async (req, res) => {
