@@ -2,8 +2,9 @@
 // Voice input via Web Speech API, text fallback.
 // Calls our backend council AI route to play all NPC characters adaptively.
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import { COUNCIL_NPCS, callCouncilAI, parseCouncilResponse } from "../engine/councilAI";
+import { logCouncilMessage } from "../engine/logger";
 import { drawCritter } from "../renderer/characters";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -46,6 +47,10 @@ export default function CouncilMeeting({ quest, onClose }) {
     ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
   const canPlayAudio = typeof window !== "undefined" && typeof Audio !== "undefined";
   const canHandsFree = hasVoice && canPlayAudio;
+
+  const submitConversationTextFromEffect = useEffectEvent((nextText) => {
+    submitConversationText(nextText);
+  });
 
   useEffect(() => {
     apiHistoryRef.current = apiHistory;
@@ -128,6 +133,16 @@ export default function CouncilMeeting({ quest, onClose }) {
 
     const playerEntry = { role: "user", content: text };
     const nextHistory = [...apiHistoryRef.current, playerEntry];
+    const turnIndex = userTurns + 1;
+
+    logCouncilMessage({
+      turnIndex,
+      conversationRole: "user",
+      npcName: "You",
+      text,
+      questStage: quest?.stage,
+      playerProfile: quest?.playerProfile,
+    });
 
     setDisplayMsgs((prev) => [
       ...prev,
@@ -136,7 +151,7 @@ export default function CouncilMeeting({ quest, onClose }) {
     setTextInput("");
     setInterimText("");
     setUserTurns((n) => n + 1);
-    sendToAI(nextHistory, nextHistory);
+    sendToAI(nextHistory, nextHistory, turnIndex);
   }
 
   async function playCouncilReply(reply) {
@@ -230,7 +245,7 @@ export default function CouncilMeeting({ quest, onClose }) {
       if (handsFreeRef.current && autoDraftRef.current.trim() && !isLoadingRef.current && !isSpeakingRef.current) {
         const spokenReply = autoDraftRef.current;
         autoDraftRef.current = "";
-        submitConversationText(spokenReply);
+        submitConversationTextFromEffect(spokenReply);
       }
     };
 
@@ -241,7 +256,7 @@ export default function CouncilMeeting({ quest, onClose }) {
   // ── AI opening message on mount ─────────────────────────────────────────────
   useEffect(() => {
     const opening = [{ role: "user", content: KICKSTART_MESSAGE }];
-    sendToAI(opening, opening);
+    sendToAI(opening, opening, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -250,11 +265,10 @@ export default function CouncilMeeting({ quest, onClose }) {
       if (recognitionRef.current) recognitionRef.current.abort();
       stopCouncilAudio();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Core AI call ─────────────────────────────────────────────────────────────
-  async function sendToAI(historyForApi, nextHistory) {
+  async function sendToAI(historyForApi, nextHistory, turnIndex = "") {
     isLoadingRef.current = true;
     stopListening(true);
     setIsLoading(true);
@@ -268,6 +282,16 @@ export default function CouncilMeeting({ quest, onClose }) {
 
       const assistantEntry = { role: "assistant", content: reply.text };
       setApiHistory([...nextHistory, assistantEntry]);
+
+      logCouncilMessage({
+        turnIndex,
+        conversationRole: "assistant",
+        npcId: parsed.npcId,
+        npcName: parsed.name,
+        text: parsed.text,
+        questStage: quest?.stage,
+        playerProfile: quest?.playerProfile,
+      });
 
       setDisplayMsgs((prev) => [
         ...prev,

@@ -21,6 +21,7 @@ const OPENAI_MODEL = "gpt-5.4-mini";
 const OPENAI_URL = "https://api.openai.com/v1/responses";
 const OPENAI_TTS_MODEL = "gpt-4o-mini-tts";
 const OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech";
+const SHEETS_ENDPOINT = process.env.SHEETS_ENDPOINT || "";
 
 const COUNCIL_VOICES = {
   olive: { voice: "sage", instructions: "warm, wise, reassuring, gentle moderator energy; calm pace; natural and conversational." },
@@ -43,6 +44,11 @@ const server = createServer(async (req, res) => {
 
     if (req.method === "POST" && url.pathname === "/api/esg-guide") {
       await handleESGGuide(req, res);
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/log-event") {
+      await handleLogEvent(req, res);
       return;
     }
 
@@ -206,6 +212,40 @@ async function handleESGGuide(req, res) {
   sendJson(res, 200, { text });
 }
 
+async function handleLogEvent(req, res) {
+  if (!SHEETS_ENDPOINT) {
+    sendJson(res, 202, { ok: false, disabled: true });
+    return;
+  }
+
+  const body = await readJsonBody(req);
+  const payload = normalizeLogPayload(body, req);
+
+  const sheetsResponse = await fetch(SHEETS_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const rawResponse = await sheetsResponse.text();
+  const responsePayload = tryParseJson(rawResponse);
+
+  if (!sheetsResponse.ok) {
+    const details =
+      responsePayload?.error ||
+      responsePayload?.message ||
+      rawResponse ||
+      "Unknown Google Sheets logging error.";
+
+    sendJson(res, 502, { error: `Google Sheets logging failed: ${details}` });
+    return;
+  }
+
+  sendJson(res, 200, { ok: true });
+}
+
 function mapConversationHistory(conversationHistory) {
   return conversationHistory
     .filter((item) => item && (item.role === "user" || item.role === "assistant"))
@@ -259,6 +299,33 @@ function extractResponseText(payload) {
   }
 
   return texts.join("\n").trim();
+}
+
+function normalizeLogPayload(body, req) {
+  const data = body && typeof body === "object" && !Array.isArray(body) ? body : {};
+
+  return {
+    receivedAt: new Date().toISOString(),
+    timestamp: typeof data.timestamp === "string" ? data.timestamp : new Date().toISOString(),
+    eventType: typeof data.eventType === "string" ? data.eventType : "",
+    userId: typeof data.userId === "string" ? data.userId : "",
+    sessionId: typeof data.sessionId === "string" ? data.sessionId : "",
+    questStage: typeof data.questStage === "string" ? data.questStage : "",
+    turnIndex: data.turnIndex ?? "",
+    conversationRole: typeof data.conversationRole === "string" ? data.conversationRole : "",
+    npcId: typeof data.npcId === "string" ? data.npcId : "",
+    npcName: typeof data.npcName === "string" ? data.npcName : "",
+    npcRole: typeof data.npcRole === "string" ? data.npcRole : "",
+    stepId: typeof data.stepId === "string" ? data.stepId : "",
+    prompt: typeof data.prompt === "string" ? data.prompt : "",
+    choiceKey: data.choiceKey ?? "",
+    choiceLabel: typeof data.choiceLabel === "string" ? data.choiceLabel : "",
+    text: typeof data.text === "string" ? data.text : "",
+    roleLevel: typeof data.roleLevel === "string" ? data.roleLevel : "",
+    branch: typeof data.branch === "string" ? data.branch : "",
+    country: typeof data.country === "string" ? data.country : "",
+    userAgent: req.headers["user-agent"] || "",
+  };
 }
 
 async function synthesizeCouncilSpeech(apiKey, parsed) {

@@ -24,7 +24,7 @@ import {
 import { COUNCIL_SEAT } from "../data/townMap";
 import { keyFor } from "../engine/mapUtils";
 import { chooseNpcMove } from "../engine/npcLogic";
-import { logChoice } from "../engine/logger";
+import { logChoice, logProfile } from "../engine/logger";
 import { buildResultsReport, extractQuestionPrompt } from "../engine/results";
 import { makePlayerChoiceSegment, parseSpeechSegments } from "../engine/dialogSegments";
 
@@ -195,14 +195,21 @@ export function useGameState() {
     // Reset player to spawn and clear any accidental key state before entering the world.
     setPlayer({ x: 24, y: 32, dir: "up", step: 0, species: "beaver" });
     keysRef.current = {};
+    logProfile(profile);
     setQuest((prev) => syncStatus({ ...prev, playerProfile: profile }));
   }
 
   function recordChoice(dialogState, choice) {
     logChoice({
       npcId: dialogState.npcId,
-      choiceKey: `${dialogState.stepId || dialogState.npcId}:${choice.key}`,
+      npcName: dialogState.npcName,
+      npcRole: dialogState.npcRole,
+      stepId: dialogState.stepId || dialogState.npcId,
+      prompt: extractQuestionPrompt(dialogState.message),
+      choiceKey: choice.key,
       choiceLabel: choice.label,
+      questStage: quest.stage,
+      playerProfile: quest.playerProfile,
     });
   }
 
@@ -493,7 +500,7 @@ export function useGameState() {
     if (councilOpen) return;
     setCouncilOpen(true);
     dismissDialog(); // clear any lingering scripted dialog
-  }, [quest.stage]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [quest.stage]);
 
   // Auto-open report when game is complete
   useEffect(() => {

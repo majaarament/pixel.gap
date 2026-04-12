@@ -37,3 +37,21 @@ components/InfoRow.jsx	Static info cards at the bottom
 App.jsx	Calls useGameState, renders the three components
 
 Key design rule: playerRef and npcRefs are mutable refs that are always kept in sync with state in useGameState. GameCanvas reads from them on every animation frame so the draw loop never has stale positions, while the useEffect dependency array still triggers a loop restart on state changes that matter for rendering (dialog, nearbyNpc, scene, etc.).
+
+Google Sheets logging
+
+Set `SHEETS_ENDPOINT` in `.env.local` to your deployed Apps Script web app `/exec` URL.
+
+Example:
+
+```bash
+SHEETS_ENDPOINT="https://script.google.com/macros/s/your-script-id/exec"
+```
+
+The app now logs:
+
+- `profile_submitted` when the player starts
+- `question_answer` for every in-game question response
+- `council_message` for every player and council turn in the debate
+
+Each row includes a persistent `userId` plus a per-session `sessionId`. A starter Apps Script receiver is included at [docs/google-apps-script.gs](/Users/majaarament/Desktop/pixel.gaps/docs/google-apps-script.gs).
