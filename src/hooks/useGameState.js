@@ -273,6 +273,7 @@ export function useGameState() {
       adaptiveFollowupShown: false,
       openingFollowupShown: false,
       openingPovChoiceKey: null,
+      followUpStepsMap: dialogData.followUpStepsMap || {},
     });
   }
 
@@ -358,6 +359,27 @@ export function useGameState() {
         }
 
         const nextStepIndex = current.stepIndex + 1;
+
+        // Inject conditional follow-up step if this choice triggers one
+        if (choice.followUp && current.followUpStepsMap?.[choice.followUp]) {
+          const followUpStep = current.followUpStepsMap[choice.followUp];
+          const newSteps = [
+            ...current.steps.slice(0, nextStepIndex),
+            followUpStep,
+            ...current.steps.slice(nextStepIndex),
+          ];
+          setDialog({
+            ...current,
+            history,
+            steps: newSteps,
+            stepIndex: nextStepIndex,
+            stepId: followUpStep.id,
+            message: followUpStep.message,
+            choices: followUpStep.choices,
+          });
+          return next;
+        }
+
         const nextStep = current.steps[nextStepIndex];
 
         if (nextStep) {

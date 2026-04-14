@@ -627,22 +627,48 @@ export const SURVEY_SCORING = {
  * Extracts choice values and assigns them to steps
  */
 export function convertSurveyToDialogSequence(surveyData) {
+  // Collect step IDs that are only shown conditionally (referenced via choice.followUp)
+  const followUpIds = new Set();
+  for (const step of surveyData.steps) {
+    for (const choice of step.choices) {
+      if (choice.followUp) followUpIds.add(choice.followUp);
+    }
+  }
+
+  // Build a map so the dialog engine can inject them on demand
+  const followUpStepsMap = {};
+  for (const step of surveyData.steps) {
+    if (followUpIds.has(step.id)) {
+      followUpStepsMap[step.id] = {
+        ...step,
+        choices: step.choices.map((choice) => ({
+          ...choice,
+          choiceValue: choice.value !== undefined ? choice.value : null,
+          reaction: choice.reaction || null,
+        })),
+      };
+    }
+  }
+
+  // Only include the main (non-conditional) steps in the default sequence
+  const mainSteps = surveyData.steps
+    .filter((step) => !followUpIds.has(step.id))
+    .map((step) => ({
+      ...step,
+      choices: step.choices.map((choice) => ({
+        ...choice,
+        choiceValue: choice.value !== undefined ? choice.value : null,
+        reaction: choice.reaction || null,
+      })),
+    }));
+
+  const pillarName = SURVEY_SCORING[surveyData.pillarKey]?.pillar || surveyData.pillarKey;
+
   return {
     type: "sequence",
-    steps: surveyData.steps.map((step) => ({
-      ...step,
-      choices: step.choices.map((choice) => {
-        // If choice has a 'value' field, use it; otherwise look for 'reaction'
-        const value = choice.value !== undefined ? choice.value : null;
-        const reaction = choice.reaction || null;
-        return {
-          ...choice,
-          choiceValue: value,
-          reaction,
-        };
-      }),
-    })),
-    reaction: `"Thank you for sharing your perspective on ${surveyData.pillarKey}. It helps understand how these values actually show up in practice."`,
+    steps: mainSteps,
+    followUpStepsMap,
+    reaction: `"Thank you for sharing your perspective on ${pillarName}. It helps understand how these values actually show up in practice."`,
     pillarNpcId: surveyData.npcId,
   };
 }
