@@ -19,6 +19,7 @@ export const townPaths = new Set();
   ...line(25, 4, 25, 33), ...line(26, 4, 26, 33), ...line(27, 4, 27, 33),
   ...line(19, 18, 22, 18), ...line(19, 19, 22, 19),
   ...line(12, 8, 21, 8), ...line(12, 9, 21, 9), ...line(12, 10, 21, 10),
+  ...line(13, 5, 13, 7), ...line(14, 5, 14, 7), ...line(15, 5, 15, 7),
   ...line(27, 13, 33, 13), ...line(27, 14, 33, 14), ...line(27, 15, 33, 15),
   ...line(27, 8, 40, 8), ...line(27, 9, 40, 9), ...line(27, 10, 40, 10),
 ].forEach((p) => townPaths.add(keyFor(p.x, p.y)));
@@ -129,7 +130,7 @@ export const townFences = [
 export const townBuildings = [
   { id: "lodge", type: "lodge", x: 29, y: 25, w: 5, h: 5, doorX: 31, doorY: 30 },
   { id: "office", type: "office", x: 22, y: 2, w: 8, h: 5, doorX: 25, doorY: 7 },
-  { id: "owl-house", type: "owlhouse", x: 9, y: 4, w: 6, h: 4, doorX: 12, doorY: 8 },
+  { id: "owl-house", type: "owlhouse", x: 12, y: 2, w: 6, h: 4, doorX: 14, doorY: 6 },
   { id: "cabin", type: "cabin", x: 44, y: 30, w: 5, h: 4, doorX: 46, doorY: 34 },
 ];
 

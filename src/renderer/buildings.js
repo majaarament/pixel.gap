@@ -131,12 +131,19 @@ export function drawHouse(ctx, building, x, y) {
     // ── Base wall
     rect(ctx, px + 2, py + 22, width - 4, height - 36, stone);
     rect(ctx, px + 2, py + 22, width - 4, 2, "#f0e6c6");
+    rect(ctx, px + 2, py + 70, width - 4, 6, "#c5b78b");
+    rect(ctx, px + 2, py + 70, width - 4, 1, "#e8dcb7");
+    rect(ctx, px + 2, py + 75, width - 4, 1, "#927f57");
 
     // ── Pilasters (columns) left and right
     rect(ctx, px + 4,          py + 22, 10, height - 36, stoneL);
     rect(ctx, px + 4,          py + 22, 10, 2,           "#f8f0d4");
     rect(ctx, px + width - 14, py + 22, 10, height - 36, stoneL);
     rect(ctx, px + width - 14, py + 22, 10, 2,           "#f8f0d4");
+    // Central bay framing the entrance and plaque
+    rect(ctx, px + width / 2 - 18, py + 24, 36, 46, stoneL);
+    rect(ctx, px + width / 2 - 18, py + 24, 36, 2,  "#f8f0d4");
+    rect(ctx, px + width / 2 - 18, py + 68, 36, 2,  "#afa175");
 
     // ── Entablature (band below pediment)
     rect(ctx, px,     py + 17, width,   6, stoneD);
@@ -155,43 +162,50 @@ export function drawHouse(ctx, building, x, y) {
     // ── Windows — books visible on shelves
     for (const wx of [px + 16, px + width - 30]) {
       // Window frame
-      rect(ctx, wx,     py + 28, 14, 24, dark);
+      rect(ctx, wx,     py + 34, 14, 24, dark);
       // Glass pane
-      rect(ctx, wx + 1, py + 29, 12, 22, glass);
-      rect(ctx, wx + 1, py + 29, 12,  3, glassH);
+      rect(ctx, wx + 1, py + 35, 12, 22, glass);
+      rect(ctx, wx + 1, py + 35, 12,  3, glassH);
       // Shelf dividers
-      rect(ctx, wx + 1, py + 37, 12, 1, "#0c1822");
-      rect(ctx, wx + 1, py + 44, 12, 1, "#0c1822");
+      rect(ctx, wx + 1, py + 43, 12, 1, "#0c1822");
+      rect(ctx, wx + 1, py + 50, 12, 1, "#0c1822");
       // Book spines — shelf 1
       const bc = ["#8b3010", "#1a6030", "#28468a", "#701a60", "#807010"];
       for (let b = 0; b < 4; b++)
-        rect(ctx, wx + 1 + b * 3, py + 38, 2, 6, bc[b]);
+        rect(ctx, wx + 1 + b * 3, py + 44, 2, 6, bc[b]);
       // Book spines — shelf 2
       for (let b = 0; b < 3; b++)
-        rect(ctx, wx + 1 + b * 4, py + 45, 3, 6, bc[(b + 2) % 5]);
+        rect(ctx, wx + 1 + b * 4, py + 51, 3, 6, bc[(b + 2) % 5]);
+      // Window sill
+      rect(ctx, wx - 1, py + 58, 16, 2, "#aa9a6c");
+      rect(ctx, wx - 1, py + 58, 16, 1, "#ddd0a8");
     }
 
     // ── Door (central, dark wood with panels)
-    const dw = 14, dh = 20;
+    const dw = 14, dh = 18;
     const dox = px + width / 2 - dw / 2;
-    rect(ctx, dox - 2, py + 52, dw + 4, dh + 2, dark);          // surround
-    rect(ctx, dox,     py + 54, dw,      dh,     "#3a2210");     // door body
-    rect(ctx, dox + 1, py + 55, dw - 2,  4,      "#5a3820");     // top panel
-    rect(ctx, dox + 1, py + 55, dw - 2,  1,      "#7a5435");     // panel highlight
-    rect(ctx, dox + dw / 2 - 1, py + 55, 2, dh - 2, "#28180a"); // centre split
+    rect(ctx, dox - 2, py + 56, dw + 4, dh + 2, dark);          // surround
+    rect(ctx, dox,     py + 58, dw,      dh,     "#3a2210");    // door body
+    rect(ctx, dox + 1, py + 59, dw - 2,  4,      "#5a3820");    // top panel
+    rect(ctx, dox + 1, py + 59, dw - 2,  1,      "#7a5435");    // panel highlight
+    rect(ctx, dox + dw / 2 - 1, py + 59, 2, dh - 2, "#28180a"); // centre split
     // Door handles
-    rect(ctx, dox + 4,      py + 66, 2, 1, "#c09838");
-    rect(ctx, dox + dw - 6, py + 66, 2, 1, "#c09838");
+    rect(ctx, dox + 4,      py + 69, 2, 1, "#c09838");
+    rect(ctx, dox + dw - 6, py + 69, 2, 1, "#c09838");
+    // Flat threshold / plinth instead of steps
+    rect(ctx, dox - 4, py + 76, dw + 8, 3, "#bcae84");
+    rect(ctx, dox - 4, py + 76, dw + 8, 1, "#e2d6ae");
+    rect(ctx, dox - 4, py + 78, dw + 8, 1, "#8e7a54");
 
-    // ── Steps (3 wide tiers)
-    rect(ctx, px + width/2 - 14, py + height - 14, 28, 5, "#c4ba92");
-    rect(ctx, px + width/2 - 14, py + height - 14, 28, 1, "#d8ce9e");
-    rect(ctx, px + width/2 - 10, py + height - 9,  20, 5, "#ccc098");
-    rect(ctx, px + width/2 - 10, py + height - 9,  20, 1, "#ddd4a4");
-    rect(ctx, px + width/2 - 6,  py + height - 4,  12, 4, "#d8cca0");
-
-    // ── Small label above the pediment (building name only)
-    drawPixelText(ctx, "ESG", px + 33, py + 20, "#7a6a40", 1);
+    // ── Central plaque between the library windows
+    rect(ctx, px + width / 2 - 24, py + 34, 48, 15, "#efe2bc");
+    rect(ctx, px + width / 2 - 24, py + 34, 48, 2,  "#fbf2d6");
+    rect(ctx, px + width / 2 - 24, py + 47, 48, 2,  "#c8b487");
+    rect(ctx, px + width / 2 - 24, py + 34, 2, 15,  "#d8c59b");
+    rect(ctx, px + width / 2 + 22, py + 34, 2, 15,  "#b8a06f");
+    outline(ctx, px + width / 2 - 24, py + 34, 48, 15, "#7d6b43");
+    drawPixelText(ctx, "KNOWLEDGE", px + width / 2 - 18, py + 37, "#5e4a29", 1);
+    drawPixelText(ctx, "HUB",       px + width / 2 - 5,  py + 43, "#5e4a29", 1);
   } else {
     // Generic house
     rect(ctx, px + 1, py + height, width, 4, "rgba(0,0,0,0.14)");

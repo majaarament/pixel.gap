@@ -66,27 +66,35 @@ export function drawScene(ctx, {
     if (s.x < -TILE || s.y < -TILE || s.x > viewportWidth + TILE || s.y > viewportHeight + TILE) return;
     const sx = s.x, sy = s.y;
 
-    // Warm green doormat stripe
-    rect(ctx, sx + 1, sy + 9, 14, 6, "rgba(100,180,120,0.30)");
-    rect(ctx, sx + 2, sy + 10, 12, 4, "rgba(180,240,190,0.18)");
+    // Drop-shadow behind each chevron row for crispness
+    rect(ctx, sx + 3, sy + 5,  10, 2, "rgba(0,0,0,0.55)");
+    rect(ctx, sx + 4, sy + 7,   8, 2, "rgba(0,0,0,0.55)");
+    rect(ctx, sx + 5, sy + 9,   6, 2, "rgba(0,0,0,0.55)");
+    rect(ctx, sx + 6, sy + 11,  4, 2, "rgba(0,0,0,0.55)");
 
-    // Downward-pointing chevron arrow
-    rect(ctx, sx + 4, sy + 4,  8, 2, "#7ab068");
-    rect(ctx, sx + 5, sy + 6,  6, 2, "#7ab068");
-    rect(ctx, sx + 6, sy + 8,  4, 2, "#7ab068");
-    rect(ctx, sx + 7, sy + 10, 2, 2, "#7ab068");
-    // Inner highlight on arrow
-    rect(ctx, sx + 4, sy + 4,  8, 1, "#b8e8a0");
-    rect(ctx, sx + 5, sy + 6,  6, 1, "#b8e8a0");
-    rect(ctx, sx + 6, sy + 8,  4, 1, "#b8e8a0");
+    // Downward-pointing chevron arrow — solid saturated green
+    rect(ctx, sx + 4, sy + 4,  8, 2, "#4ecb38");
+    rect(ctx, sx + 5, sy + 6,  6, 2, "#4ecb38");
+    rect(ctx, sx + 6, sy + 8,  4, 2, "#4ecb38");
+    rect(ctx, sx + 7, sy + 10, 2, 2, "#4ecb38");
+    // Top highlight row
+    rect(ctx, sx + 4, sy + 4,  8, 1, "#9cf07a");
+    rect(ctx, sx + 5, sy + 6,  6, 1, "#9cf07a");
+    rect(ctx, sx + 6, sy + 8,  4, 1, "#9cf07a");
 
-    // "EXIT" label above the tile
+    // "EXIT" label — hard pixel outline, no blur
     ctx.save();
     ctx.font = "bold 7px 'Courier New', monospace";
     ctx.textAlign = "center";
-    ctx.shadowColor = "rgba(0,0,0,0.9)";
-    ctx.shadowBlur = 4;
-    ctx.fillStyle = "#c8f0b0";
+    ctx.shadowBlur = 0;
+    // 1px hard outline in all four directions
+    ctx.fillStyle = "#000000";
+    ctx.fillText("EXIT", sx + 9, sy - 3);
+    ctx.fillText("EXIT", sx + 7, sy - 3);
+    ctx.fillText("EXIT", sx + 8, sy - 2);
+    ctx.fillText("EXIT", sx + 8, sy - 4);
+    // Main text on top
+    ctx.fillStyle = "#e8ffdc";
     ctx.fillText("EXIT", sx + 8, sy - 3);
     ctx.restore();
   }

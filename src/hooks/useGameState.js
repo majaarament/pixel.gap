@@ -582,7 +582,7 @@ export function useGameState() {
   function exitOwlHouse() {
     setLearningHouseOpen(false);
     setScene("town");
-    setPlayer((prev) => ({ ...prev, x: 12, y: 9, dir: "down" }));
+    setPlayer((prev) => ({ ...prev, x: 14, y: 7, dir: "down" }));
     setQuest((prev) => syncStatus(prev));
     dismissDialog();
   }
@@ -702,17 +702,25 @@ export function useGameState() {
     if (!triggerTarget || (triggerTarget.scene && triggerTarget.scene !== scene)) return;
 
     const targetKey = `${scene}:${quest.stage}:${triggerTarget.id || triggerTarget.label || triggerTarget.name}`;
-    const distance = Math.abs(triggerTarget.x - player.x) + Math.abs(triggerTarget.y - player.y);
-    if (distance > 1) return;
-    if (lastAutoTriggerRef.current === targetKey) return;
-    lastAutoTriggerRef.current = targetKey;
 
-    // Council seat — player walks to chair, triggers Olive's council sequence
+    // Council seat: fire from anywhere in the area surrounding the table
+    // so the player can sit in any chair and still trigger the sequence.
     if (triggerTarget.id === "councilSeat") {
+      const inCouncilArea =
+        player.x >= 39 && player.x <= 47 &&
+        player.y >= 7  && player.y <= 13;
+      if (!inCouncilArea) return;
+      if (lastAutoTriggerRef.current === targetKey) return;
+      lastAutoTriggerRef.current = targetKey;
       const oliveNpc = currentNpcs.find((n) => n.id === "olive");
       if (oliveNpc) handleNpcInteraction(oliveNpc);
       return;
     }
+
+    const distance = Math.abs(triggerTarget.x - player.x) + Math.abs(triggerTarget.y - player.y);
+    if (distance > 1) return;
+    if (lastAutoTriggerRef.current === targetKey) return;
+    lastAutoTriggerRef.current = targetKey;
 
     const npcMatch = currentNpcs.find((npc) => npc.id === triggerTarget.id);
     if (npcMatch) {
@@ -890,5 +898,6 @@ export function useGameState() {
     learningHouseOpen,
     openLearningHouse,
     closeLearningHouse,
+    exitOwlHouse,
   };
 }

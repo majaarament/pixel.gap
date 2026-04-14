@@ -599,11 +599,11 @@ export function getNpcDialog(npcId, quest) {
       };
     }
 
-    // Any other stage: let the player re-run the opening questions without advancing the quest
+    // Any other stage: brief ambient acknowledgment — don't re-ask the opening questions
     return {
-      type: "sequence",
-      steps: OLIVE_INTRO_STEPS,
-      reaction: "\"your answers are noted. the zones are still open if you want to keep exploring.\"",
+      type: "info",
+      message:
+        "Olive the Owl — Sustainability Guide\n\n\"the zones are still open. take your time with each guide — come back when you're ready.\"",
       advanceTo: null,
     };
   }
@@ -648,9 +648,17 @@ export function getNpcDialog(npcId, quest) {
   if (["frank", "otis", "suzy", "hazel"].includes(npcId)) {
     const beat = quest.pillarBeats?.[npcId] || 0;
 
-    // Use new ESG survey data
+    // On revisit: brief acknowledgment only — don't re-run the full survey
+    if (beat === 1) {
+      return {
+        type: "info",
+        message: PILLAR_VISITED_MESSAGES[npcId],
+        advanceTo: null,
+      };
+    }
+
+    // First visit: use ESG survey data
     const surveyData = getSurveySectionForNpc(npcId);
-    
     if (surveyData) {
       const dialogSequence = convertSurveyToDialogSequence(surveyData);
       return {
@@ -658,9 +666,8 @@ export function getNpcDialog(npcId, quest) {
         steps: dialogSequence.steps,
         followUpStepsMap: dialogSequence.followUpStepsMap,
         reaction: dialogSequence.reaction,
-        // On revisit (beat === 1): don't re-mark the pillar or re-advance the quest
-        pillarNpcId: beat === 0 ? dialogSequence.pillarNpcId : null,
-        advanceTo: beat === 0 ? dialogSequence.advanceTo : null,
+        pillarNpcId: dialogSequence.pillarNpcId,
+        advanceTo: dialogSequence.advanceTo || null,
       };
     }
   }

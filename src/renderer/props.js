@@ -6,15 +6,20 @@ import { rect, outline } from "../engine/mapUtils";
 // ─── Pixel font (used by drawSign) ────────────────────────────────────────────
 const PIXEL_GLYPHS = {
   A: ["010","101","111","101","101"],
+  B: ["110","101","110","101","110"],
   D: ["110","101","101","101","110"],
   E: ["111","100","110","100","111"],
   G: ["011","100","101","101","011"],
+  H: ["101","101","111","101","101"],
+  I: ["111","010","010","010","111"],
+  K: ["101","110","100","110","101"],
   L: ["100","100","100","100","111"],
   M: ["101","111","111","101","101"],
   N: ["101","111","111","111","101"],
   O: ["111","101","101","101","111"],
   R: ["110","101","110","101","101"],
   S: ["011","100","010","001","110"],
+  U: ["101","101","101","101","111"],
   W: ["101","101","111","111","101"],
 };
 
@@ -44,32 +49,62 @@ export function drawFence(ctx, x, y) {
 }
 
 export function drawBillboard(ctx, x, y) {
-  // ── Two-post roadside billboard ───────────────────────────────────────────
+  // ── Left-pointing wooden arrow sign ──────────────────────────────────────
+  // Ground shadow
+  rect(ctx, x + 8,  y + 13, 34, 3, "rgba(0,0,0,0.18)");
+
   // Posts
-  rect(ctx, x + 5,  y + 1, 3, 13, "#6a4220");
-  rect(ctx, x + 6,  y + 1, 1, 13, "#3d2412");
-  rect(ctx, x + 24, y + 1, 3, 13, "#6a4220");
-  rect(ctx, x + 25, y + 1, 1, 13, "#3d2412");
+  rect(ctx, x + 16, y + 1, 3, 13, "#7b5230");
+  rect(ctx, x + 17, y + 1, 1, 13, "#4a2c16");
+  rect(ctx, x + 31, y + 1, 3, 13, "#7b5230");
+  rect(ctx, x + 32, y + 1, 1, 13, "#4a2c16");
 
-  // Board drop shadow
-  rect(ctx, x + 2, y - 17, 30, 17, "rgba(0,0,0,0.28)");
+  // Arrow board shadow
+  rect(ctx, x + 4,  y - 17, 38, 17, "rgba(0,0,0,0.22)");
+  rect(ctx, x,      y - 13,  6,  9, "rgba(0,0,0,0.22)");
 
-  // Board face (bright cream-yellow — high contrast for readability)
-  rect(ctx, x,     y - 19, 30, 17, "#f6e84e");
-  rect(ctx, x,     y - 19, 30,  2, "#fff9a8");   // top gloss
-  rect(ctx, x,     y - 4,  30,  2, "#c8b020");   // bottom shade
+  // Outer wood silhouette
+  rect(ctx, x + 6,  y - 19, 36, 17, "#8e6038");
+  rect(ctx, x + 2,  y - 16,  4, 11, "#8e6038");
+  rect(ctx, x,      y - 13,  2,  5, "#8e6038");
 
-  // Board border frame
-  rect(ctx, x - 1, y - 20, 32,  1, "#261800");
-  rect(ctx, x - 1, y - 3,  32,  1, "#261800");
-  rect(ctx, x - 1, y - 20,  1, 18, "#261800");
-  rect(ctx, x + 30, y - 20, 1, 18, "#261800");
+  // Top highlights
+  rect(ctx, x + 6,  y - 19, 36, 2, "#c8955a");
+  rect(ctx, x + 2,  y - 16,  4, 2, "#c8955a");
+  rect(ctx, x,      y - 13,  2, 1, "#c8955a");
 
-  // Sharp pixel-font text — dark on bright yellow
-  // "LEARN" = 20px wide at scale 1, centred in the 30px board
-  // "MORE ESG" = 29px wide at scale 1, fits with 1px margin
-  drawPixelText(ctx, "LEARN",    x + 6, y - 15, "#1a1006", 1);
-  drawPixelText(ctx, "MORE ESG", x + 1, y - 8,  "#1a1006", 1);
+  // Bottom shade
+  rect(ctx, x + 6,  y - 4,  36, 2, "#5c3920");
+  rect(ctx, x + 2,  y - 7,   4, 2, "#5c3920");
+  rect(ctx, x,      y - 10,  2, 1, "#5c3920");
+
+  // Cream sign face inset with arrow tip
+  rect(ctx, x + 8,  y - 17, 31, 13, "#f8efcf");
+  rect(ctx, x + 4,  y - 14,  4,  7, "#f8efcf");
+  rect(ctx, x + 2,  y - 12,  2,  3, "#f8efcf");
+  rect(ctx, x + 8,  y - 17, 31,  2, "#fff8e4");
+  rect(ctx, x + 4,  y - 14,  4,  1, "#fff8e4");
+  rect(ctx, x + 2,  y - 12,  2,  1, "#fff8e4");
+  rect(ctx, x + 8,  y - 6,  31,  2, "#d7c29a");
+  rect(ctx, x + 4,  y - 9,   4,  1, "#d7c29a");
+
+  // Outer border lines to sharpen the arrow silhouette
+  rect(ctx, x + 7,  y - 18, 34, 1, "#4a2c16");
+  rect(ctx, x + 7,  y - 4,  34, 1, "#4a2c16");
+  rect(ctx, x + 6,  y - 18,  1, 14, "#4a2c16");
+  rect(ctx, x + 41, y - 18,  1, 14, "#4a2c16");
+  rect(ctx, x + 3,  y - 15,  1,  9, "#4a2c16");
+  rect(ctx, x + 1,  y - 12,  1,  3, "#4a2c16");
+  rect(ctx, x + 2,  y - 16,  1,  2, "#4a2c16");
+  rect(ctx, x + 2,  y - 8,   1,  2, "#4a2c16");
+
+  // Inner face shadow line so the white area reads larger and cleaner
+  rect(ctx, x + 8,  y - 7,  31, 1, "#e1d1ac");
+  rect(ctx, x + 12, y - 5,  23, 1, "#c7b189");
+
+  // Text — both lines sit fully within the white face
+  drawPixelText(ctx, "LEARN",    x + 14, y - 15, "#2a180a", 1);
+  drawPixelText(ctx, "MORE ESG", x + 9,  y - 9,  "#2a180a", 1);
 }
 
 export function drawSign(ctx, x, y, text) {

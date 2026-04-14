@@ -30,7 +30,7 @@ export const SCENES = {
 // Tile the player walks onto to enter/exit the office.
 export const TOWN_OFFICE_ENTRY = { x: 25, y: 7 };
 export const OFFICE_EXIT_TILE  = { x: 21, y: 8 };
-export const TOWN_OWL_HOUSE_ENTRY = { x: 12, y: 8 };
+export const TOWN_OWL_HOUSE_ENTRY = { x: 14, y: 6 };
 export const OWL_HOUSE_EXIT_TILE = { x: 9, y: 14 };
 
 
