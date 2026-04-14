@@ -12,6 +12,18 @@ import { drawCritter } from "../renderer/characters";
 const KICKSTART_MESSAGE =
   "the council is now gathered and the player has arrived. open the meeting as Olive, welcoming them warmly and asking one reflective question based on a specific choice they made during their journey.";
 
+const TABLE_PLACE_CARDS = [
+  { left: "calc(50% - 204px)", top: "calc(50% - 62px)", width: 34, height: 18 },
+  { left: "calc(50% + 170px)", top: "calc(50% - 62px)", width: 34, height: 18 },
+  { left: "calc(50% - 204px)", top: "calc(50% + 34px)", width: 34, height: 18 },
+  { left: "calc(50% + 170px)", top: "calc(50% + 34px)", width: 34, height: 18 },
+  { left: "calc(50% - 244px)", top: "calc(50% - 12px)", width: 18, height: 34 },
+  { left: "calc(50% + 226px)", top: "calc(50% - 12px)", width: 18, height: 34 },
+];
+
+const PIXEL_OVAL_CLIP =
+  "polygon(10% 0, 90% 0, 95% 4%, 98% 10%, 100% 22%, 100% 78%, 98% 90%, 95% 96%, 90% 100%, 10% 100%, 5% 96%, 2% 90%, 0 78%, 0 22%, 2% 10%, 5% 4%)";
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function CouncilMeeting({ quest, onClose }) {
@@ -520,12 +532,29 @@ function CouncilScene({ activeNpcId }) {
       {/* Floor shadow beneath table */}
       <div style={styles.floorShadow} />
 
-      {/* Table: wood sides */}
-      <div style={styles.tableBody} />
-      {/* Table: green felt surface */}
-      <div style={styles.tableFelt} />
-      {/* Small item on table */}
-      <div style={styles.tableCup} />
+      {/* Table layers, matched to the outdoor terrace sprite */}
+      <div style={styles.tableDepth} />
+      <div style={styles.tableOuter} />
+      <div style={styles.tableMid} />
+      <div style={styles.tableTop} />
+      <div style={styles.tableHighlight} />
+      <div style={styles.tableGrainTop} />
+      <div style={styles.tableGrainMid} />
+      <div style={styles.tableGrainBottom} />
+      <div style={styles.tableRightShade} />
+      {TABLE_PLACE_CARDS.map((card, index) => (
+        <div
+          key={index}
+          style={{
+            ...styles.tablePlaceCard,
+            left: card.left,
+            top: card.top,
+            width: card.width,
+            height: card.height,
+          }}
+        />
+      ))}
+      <div style={styles.tableCenterPaper} />
 
       {COUNCIL_NPCS.map((npc) => {
         const layout = COUNCIL_STAGE_LAYOUT[npc.id];
@@ -696,48 +725,115 @@ const styles = {
   floorShadow: {
     position: "absolute",
     left: "50%",
-    bottom: "12%",
-    width: 520,
-    height: 32,
+    top: "calc(50% + 74px)",
+    width: 560,
+    height: 28,
     transform: "translateX(-50%)",
-    borderRadius: 999,
-    background: "rgba(0,0,0,0.35)",
+    background: "rgba(0,0,0,0.22)",
+    clipPath: PIXEL_OVAL_CLIP,
   },
-  // Table wood body (slightly larger, behind felt)
-  tableBody: {
+  tableDepth: {
     position: "absolute",
     left: "50%",
-    top: "52%",
-    width: 548,
-    height: 120,
+    top: "50%",
+    width: 540,
+    height: 124,
     transform: "translate(-50%, -50%)",
-    borderRadius: 999,
-    background: "linear-gradient(180deg, #6b3f1e 0%, #4a2c12 100%)",
-    boxShadow: "0 9px 0 #2e1a08, 0 0 0 3px #3a2010",
+    background: "#5c3820",
+    clipPath: PIXEL_OVAL_CLIP,
   },
-  // Table felt surface (green, slightly inset from wood)
-  tableFelt: {
+  tableOuter: {
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    width: 540,
+    height: 112,
+    transform: "translate(-50%, -50%)",
+    background: "#9a6438",
+    clipPath: PIXEL_OVAL_CLIP,
+  },
+  tableMid: {
     position: "absolute",
     left: "50%",
     top: "50%",
     width: 510,
-    height: 90,
+    height: 98,
     transform: "translate(-50%, -50%)",
-    borderRadius: 999,
-    background: "linear-gradient(180deg, #1e5028 0%, #183e20 100%)",
-    boxShadow: "inset 0 3px 8px rgba(0,0,0,0.4)",
-    border: "2px solid #143018",
+    background: "#b07844",
+    clipPath: PIXEL_OVAL_CLIP,
   },
-  tableCup: {
+  tableTop: {
     position: "absolute",
     left: "50%",
-    top: "47%",
-    width: 12,
-    height: 16,
+    top: "50%",
+    width: 472,
+    height: 82,
     transform: "translate(-50%, -50%)",
-    borderRadius: 2,
-    background: "linear-gradient(180deg, #c8a840 0%, #a08028 100%)",
-    boxShadow: "2px 2px 0 #3a2010",
+    background: "#c08850",
+    clipPath: PIXEL_OVAL_CLIP,
+  },
+  tableHighlight: {
+    position: "absolute",
+    left: "50%",
+    top: "calc(50% - 22px)",
+    width: 430,
+    height: 10,
+    transform: "translateX(-50%)",
+    background: "rgba(255,255,255,0.13)",
+    clipPath: PIXEL_OVAL_CLIP,
+  },
+  tableGrainTop: {
+    position: "absolute",
+    left: "50%",
+    top: "calc(50% - 8px)",
+    width: 426,
+    height: 2,
+    transform: "translateX(-50%)",
+    background: "#8a5830",
+  },
+  tableGrainMid: {
+    position: "absolute",
+    left: "50%",
+    top: "calc(50% + 12px)",
+    width: 426,
+    height: 2,
+    transform: "translateX(-50%)",
+    background: "#8a5830",
+  },
+  tableGrainBottom: {
+    position: "absolute",
+    left: "50%",
+    top: "calc(50% + 32px)",
+    width: 426,
+    height: 2,
+    transform: "translateX(-50%)",
+    background: "#8a5830",
+  },
+  tableRightShade: {
+    position: "absolute",
+    left: "calc(50% + 186px)",
+    top: "50%",
+    width: 22,
+    height: 82,
+    transform: "translateY(-50%)",
+    background: "#7a4828",
+    clipPath: "polygon(28% 0, 100% 0, 100% 100%, 28% 100%, 0 86%, 0 14%)",
+  },
+  tablePlaceCard: {
+    position: "absolute",
+    transform: "translate(-50%, -50%)",
+    background: "#eeeae0",
+    boxShadow: "inset 0 2px 0 #fffff4, 0 0 0 2px rgba(116,78,44,0.25)",
+  },
+  tableCenterPaper: {
+    position: "absolute",
+    left: "50%",
+    top: "calc(50% - 6px)",
+    width: 28,
+    height: 18,
+    transform: "translate(-50%, -50%) rotate(-6deg)",
+    background: "#ece6d8",
+    boxShadow: "inset 0 2px 0 #fffdf4, 0 0 0 2px rgba(116,78,44,0.22)",
   },
   avatarSlot: {
     position: "absolute",
