@@ -599,10 +599,12 @@ export function getNpcDialog(npcId, quest) {
       };
     }
 
+    // Any other stage: let the player re-run the opening questions without advancing the quest
     return {
-      type: "info",
-      message:
-        "Olive the Owl — Sustainability Guide\n\nOlive watches the path. \"keep going. there's more to discover in the zones ahead.\"",
+      type: "sequence",
+      steps: OLIVE_INTRO_STEPS,
+      reaction: "\"your answers are noted. the zones are still open if you want to keep exploring.\"",
+      advanceTo: null,
     };
   }
 
@@ -649,32 +651,18 @@ export function getNpcDialog(npcId, quest) {
     // Use new ESG survey data
     const surveyData = getSurveySectionForNpc(npcId);
     
-    if (beat === 0 && surveyData) {
+    if (surveyData) {
       const dialogSequence = convertSurveyToDialogSequence(surveyData);
       return {
         type: "sequence",
         steps: dialogSequence.steps,
+        followUpStepsMap: dialogSequence.followUpStepsMap,
         reaction: dialogSequence.reaction,
-        pillarNpcId: dialogSequence.pillarNpcId,
+        // On revisit (beat === 1): don't re-mark the pillar or re-advance the quest
+        pillarNpcId: beat === 0 ? dialogSequence.pillarNpcId : null,
+        advanceTo: beat === 0 ? dialogSequence.advanceTo : null,
       };
     }
-
-    // Fallback for repeat visits
-    const visitMessages = {
-      frank:
-        "Frank the Fish — Environmental Stewardship\n\nFrank nods toward the drainage channel. \"the readings don't change just because we've already talked about them. but your view is in the record.\"",
-      otis:
-        "Otis the Otter — People & Culture\n\nOtis glances back at the building. \"people situations don't resolve neatly. thanks for engaging with it honestly.\"",
-      suzy:
-        "Suzy the Sheep — Business Conduct\n\nSuzy taps her desk. \"policies exist. but the hardest part is keeping them alive under pressure. your view matters.\"",
-      hazel:
-        "Hazel the Hedgehog — Responsible Value Chain\n\nHazel looks at the supply chain logs. \"choices ripple outward. good that you're thinking about it.\"",
-    };
-    
-    return {
-      type: "info",
-      message: visitMessages[npcId] || "You've already shared your perspective with this guide.",
-    };
   }
 
   return null;

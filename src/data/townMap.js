@@ -92,7 +92,7 @@ export const townSigns = [
   { x: 17, y: 19, text: "river" },
   { x: 30, y: 15, text: "works" },
   { x: 30, y: 10, text: "Delaware" },
-  { x: 39, y: 14, text: "terrace" }, 
+  { x: 39, y: 14, text: "terrace" },
 ];
 
 export const townBenches = [
@@ -230,6 +230,12 @@ function makeTownTrees() {
 
 export const townTrees = makeTownTrees();
 
+// ─── Billboard — "learn more about ESG" between library and Delaware building ──
+// Positioned on the path at y=8, midway between the library (x≈14) and office (x≈22)
+export const townBillboards = [
+  { x: 17, y: 8 },
+];
+
 // ─── Blocking set ─────────────────────────────────────────────────────────────
 export const townBlocking = new Set();
 townWater.forEach((k) => townBlocking.add(k));
@@ -255,6 +261,11 @@ townBuildings.forEach((b) => {
       townBlocking.add(keyFor(x, y));
     }
   }
+});
+// Billboard posts occupy two tiles each
+townBillboards.forEach((b) => {
+  townBlocking.add(keyFor(b.x,     b.y));
+  townBlocking.add(keyFor(b.x + 1, b.y));
 });
 // Council table tiles are solid — chairs and player seat remain walkable
 addRect(townBlocking, townCouncilTable.x, townCouncilTable.y, townCouncilTable.w, townCouncilTable.h);

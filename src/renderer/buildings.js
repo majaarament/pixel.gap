@@ -117,25 +117,81 @@ export function drawHouse(ctx, building, x, y) {
     rect(ctx, doorX - 8,  py + height - 4, doorW + 16, 2, "#b8c8d4");
     rect(ctx, doorX - 6,  py + height - 2, doorW + 12, 2, "#ccd8e2");
   } else if (building.type === "owlhouse") {
-    rect(ctx, px + 1, py + height, width, 4, "rgba(0,0,0,0.14)");
-    rect(ctx, px + 2, py + 14, width - 4, height - 16, "#f5ead4");
-    rect(ctx, px + 2, py + 14, width - 4, 3, "#fff8ee");
-    rect(ctx, px, py + 7, width, 18, "#7b5944");
-    rect(ctx, px + 4, py + 3, width - 8, 10, "#a67a5a");
-    rect(ctx, px + 8, py + 28, 12, 10, "#c9def0");
-    rect(ctx, px + 8, py + 28, 12, 2, "#eef8ff");
-    rect(ctx, px + width - 20, py + 28, 12, 10, "#c9def0");
-    rect(ctx, px + width - 20, py + 28, 12, 2, "#eef8ff");
-    rect(ctx, px + width / 2 - 6, py + 34, 12, 14, "#8f6d52");
-    rect(ctx, px + width / 2 - 5, py + 36, 10, 10, "#c9a27e");
-    rect(ctx, px + width / 2 - 8, py + 20, 16, 10, "#6b8b59");
-    rect(ctx, px + width / 2 - 6, py + 22, 12, 6, "#88ab74");
-    rect(ctx, px + width / 2 - 1, py + 18, 2, 2, "#6b8b59");
-    rect(ctx, px + width / 2 - 1, py + 20, 2, 6, "#4f6842");
-    rect(ctx, px + width / 2 - 3, py + 24, 2, 2, "#f4efdd");
-    rect(ctx, px + width / 2 + 1, py + 24, 2, 2, "#f4efdd");
-    drawPixelText(ctx, "LEARN", px + 20, py - 11, "#f8f1dc", 2);
-    drawPixelText(ctx, "MORE ESG", px + 7, py - 2, "#e3f3d0", 2);
+    // ── Library / Learning House — classical stone facade ──────────────────
+    const stone  = "#d8cda8";   // warm sandstone
+    const stoneL = "#ece0c0";   // lighter (column/pilaster face)
+    const stoneD = "#b0a278";   // shadowed stone
+    const dark   = "#18120a";   // outlines / window frames
+    const glass  = "#1c2e3e";   // window glass (dark)
+    const glassH = "#3a6080";   // glass highlight
+
+    // Drop shadow
+    rect(ctx, px + 2, py + height, width - 2, 5, "rgba(0,0,0,0.18)");
+
+    // ── Base wall
+    rect(ctx, px + 2, py + 22, width - 4, height - 36, stone);
+    rect(ctx, px + 2, py + 22, width - 4, 2, "#f0e6c6");
+
+    // ── Pilasters (columns) left and right
+    rect(ctx, px + 4,          py + 22, 10, height - 36, stoneL);
+    rect(ctx, px + 4,          py + 22, 10, 2,           "#f8f0d4");
+    rect(ctx, px + width - 14, py + 22, 10, height - 36, stoneL);
+    rect(ctx, px + width - 14, py + 22, 10, 2,           "#f8f0d4");
+
+    // ── Entablature (band below pediment)
+    rect(ctx, px,     py + 17, width,   6, stoneD);
+    rect(ctx, px,     py + 17, width,   2, "#c8ba90");
+    rect(ctx, px,     py + 21, width,   2, "#8c7e58");
+
+    // ── Pediment (classical triangular roof, built from stacked rects)
+    rect(ctx, px + 2,  py + 8,  width - 4,  10, "#bfb07a");
+    rect(ctx, px + 2,  py + 8,  width - 4,   2, "#d4c688");
+    rect(ctx, px + 8,  py + 5,  width - 16,  4, "#a89860");
+    rect(ctx, px + 16, py + 3,  width - 32,  3, "#9a8c58");
+    rect(ctx, px + 22, py + 1,  width - 44,  3, "#887a4c");
+    // Pediment baseline
+    rect(ctx, px + 2,  py + 16, width - 4,   2, "#9a8e62");
+
+    // ── Windows — books visible on shelves
+    for (const wx of [px + 16, px + width - 30]) {
+      // Window frame
+      rect(ctx, wx,     py + 28, 14, 24, dark);
+      // Glass pane
+      rect(ctx, wx + 1, py + 29, 12, 22, glass);
+      rect(ctx, wx + 1, py + 29, 12,  3, glassH);
+      // Shelf dividers
+      rect(ctx, wx + 1, py + 37, 12, 1, "#0c1822");
+      rect(ctx, wx + 1, py + 44, 12, 1, "#0c1822");
+      // Book spines — shelf 1
+      const bc = ["#8b3010", "#1a6030", "#28468a", "#701a60", "#807010"];
+      for (let b = 0; b < 4; b++)
+        rect(ctx, wx + 1 + b * 3, py + 38, 2, 6, bc[b]);
+      // Book spines — shelf 2
+      for (let b = 0; b < 3; b++)
+        rect(ctx, wx + 1 + b * 4, py + 45, 3, 6, bc[(b + 2) % 5]);
+    }
+
+    // ── Door (central, dark wood with panels)
+    const dw = 14, dh = 20;
+    const dox = px + width / 2 - dw / 2;
+    rect(ctx, dox - 2, py + 52, dw + 4, dh + 2, dark);          // surround
+    rect(ctx, dox,     py + 54, dw,      dh,     "#3a2210");     // door body
+    rect(ctx, dox + 1, py + 55, dw - 2,  4,      "#5a3820");     // top panel
+    rect(ctx, dox + 1, py + 55, dw - 2,  1,      "#7a5435");     // panel highlight
+    rect(ctx, dox + dw / 2 - 1, py + 55, 2, dh - 2, "#28180a"); // centre split
+    // Door handles
+    rect(ctx, dox + 4,      py + 66, 2, 1, "#c09838");
+    rect(ctx, dox + dw - 6, py + 66, 2, 1, "#c09838");
+
+    // ── Steps (3 wide tiers)
+    rect(ctx, px + width/2 - 14, py + height - 14, 28, 5, "#c4ba92");
+    rect(ctx, px + width/2 - 14, py + height - 14, 28, 1, "#d8ce9e");
+    rect(ctx, px + width/2 - 10, py + height - 9,  20, 5, "#ccc098");
+    rect(ctx, px + width/2 - 10, py + height - 9,  20, 1, "#ddd4a4");
+    rect(ctx, px + width/2 - 6,  py + height - 4,  12, 4, "#d8cca0");
+
+    // ── Small label above the pediment (building name only)
+    drawPixelText(ctx, "ESG", px + 33, py + 20, "#7a6a40", 1);
   } else {
     // Generic house
     rect(ctx, px + 1, py + height, width, 4, "rgba(0,0,0,0.14)");

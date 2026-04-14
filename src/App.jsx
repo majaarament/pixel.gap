@@ -27,6 +27,13 @@ export default function App() {
 
   return (
     <div style={styles.page}>
+      <button
+        style={styles.skipBtn}
+        onClick={game.skipToDebate}
+        title="dev: skip to council debate"
+      >
+        ⏭ skip to debate
+      </button>
       <div style={styles.gameWrap}>
         <GameCanvas
           scene={game.scene}
@@ -72,6 +79,22 @@ const styles = {
     color: "#31423a",
     position: "relative",
     overflow: "hidden",
+  },
+  skipBtn: {
+    position: "fixed",
+    bottom: 12,
+    right: 12,
+    zIndex: 9999,
+    padding: "6px 12px",
+    background: "rgba(20,20,20,0.82)",
+    border: "1px solid rgba(255,200,80,0.5)",
+    borderRadius: 4,
+    color: "rgba(255,200,80,0.85)",
+    fontSize: 11,
+    fontFamily: "monospace",
+    fontWeight: 700,
+    cursor: "pointer",
+    letterSpacing: 0.5,
   },
   gameWrap: {
     display: "flex",

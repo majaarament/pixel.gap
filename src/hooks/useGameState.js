@@ -675,6 +675,23 @@ export function useGameState() {
   useEffect(() => {
     if (councilOpen) return;                          // council meeting handles POST_GAME interaction
     if (dialogRef.current) return;
+
+    // Olive can always be re-engaged once past the opening — even between stages
+    // or after the game is complete. Check her first before the normal stage gate.
+    if (
+      nearbyNpc?.id === "olive" &&
+      quest.stage !== QUEST_STAGES.MEET_OLIVE &&
+      quest.stage !== QUEST_STAGES.BASELINE_DILEMMA &&
+      quest.stage !== QUEST_STAGES.RETURN_TO_OLIVE
+    ) {
+      const oliveKey = `${scene}:olive-revisit:${quest.stage}`;
+      if (lastAutoTriggerRef.current !== oliveKey) {
+        lastAutoTriggerRef.current = oliveKey;
+        handleNpcInteraction(nearbyNpc);
+        return;
+      }
+    }
+
     if (!AUTO_TRIGGERABLE_STAGES.has(quest.stage)) return;
 
     const triggerTarget =
@@ -826,6 +843,22 @@ export function useGameState() {
 
   useEffect(() => () => window.clearTimeout(bannerTimeoutRef.current), []);
 
+  function skipToDebate() {
+    dismissDialog();
+    setScene("town");
+    setPlayer((prev) => ({ ...prev, x: 43, y: 12, dir: "up" }));
+    setQuest((prev) =>
+      syncStatus({
+        ...prev,
+        stage: QUEST_STAGES.POST_GAME,
+        visited: ["frank", "otis", "suzy", "hazel", "olive"],
+        pillarBeats: { frank: 1, otis: 1, suzy: 1, hazel: 1 },
+        pillarOrder: { town: ["frank", "otis"], office: ["suzy", "hazel"] },
+        openingPov: prev.openingPov || "conduct",
+      })
+    );
+  }
+
   return {
     scene,
     player,
@@ -853,6 +886,7 @@ export function useGameState() {
     setPlayerProfile,
     councilOpen,
     closeCouncil,
+    skipToDebate,
     learningHouseOpen,
     openLearningHouse,
     closeLearningHouse,

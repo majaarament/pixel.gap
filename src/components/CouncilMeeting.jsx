@@ -524,8 +524,6 @@ function CouncilScene({ activeNpcId }) {
       <div style={styles.tableBody} />
       {/* Table: green felt surface */}
       <div style={styles.tableFelt} />
-      {/* Table edge/lip */}
-      <div style={styles.tableLip} />
       {/* Small item on table */}
       <div style={styles.tableCup} />
 
@@ -729,16 +727,6 @@ const styles = {
     background: "linear-gradient(180deg, #1e5028 0%, #183e20 100%)",
     boxShadow: "inset 0 3px 8px rgba(0,0,0,0.4)",
     border: "2px solid #143018",
-  },
-  tableLip: {
-    position: "absolute",
-    left: "50%",
-    top: "58%",
-    width: 590,
-    height: 24,
-    transform: "translate(-50%, -50%)",
-    borderRadius: 999,
-    background: "#3a2010",
   },
   tableCup: {
     position: "absolute",

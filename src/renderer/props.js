@@ -43,6 +43,35 @@ export function drawFence(ctx, x, y) {
   rect(ctx, x + 1,  y + 5, TILE - 2, 1, "#c99472");
 }
 
+export function drawBillboard(ctx, x, y) {
+  // ── Two-post roadside billboard ───────────────────────────────────────────
+  // Posts
+  rect(ctx, x + 5,  y + 1, 3, 13, "#6a4220");
+  rect(ctx, x + 6,  y + 1, 1, 13, "#3d2412");
+  rect(ctx, x + 24, y + 1, 3, 13, "#6a4220");
+  rect(ctx, x + 25, y + 1, 1, 13, "#3d2412");
+
+  // Board drop shadow
+  rect(ctx, x + 2, y - 17, 30, 17, "rgba(0,0,0,0.28)");
+
+  // Board face (bright cream-yellow — high contrast for readability)
+  rect(ctx, x,     y - 19, 30, 17, "#f6e84e");
+  rect(ctx, x,     y - 19, 30,  2, "#fff9a8");   // top gloss
+  rect(ctx, x,     y - 4,  30,  2, "#c8b020");   // bottom shade
+
+  // Board border frame
+  rect(ctx, x - 1, y - 20, 32,  1, "#261800");
+  rect(ctx, x - 1, y - 3,  32,  1, "#261800");
+  rect(ctx, x - 1, y - 20,  1, 18, "#261800");
+  rect(ctx, x + 30, y - 20, 1, 18, "#261800");
+
+  // Sharp pixel-font text — dark on bright yellow
+  // "LEARN" = 20px wide at scale 1, centred in the 30px board
+  // "MORE ESG" = 29px wide at scale 1, fits with 1px margin
+  drawPixelText(ctx, "LEARN",    x + 6, y - 15, "#1a1006", 1);
+  drawPixelText(ctx, "MORE ESG", x + 1, y - 8,  "#1a1006", 1);
+}
+
 export function drawSign(ctx, x, y, text) {
   rect(ctx, x + 5,  y + 7, 6, 8, "#8f6746");
   rect(ctx, x + 10, y + 7, 1, 8, "#5f4330");

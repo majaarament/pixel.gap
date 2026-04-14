@@ -12,6 +12,7 @@ import {
   townHazardCones, townWasteBins, townWaterMarkers, townNoticeboards,
   townWatchPosts, townMachines,
   townCouncilTable, townCouncilChairs,
+  townBillboards,
 } from "../data/townMap";
 import {
   officeDesks, officeCounters, officePlants, officeDecor, officeFolder,
@@ -25,7 +26,7 @@ import {
 } from "../data/owlHouseMap";
 import { drawGround } from "./tiles";
 import {
-  drawFence, drawSign, drawBench, drawBarrel, drawCrate, drawLamp,
+  drawBillboard, drawFence, drawSign, drawBench, drawBarrel, drawCrate, drawLamp,
   drawCanalPost, drawBridge, drawRock, drawFlower, drawCropBed, drawTree,
   drawHazardCone, drawWasteBin, drawWaterMarker, drawNoticeboard, drawWatchPost, drawMachine,
   drawCouncilTable, drawChair,
@@ -111,6 +112,7 @@ export function drawScene(ctx, {
     townFlowers.forEach((d) => drawables.push({ type: "flower",     sortY: d.y,       data: d }));
     townFarmBeds.forEach((d) => drawables.push({ type: "bed",       sortY: d.y + d.h, data: d }));
     townStatues.forEach((d) => drawables.push({ type: "statue",     sortY: d.y,       data: d }));
+    townBillboards.forEach((d) => drawables.push({ type: "billboard", sortY: d.y + 1,  data: d }));
     // ESG props
     townHazardCones.forEach((d) => drawables.push({ type: "hazardCone",  sortY: d.y, data: d }));
     townWasteBins.forEach((d) => drawables.push({ type: "wasteBin",      sortY: d.y, data: d }));
@@ -166,6 +168,7 @@ export function drawScene(ctx, {
           }
         break;
       case "statue":      drawStatue(ctx, s.x, s.y, data.type); break;
+      case "billboard":   drawBillboard(ctx, s.x, s.y); break;
       case "hazardCone":  drawHazardCone(ctx, s.x, s.y); break;
       case "wasteBin":    drawWasteBin(ctx, s.x, s.y, data.kind); break;
       case "waterMarker": drawWaterMarker(ctx, s.x, s.y); break;
