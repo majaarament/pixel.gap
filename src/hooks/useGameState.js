@@ -42,7 +42,7 @@ const INITIAL_QUEST = {
   pillarBeats: {},   // { frank: 0|1, otis: 0|1, suzy: 0|1, hazel: 0|1 }
   pillarOrder: null, // { town: ["frank","otis"] | ["otis","frank"], office: ["suzy","hazel"] | ["hazel","suzy"] }
   openingPov: null, // env | people | conduct | chain
-  playerProfile: null, // { roleLevel, branch, country }
+  playerProfile: null, // { roleLevel, team, country }
 };
 
 const AUTO_TRIGGERABLE_STAGES = new Set([

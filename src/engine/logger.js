@@ -39,7 +39,7 @@ function writeStoredValue(storage, key, value) {
 function profileFields(playerProfile = {}) {
   return {
     roleLevel: playerProfile?.roleLevel || "",
-    branch: playerProfile?.branch || "",
+    team: playerProfile?.team || playerProfile?.branch || "",
     country: playerProfile?.country || "",
   };
 }

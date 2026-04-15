@@ -334,7 +334,11 @@ function normalizeLogPayload(body, req) {
     choiceLabel: typeof data.choiceLabel === "string" ? data.choiceLabel : "",
     text: typeof data.text === "string" ? data.text : "",
     roleLevel: typeof data.roleLevel === "string" ? data.roleLevel : "",
-    branch: typeof data.branch === "string" ? data.branch : "",
+    team: typeof data.team === "string"
+      ? data.team
+      : typeof data.branch === "string"
+        ? data.branch
+        : "",
     country: typeof data.country === "string" ? data.country : "",
     userAgent: req.headers["user-agent"] || "",
   };

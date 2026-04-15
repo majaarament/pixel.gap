@@ -5,7 +5,7 @@ function summarizePlayerContext(quest) {
 
   return [
     `role: ${profile.roleLevel || "employee"}`,
-    `branch: ${profile.branch || "unknown"}`,
+    `team: ${profile.team || profile.branch || "unknown"}`,
     `country: ${profile.country || "unknown"}`,
     recentChoices.length ? "recent choices:" : null,
     ...recentChoices,
