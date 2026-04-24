@@ -7,6 +7,7 @@ import GameCanvas     from "./components/GameCanvas";
 import IntroScreen    from "./components/IntroScreen";
 import PrivacyScreen  from "./components/PrivacyScreen";
 import ProfileScreen  from "./components/ProfileScreen";
+import InfoRow        from "./components/InfoRow";
 
 export default function App() {
   const [screen, setScreen] = useState("start");
@@ -73,6 +74,7 @@ export default function App() {
           onOpenLearningHouse={game.openLearningHouse}
           onCloseLearningHouse={game.closeLearningHouse}
         />
+        <InfoRow />
       </div>
     </div>
   );
@@ -116,7 +118,7 @@ const styles = {
   gameWrap: {
     display: "flex",
     flexDirection: "column",
-    gap: 0,
+    gap: 8,
     width: "fit-content",
     margin: "0 auto",
     position: "relative",

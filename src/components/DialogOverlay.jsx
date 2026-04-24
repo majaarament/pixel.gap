@@ -44,11 +44,27 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
   const segments = dialog && !isReflection && bodyText ? parseSpeechSegments(dialog, bodyText) : [];
   const history  = dialog && !isReflection && dialog.history?.length > 0 ? dialog.history : [];
   const hasPromptValues = dialog?.prompts?.every((p) => (values[p.id] || "").trim());
+
+  // Step progress for multi-step sequences
+  const totalSteps    = dialog?.steps?.length ?? 0;
+  const currentStep   = dialog?.stepIndex ?? 0;
+  const showProgress  = dialog?.type === "sequence" && totalSteps > 1;
+
+  // During reaction phase, surface the last Q&A pair as a pinned recap
+  const lastPlayerIdx   = history.length - 1;
+  const lastPlayerEntry = isReaction && lastPlayerIdx >= 0 && history[lastPlayerIdx]?.variant === "player"
+    ? history[lastPlayerIdx]
+    : null;
+  const lastNpcEntry    = isReaction && lastPlayerIdx >= 1 && history[lastPlayerIdx - 1]?.variant !== "player"
+    ? history[lastPlayerIdx - 1]
+    : null;
+
   const canAdvanceWithShortcut =
     isInfo ||
     isReaction ||
     (isQuestion && (!dialog?.choices || dialog.choices.length === 0));
 
+  // Tab/Enter advance for info and reaction phases
   useEffect(() => {
     if (!dialog || !canAdvanceWithShortcut) return undefined;
 
@@ -66,6 +82,27 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
     window.addEventListener("keydown", handleWindowKeyDown);
     return () => window.removeEventListener("keydown", handleWindowKeyDown);
   }, [canAdvanceWithShortcut, dialog, onAdvance]);
+
+  // 1-4 number keys to select choices
+  useEffect(() => {
+    if (!dialog || !isQuestion) return;
+    const regularChoices = (dialog.choices || []).filter((c) => !c.isOpenEnded);
+    if (!regularChoices.length) return;
+
+    function handleNumberKey(e) {
+      const tag = document.activeElement?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      const num = parseInt(e.key, 10);
+      if (num >= 1 && num <= regularChoices.length) {
+        e.preventDefault();
+        setHoveredIdx(null);
+        onChoice(regularChoices[num - 1]);
+      }
+    }
+
+    window.addEventListener("keydown", handleNumberKey);
+    return () => window.removeEventListener("keydown", handleNumberKey);
+  }, [dialog, isQuestion, onChoice]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -127,7 +164,7 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
     <div style={styles.backdrop}>
       <div style={{ ...styles.gameCard, borderTopColor: accent }}>
 
-        {/* Header: NPC identity */}
+        {/* Header: NPC identity + step progress */}
         <div style={styles.cardHeader}>
           <div style={{ ...styles.accentDot, background: accent }} />
           <div style={styles.headerText}>
@@ -138,10 +175,33 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
               <span style={styles.npcRole}>&nbsp;·&nbsp;{dialog.npcRole}</span>
             )}
           </div>
+          {showProgress && (
+            <div style={{ ...styles.stepBadge, borderColor: accent, color: accent }}>
+              {currentStep + 1} / {totalSteps}
+            </div>
+          )}
         </div>
 
-        {/* History: previous exchanges in this dialog */}
-        {history.length > 0 && (
+        {/* Pinned recap during reaction: show the question and the player's answer */}
+        {isReaction && (lastNpcEntry || lastPlayerEntry) && (
+          <div style={{ ...styles.pinnedRecap, borderColor: `${accent}44` }}>
+            {lastNpcEntry && (
+              <div style={styles.pinnedQuestion}>
+                <span style={styles.pinnedLabel}>Q</span>
+                <span style={styles.pinnedQText}>{lastNpcEntry.text}</span>
+              </div>
+            )}
+            {lastPlayerEntry && (
+              <div style={styles.pinnedAnswer}>
+                <span style={{ ...styles.pinnedLabel, background: `${accent}33`, color: accent }}>You</span>
+                <span style={styles.pinnedAText}>{lastPlayerEntry.text}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* History: previous exchanges in this dialog (only in non-reaction phases) */}
+        {!isReaction && history.length > 0 && (
           <div ref={historyRef} style={styles.historyArea}>
             {history.map((seg, i) => (
               <div
@@ -217,25 +277,28 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
           }
 
           return (
-            <div style={styles.choices}>
-              {dialog.choices.map((c, i) => (
-                <button
-                  key={c.key}
-                  style={{
-                    ...styles.choice,
-                    ...(hoveredIdx === i
-                      ? { ...styles.choiceHover, borderColor: accent }
-                      : {}),
-                  }}
-                  onMouseEnter={() => setHoveredIdx(i)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                  onClick={() => { setHoveredIdx(null); onChoice(c); }}
-                >
-                  <span style={{ ...styles.choiceNum, background: accent }}>{i + 1}</span>
-                  <span style={styles.choiceLabel}>{c.label}</span>
-                </button>
-              ))}
-            </div>
+            <>
+              <div style={styles.choices}>
+                {dialog.choices.map((c, i) => (
+                  <button
+                    key={c.key}
+                    style={{
+                      ...styles.choice,
+                      ...(hoveredIdx === i
+                        ? { ...styles.choiceHover, borderColor: accent }
+                        : {}),
+                    }}
+                    onMouseEnter={() => setHoveredIdx(i)}
+                    onMouseLeave={() => setHoveredIdx(null)}
+                    onClick={() => { setHoveredIdx(null); onChoice(c); }}
+                  >
+                    <span style={{ ...styles.choiceNum, background: accent }}>{i + 1}</span>
+                    <span style={styles.choiceLabel}>{c.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div style={styles.choiceHint}>press 1–{dialog.choices.length} or click to answer</div>
+            </>
           );
         })()}
 
@@ -272,13 +335,13 @@ const styles = {
   // ── Main game card — RPG dialog box at the bottom ─────────────────────────
   gameCard: {
     width: "100%",
-    maxHeight: "54%",
+    maxHeight: "60%",
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
     gap: 8,
     padding: "12px 16px 16px",
-    background: "rgba(14, 20, 16, 0.96)",
+    background: "rgba(14, 20, 16, 0.97)",
     borderTop: "3px solid",
     pointerEvents: "auto",
     scrollbarWidth: "thin",
@@ -304,6 +367,7 @@ const styles = {
     alignItems: "baseline",
     gap: 0,
     flexWrap: "wrap",
+    flex: 1,
   },
   npcName: {
     fontSize: 11,
@@ -317,10 +381,64 @@ const styles = {
     letterSpacing: 0.8,
     color: "rgba(180,200,175,0.55)",
   },
+  stepBadge: {
+    fontSize: 10,
+    fontWeight: 800,
+    letterSpacing: 0.5,
+    border: "1px solid",
+    borderRadius: 4,
+    padding: "2px 7px",
+    opacity: 0.75,
+    flexShrink: 0,
+  },
+
+  // ── Pinned recap (shown during reaction) ─────────────────────────────────
+  pinnedRecap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 5,
+    padding: "8px 10px",
+    borderRadius: 5,
+    background: "rgba(255,255,255,0.03)",
+    border: "1px solid",
+  },
+  pinnedQuestion: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 7,
+  },
+  pinnedAnswer: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 7,
+  },
+  pinnedLabel: {
+    fontSize: 9,
+    fontWeight: 900,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    background: "rgba(255,255,255,0.08)",
+    color: "rgba(180,210,175,0.7)",
+    borderRadius: 3,
+    padding: "2px 5px",
+    flexShrink: 0,
+    marginTop: 1,
+  },
+  pinnedQText: {
+    fontSize: 11,
+    lineHeight: 1.45,
+    color: "rgba(180,210,175,0.7)",
+  },
+  pinnedAText: {
+    fontSize: 11,
+    lineHeight: 1.45,
+    color: "rgba(210,235,205,0.9)",
+    fontWeight: 600,
+  },
 
   // ── History area ─────────────────────────────────────────────────────────
   historyArea: {
-    maxHeight: 52,
+    maxHeight: 80,
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
@@ -332,12 +450,12 @@ const styles = {
   historyNpc: {
     fontSize: 11,
     lineHeight: 1.4,
-    color: "rgba(160,190,155,0.55)",
+    color: "rgba(160,190,155,0.82)",
   },
   historyPlayer: {
     fontSize: 11,
     lineHeight: 1.4,
-    color: "rgba(190,215,185,0.55)",
+    color: "rgba(200,230,195,0.88)",
     textAlign: "right",
   },
   historyLabel: {
@@ -403,6 +521,13 @@ const styles = {
   },
   choiceLabel: {
     lineHeight: 1.4,
+  },
+  choiceHint: {
+    fontSize: 10,
+    color: "rgba(140,170,135,0.5)",
+    letterSpacing: 0.3,
+    textAlign: "right",
+    marginTop: 2,
   },
 
   // ── Continue ──────────────────────────────────────────────────────────────

@@ -3,6 +3,46 @@
 
 import { getOpeningPov } from "../data/npcs";
 
+// Illustrative benchmark — percentage of early participants who chose each option
+export const BENCHMARK_CHOICES = {
+  env_scenario_personal:    { flag_energy: 33, lighter_model: 28, note_internally: 24, full_info: 15 },
+  people_scenario_personal: { raise_now: 26, check_in: 45, let_lead: 16, document: 13 },
+  conduct_scenario_personal:{ follow_proper: 34, flag_up: 38, use_workaround: 12, suggest_review: 16 },
+  chain_scenario_personal:  { responsible: 41, negotiate: 29, cost: 19, escalate: 11 },
+};
+
+const BENCHMARK_LABELS = {
+  env_scenario_personal:    { flag_energy: "flag energy cost", lighter_model: "default to lighter model", note_internally: "note internally", full_info: "full info to client" },
+  people_scenario_personal: { raise_now: "raise it now", check_in: "check in privately", let_lead: "leave to manager", document: "document and flag later" },
+  conduct_scenario_personal:{ follow_proper: "follow full process", flag_up: "flag and seek guidance", use_workaround: "use the workaround", suggest_review: "use it, push for review" },
+  chain_scenario_personal:  { responsible: "responsible supplier", negotiate: "negotiate standards", cost: "prioritise cost", escalate: "escalate to leadership" },
+};
+
+const BENCHMARK_NPC = {
+  env_scenario_personal: "Frank the Fish",
+  people_scenario_personal: "Otis the Otter",
+  conduct_scenario_personal: "Suzy the Sheep",
+  chain_scenario_personal: "Hazel the Hedgehog",
+};
+
+function buildBenchmarkComparison(choices) {
+  return Object.entries(BENCHMARK_CHOICES).map(([stepId, percentages]) => {
+    const playerChoice = choices.find((c) => c.stepId === stepId);
+    const bars = Object.entries(percentages).map(([key, pct]) => ({
+      key,
+      label: BENCHMARK_LABELS[stepId]?.[key] || key,
+      percent: pct,
+      isPlayerChoice: playerChoice?.choiceKey === key,
+    }));
+    return {
+      stepId,
+      npcName: BENCHMARK_NPC[stepId] || "",
+      playerChoiceKey: playerChoice?.choiceKey || null,
+      bars,
+    };
+  });
+}
+
 const PILLAR_LABELS = {
   env: "Environmental Stewardship",
   people: "People & Culture",
@@ -202,6 +242,7 @@ export function buildResultsReport(quest) {
     pillarOrder: quest.pillarOrder || null,
     choiceAnswers,
     reflectionAnswers: [], // kept for backward compatibility
+    benchmark: buildBenchmarkComparison(choices),
     // Simplified scores for the score bars in ResultsOverlay
     scores: pillarScores,
     stats: [

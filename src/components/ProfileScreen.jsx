@@ -1,47 +1,71 @@
-// Player profile setup screen — collects role, team, and country before the game begins.
+// Player profile setup screen — collects role, team, and entity before the game begins.
 
 import React, { useState } from "react";
 
 const ROLE_OPTIONS = [
   {
-    value: "employee",
-    label: "Employee",
-    detail: "individual contributor or front-line team member",
+    value: "team_lead",
+    label: "Team Lead",
+    detail: "leads a team or workstream within a project or practice",
   },
   {
     value: "manager",
     label: "Manager",
-    detail: "people leader, supervisor, or department manager",
+    detail: "people leader, engagement manager, or practice manager",
   },
   {
-    value: "leadership",
-    label: "Leadership",
-    detail: "senior leader, director, or executive",
+    value: "partner",
+    label: "Partner",
+    detail: "partner, director, or senior leadership",
   },
+];
+
+const TEAM_OPTIONS = [
+  "Business Transformation",
+  "Data & Analytics",
+  "Digital Commerce",
+  "ERP & Cloud",
+  "Finance & Performance",
+  "Human Capital",
+  "Marketing & Sales",
+  "Operations & Supply Chain",
+  "Strategy & Innovation",
+  "Technology & Integration",
+  "Other",
+];
+
+const ENTITY_OPTIONS = [
+  "Belgium",
+  "Netherlands",
+  "Germany",
+  "France",
+  "United Kingdom",
+  "Luxembourg",
+  "Spain",
+  "Portugal",
+  "Poland",
+  "Romania",
+  "United Arab Emirates",
+  "Saudi Arabia",
+  "Morocco",
+  "Other",
 ];
 
 export default function ProfileScreen({ onSubmit }) {
   const [roleLevel, setRoleLevel] = useState("");
   const [team, setTeam] = useState("");
-  const [country, setCountry] = useState("");
+  const [entity, setEntity] = useState("");
   const [error, setError] = useState("");
-  const canSubmit = Boolean(roleLevel && team.trim() && country.trim());
+  const canSubmit = Boolean(roleLevel && team && entity);
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!canSubmit) {
-      setError("please fill in all three fields to continue.");
+      setError("please select all three options to continue.");
       return;
     }
     setError("");
-    onSubmit({ roleLevel, team: team.trim(), country: country.trim() });
-  }
-
-  function handleCountryKeyDown(e) {
-    if (e.key === "Tab" && !e.shiftKey && canSubmit) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
+    onSubmit({ roleLevel, team, country: entity });
   }
 
   return (
@@ -96,38 +120,41 @@ export default function ProfileScreen({ onSubmit }) {
                   <div style={styles.questionNumber}>2</div>
                   <div>
                     <label style={styles.label} htmlFor="team">team</label>
-                    <p style={styles.helper}>use the team you work with most closely.</p>
+                    <p style={styles.helper}>select the practice area you work in most closely.</p>
                   </div>
                 </div>
-                <input
+                <select
                   id="team"
-                  type="text"
                   value={team}
                   onChange={(e) => setTeam(e.target.value)}
-                  placeholder="e.g. operations, guest services, finance"
-                  style={styles.input}
-                  autoComplete="off"
-                />
+                  style={styles.select}
+                >
+                  <option value="">select a team...</option>
+                  {TEAM_OPTIONS.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
               </div>
 
               <div style={styles.questionCard}>
                 <div style={styles.questionHeader}>
                   <div style={styles.questionNumber}>3</div>
                   <div>
-                    <label style={styles.label} htmlFor="country">country</label>
-                    <p style={styles.helper}>this helps us keep examples relevant to your context.</p>
+                    <label style={styles.label} htmlFor="entity">entity</label>
+                    <p style={styles.helper}>select the delaware entity you are based in.</p>
                   </div>
                 </div>
-                <input
-                  id="country"
-                  type="text"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  onKeyDown={handleCountryKeyDown}
-                  placeholder="e.g. Netherlands, Belgium, Germany"
-                  style={styles.input}
-                  autoComplete="off"
-                />
+                <select
+                  id="entity"
+                  value={entity}
+                  onChange={(e) => setEntity(e.target.value)}
+                  style={styles.select}
+                >
+                  <option value="">select an entity...</option>
+                  {ENTITY_OPTIONS.map((ent) => (
+                    <option key={ent} value={ent}>{ent}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -335,7 +362,7 @@ const styles = {
     lineHeight: 1.35,
     color: "#5a6c54",
   },
-  input: {
+  select: {
     padding: "12px 12px",
     background: "#fff9ea",
     border: "3px solid #ccb993",
@@ -346,6 +373,8 @@ const styles = {
     width: "100%",
     boxSizing: "border-box",
     boxShadow: "inset 0 2px 0 #fffef8",
+    cursor: "pointer",
+    appearance: "auto",
   },
   error: {
     fontFamily: '"Courier New", "Lucida Console", monospace',

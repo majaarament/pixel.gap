@@ -145,7 +145,7 @@ export function buildOpeningRouteReaction(choiceKey, commitmentKey = null) {
   };
   const commitmentSummary = commitmentMap[commitmentKey] || "now we know what kind of cost you're willing to carry for that instinct.";
 
-  return `"good. that's a real position, not a slogan. your route begins through a ${pov.routeLabel}, and ${commitmentSummary} you'll meet four guides on the way: Frank on environmental stewardship, Otis on people and culture, Suzy on business conduct, and Hazel on responsible value chain. Frank and Otis are outside first; Suzy and Hazel are waiting inside the Delaware building."`;
+  return `"good. that's a real position, not a slogan. your route begins through a ${pov.routeLabel}, and ${commitmentSummary} you'll meet four guides on the way: Frank on environmental stewardship, Otis on people and culture, Suzy on business conduct, and Hazel on responsible value chain. Frank and Otis are outside first; Suzy and Hazel are waiting inside the delaware building."`;
 }
 
 // ─── NPC ROSTER ─────────────────────────────────────────────────────────────
@@ -253,37 +253,15 @@ export const OFFICE_STATION_IDS = ["suzy", "hazel"];
 
 const OLIVE_INTRO_STEPS = [
   {
-    id: "baseline_understanding",
+    id: "baseline_familiarity",
     message:
-      "Olive the Owl — Sustainability Guide\n\n\"welcome. before we begin, i have three quick questions to understand where you're starting from.\"\n\n\"how well do you feel you currently understand Delaware's sustainability values?\"",
+      "Olive the Owl — Sustainability Guide\n\n\"welcome. one question before we begin — delaware's work is built around five values: entrepreneurship, team spirit, respect, commitment, and care. thinking about where you work today, how much do you see those values shape real decisions?\"",
     choices: [
-      { key: "1", label: "1 — i have little to no familiarity" },
+      { key: "1", label: "1 — little to no familiarity" },
       { key: "2", label: "2 — i know a little, but not deeply" },
-      { key: "3", label: "3 — i have a moderate understanding" },
+      { key: "3", label: "3 — a moderate understanding" },
       { key: "4", label: "4 — i understand them fairly well" },
       { key: "5", label: "5 — i know them very well" },
-    ],
-  },
-  {
-    id: "baseline_relevance",
-    message: "\"and how relevant do Delaware's sustainability topics feel to your daily work?\"",
-    choices: [
-      { key: "1", label: "1 — not relevant at all" },
-      { key: "2", label: "2 — slightly relevant" },
-      { key: "3", label: "3 — somewhat relevant" },
-      { key: "4", label: "4 — fairly relevant" },
-      { key: "5", label: "5 — very relevant to what i do" },
-    ],
-  },
-  {
-    id: "baseline_confidence",
-    message: "\"how confident are you in spotting these values in real decisions and everyday work?\"",
-    choices: [
-      { key: "1", label: "1 — not confident at all" },
-      { key: "2", label: "2 — slightly confident" },
-      { key: "3", label: "3 — somewhat confident" },
-      { key: "4", label: "4 — fairly confident" },
-      { key: "5", label: "5 — very confident" },
     ],
   },
   {
@@ -305,7 +283,7 @@ const FINAL_REFLECTION_STEPS = [
   {
     id: "final_strongest",
     message:
-      "Olive the Owl — Council Circle\n\n\"you've walked through all four zones. now let's reflect before you leave.\"\n\n\"which pillar feels strongest in terms of how it shows up in daily practice at Delaware?\"",
+      "Olive the Owl — Council Circle\n\n\"you've walked through all four zones. now let's reflect before you leave.\"\n\n\"which pillar feels strongest in terms of how it shows up in daily practice at delaware?\"",
     choices: PILLAR_CHOICES,
   },
   {
@@ -315,7 +293,7 @@ const FINAL_REFLECTION_STEPS = [
   },
   {
     id: "final_gap",
-    message: "\"where do you see the biggest gap between Delaware's sustainability ambition and what you experience in practice?\"",
+    message: "\"where do you see the biggest gap between delaware's sustainability ambition and what you experience in practice?\"",
     choices: [
       { key: "env", label: "the environmental side — intentions are there but daily operations don't always reflect it." },
       { key: "people", label: "people and culture — wellbeing and inclusion feel less visible under pressure." },
@@ -325,7 +303,7 @@ const FINAL_REFLECTION_STEPS = [
   },
   {
     id: "final_focus",
-    message: "\"last one. what should Delaware prioritize to close that gap?\"",
+    message: "\"last one. what should delaware prioritize to close that gap?\"",
     choices: [
       { key: "visible_action", label: "more visible action — less strategy, more tangible change people can see and feel." },
       { key: "culture_safety", label: "a stronger speak-up culture where concerns actually reach the right people." },
@@ -341,7 +319,7 @@ const POST_GAME_STEPS = [
   {
     id: "postGame_understanding",
     message:
-      "Rowan the Hare — Post-Reflection\n\n\"one last set of questions before you go. how well do you now feel you understand Delaware's sustainability values — compared to when you started?\"",
+      "Rowan the Hare — Post-Reflection\n\n\"one last set of questions before you go. how well do you now feel you understand delaware's sustainability values — compared to when you started?\"",
     choices: [
       { key: "1", label: "1 — not much clearer than before" },
       { key: "2", label: "2 — slightly clearer" },
@@ -388,7 +366,7 @@ const FRANK_PILLAR_STEPS = [
   },
   {
     id: "env_scenario_delaware",
-    message: "\"and what do you think Delaware leadership would prioritize in this situation?\"",
+    message: "\"and what do you think delaware leadership would prioritize in this situation?\"",
     choices: [
       { key: "act_now", label: "act now — take temporary measures while the assessment runs." },
       { key: "communicate", label: "communicate the risk upward and let leadership decide." },
@@ -417,7 +395,7 @@ const OTIS_PILLAR_STEPS = [
   },
   {
     id: "people_scenario_delaware",
-    message: "\"and what do you think Delaware would expect someone to do in this situation?\"",
+    message: "\"and what do you think delaware would expect someone to do in this situation?\"",
     choices: [
       { key: "raise_now", label: "raise it now — don't wait." },
       { key: "check_in", label: "check in privately first, then escalate if needed." },
@@ -446,7 +424,7 @@ const SUZY_PILLAR_STEPS = [
   },
   {
     id: "conduct_scenario_delaware",
-    message: "\"what do you think Delaware's leadership would expect someone to do here?\"",
+    message: "\"what do you think delaware's leadership would expect someone to do here?\"",
     choices: [
       { key: "follow_proper", label: "always follow the full process — no shortcuts." },
       { key: "flag_up", label: "flag it and seek guidance before proceeding." },
@@ -475,7 +453,7 @@ const HAZEL_PILLAR_STEPS = [
   },
   {
     id: "chain_scenario_delaware",
-    message: "\"what do you think Delaware would prioritize in a supplier decision like this?\"",
+    message: "\"what do you think delaware would prioritize in a supplier decision like this?\"",
     choices: [
       { key: "responsible", label: "choose the responsible supplier even at higher cost." },
       { key: "negotiate", label: "use procurement leverage to push suppliers to improve." },
@@ -495,42 +473,46 @@ const HAZEL_PILLAR_STEPS = [
 const ADAPTIVE_GAP_STEPS = {
   frank: {
     id: "env_adaptive_gap",
-    message: "\"your own choice and what you think Delaware would do seem different. what do you think creates that gap?\"",
+    message:
+      "Frank pauses.\n\n\"interesting. you'd make that recommendation yourself — but you expect delaware would point in a different direction. that gap is actually what we're here to understand.\"\n\n\"what do you think creates it?\"",
     choices: [
-      { key: "priorities", label: "different priorities — what matters to individuals vs the organization." },
-      { key: "visibility", label: "a lack of visibility — leadership might not see what people on the ground do." },
-      { key: "incentives", label: "incentives aren't aligned — people are rewarded for other things." },
-      { key: "culture", label: "the culture makes it hard to act on what you believe is right." },
+      { key: "priorities", label: "different priorities — what matters to individuals vs what the organization optimises for." },
+      { key: "visibility", label: "a visibility gap — leadership may not see what people on the ground actually face." },
+      { key: "incentives", label: "incentives aren't aligned — people are rewarded for speed, not environmental care." },
+      { key: "culture",    label: "the culture makes it hard to act on what you know is right." },
     ],
   },
   otis: {
     id: "people_adaptive_gap",
-    message: "\"there seems to be a gap between what you'd do and what you think Delaware would expect. what do you think creates it?\"",
+    message:
+      "Otis looks thoughtful.\n\n\"so you'd step in — but you don't think that's what usually happens here. that distance between what we'd do and what we think the organisation would do is worth naming.\"\n\n\"what creates it, in your experience?\"",
     choices: [
-      { key: "priorities", label: "different priorities — individual values vs organizational culture." },
-      { key: "visibility", label: "limited visibility upward — concerns don't always reach the people who can act." },
-      { key: "incentives", label: "short-term delivery pressure overrides longer-term people considerations." },
-      { key: "culture", label: "the culture doesn't consistently make it safe to step in for others." },
+      { key: "priorities", label: "individual values and organisational culture are pulling in different directions." },
+      { key: "visibility", label: "concerns don't always reach the people who have the power to act on them." },
+      { key: "incentives", label: "short-term delivery pressure consistently overrides longer-term people care." },
+      { key: "culture",    label: "the culture doesn't make it consistently safe to step in for others." },
     ],
   },
   suzy: {
     id: "conduct_adaptive_gap",
-    message: "\"your personal response and what you think Delaware expects seem to differ. what do you think explains that?\"",
+    message:
+      "Suzy nods slowly.\n\n\"so your instinct and what you think delaware expects are pointing different directions. that's the pixel gap — the space between the stated value and what people actually navigate day to day.\"\n\n\"what explains it, from your perspective?\"",
     choices: [
-      { key: "priorities", label: "compliance culture in theory isn't always what's rewarded in practice." },
-      { key: "visibility", label: "leadership might not see the shortcuts that become routine at ground level." },
+      { key: "priorities", label: "the compliance culture in policy isn't always what's rewarded in practice." },
+      { key: "visibility", label: "leadership may not see the shortcuts that become routine at ground level." },
       { key: "incentives", label: "delivery pressure makes the 'right' path feel like the slow path." },
-      { key: "culture", label: "speaking up about process feels risky in a hierarchical environment." },
+      { key: "culture",    label: "speaking up about process still feels risky in a hierarchical environment." },
     ],
   },
   hazel: {
     id: "chain_adaptive_gap",
-    message: "\"it looks like your own approach differs from what you'd expect Delaware to prioritize. what creates that gap, in your view?\"",
+    message:
+      "Hazel sets down her notes.\n\n\"your own instinct and what you'd expect delaware to do aren't quite the same. that space in between — that's exactly the gap this whole journey is trying to map.\"\n\n\"what do you think creates it?\"",
     choices: [
-      { key: "priorities", label: "financial pressure overrides sustainability aspirations in practice." },
-      { key: "visibility", label: "supply chain decisions happen at too many levels for central values to reach." },
+      { key: "priorities", label: "financial pressure overrides sustainability aspirations when it counts." },
+      { key: "visibility", label: "supply chain decisions happen at too many levels for central values to reach all of them." },
       { key: "incentives", label: "procurement KPIs are still primarily cost and speed, not responsibility." },
-      { key: "culture", label: "sustainability in the value chain is discussed but not yet deeply embedded." },
+      { key: "culture",    label: "sustainability in the value chain is discussed — but not yet deeply embedded." },
     ],
   },
 };
@@ -546,7 +528,7 @@ const PILLAR_REACTIONS = {
 
 const PILLAR_VISITED_MESSAGES = {
   frank:
-    "Frank the Fish — Environmental Stewardship\n\nFrank nods toward the drainage channel. \"the readings don't change just because we've already talked about them. but your view is in the record.\"",
+    "Frank the Fish — Environmental Stewardship\n\nFrank glances at the screen. \"the model's deployed. i still think about that choice. digital decisions leave no visible trace — no runoff, no smoke — but they accumulate quietly. that's the part that keeps me honest.\"",
   otis:
     "Otis the Otter — People & Culture\n\nOtis glances back at the building. \"people situations don't resolve neatly. thanks for engaging with it honestly.\"",
   suzy:
@@ -574,7 +556,7 @@ export function getNpcDialog(npcId, quest) {
       return {
         type: "info",
         message:
-          "Olive the Owl — Sustainability Guide\n\n\"welcome to Delaware's sustainability journey. this is a reflective experience — there are no right or wrong answers here.\"\n\nPlayer\n\"what am i doing exactly?\"\n\nOlive\n\"walking through four zones, meeting the guides, and sharing your honest perspective. your responses are anonymised and help Delaware understand what sustainability looks like in practice.\"",
+          "Olive the Owl — Sustainability Guide\n\n\"welcome to delaware's sustainability journey. this is a reflective experience — there are no right or wrong answers here.\"\n\nPlayer\n\"what am i doing exactly?\"\n\nOlive\n\"walking through four zones, meeting the guides, and sharing your honest perspective. your responses are anonymised and help delaware understand what sustainability looks like in practice.\"",
         advanceTo: QUEST_STAGES.BASELINE_DILEMMA,
       };
     }
@@ -615,7 +597,7 @@ export function getNpcDialog(npcId, quest) {
         type: "sequence",
         steps: POST_GAME_STEPS,
         reaction:
-          "\"that's everything. thank you for your honest reflection. your responses will help Delaware understand where the real gaps are.\"",
+          "\"that's everything. commitment is one of delaware's five values — and their definition is 'we have never walked away.' i think the same applies here. you didn't skip the hard questions. your view is in the record now.\"",
         advanceTo: QUEST_STAGES.COMPLETE,
       };
     }
@@ -640,7 +622,7 @@ export function getNpcDialog(npcId, quest) {
     return {
       type: "info",
       message:
-        "Daisy the Deer — People & Culture\n\n\"feel free to explore. every zone you visit adds a piece to the picture. and if you want to understand more about what any of these topics mean in practice, Olive can help.\"",
+        "Daisy the Deer — People & Culture\n\n\"i've been in this office long enough to notice a pattern. when things are going well, people talk a lot about care and team spirit. when a deadline gets tight, those words get quieter — not because people stop believing them, just because pressure has a way of narrowing what feels possible.\"\n\n\"that gap between what we say we value and how we actually show up under pressure — that's what olive is trying to map. it's worth paying attention to.\"",
     };
   }
 
@@ -667,6 +649,7 @@ export function getNpcDialog(npcId, quest) {
         followUpStepsMap: dialogSequence.followUpStepsMap,
         reaction: dialogSequence.reaction,
         pillarNpcId: dialogSequence.pillarNpcId,
+        adaptiveGapStep: ADAPTIVE_GAP_STEPS[npcId] || null,
         advanceTo: dialogSequence.advanceTo || null,
       };
     }
@@ -692,7 +675,7 @@ export function getTaskLabel(quest) {
 
     case QUEST_STAGES.TOWN_PILLARS: {
       const remaining = townOrder.filter((id) => !quest.visited.includes(id));
-      if (remaining.length === 0) return "3. Head into the Delaware building.";
+      if (remaining.length === 0) return "3. Head into the delaware building.";
       const done = townOrder.length - remaining.length;
       if (remaining.length === 2) {
         return `3. Follow your ${routeLabel} outdoors (${done}/2 complete) — suggested first: ${remaining[0] === "otis" ? "Otis" : "Frank"}.`;
@@ -701,7 +684,7 @@ export function getTaskLabel(quest) {
     }
 
     case QUEST_STAGES.GO_TO_OFFICE:
-      return "4. Enter the Delaware building to meet the remaining guides: Suzy and Hazel.";
+      return "4. Enter the delaware building to meet the remaining guides: Suzy and Hazel.";
 
     case QUEST_STAGES.OFFICE_PILLARS: {
       const remaining = officeOrder.filter((id) => !quest.visited.includes(id));
@@ -720,7 +703,7 @@ export function getTaskLabel(quest) {
       return "6. Speak with Rowan for the final reflection.";
 
     case QUEST_STAGES.COMPLETE:
-      return "Journey complete. Open your Delaware sustainability report.";
+      return "Journey complete. Open your delaware sustainability report.";
 
     default:
       return "Explore the site.";

@@ -6,10 +6,27 @@ const OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech";
 const OPENAI_MODEL = "gpt-5.4-mini";
 const OPENAI_TTS_MODEL = "gpt-4o-mini-tts";
 
+// Set this env var to enable knowledge base retrieval for both chatbots.
+// Create a Vector Store in the OpenAI dashboard, upload your documents, then
+// copy the ID (e.g. "vs_abc123") into your environment as OPENAI_VECTOR_STORE_ID.
+const VECTOR_STORE_ID = process.env.OPENAI_VECTOR_STORE_ID || null;
+
 export async function createTextResponse({ instructions, input, maxOutputTokens }) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("Missing OPENAI_API_KEY in the server environment.");
+  }
+
+  const body = {
+    model: OPENAI_MODEL,
+    instructions,
+    input,
+    max_output_tokens: maxOutputTokens,
+    text: { format: { type: "text" } },
+  };
+
+  if (VECTOR_STORE_ID) {
+    body.tools = [{ type: "file_search", vector_store_ids: [VECTOR_STORE_ID] }];
   }
 
   const response = await fetch(OPENAI_URL, {
@@ -18,17 +35,7 @@ export async function createTextResponse({ instructions, input, maxOutputTokens 
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      instructions,
-      input,
-      max_output_tokens: maxOutputTokens,
-      text: {
-        format: {
-          type: "text",
-        },
-      },
-    }),
+    body: JSON.stringify(body),
   });
 
   const rawText = await response.text();

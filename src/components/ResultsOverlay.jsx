@@ -98,6 +98,45 @@ export default function ResultsOverlay({ report, onClose }) {
             </div>
           </section>
 
+          {report.benchmark && report.benchmark.length > 0 && (
+            <section style={styles.section}>
+              <div style={styles.sectionTitle}>How others answered</div>
+              <p style={styles.benchmarkDisclaimer}>illustrative — based on early participant data</p>
+              <div style={styles.benchmarkStack}>
+                {report.benchmark.map((item) => (
+                  <div key={item.stepId} style={styles.benchmarkCard}>
+                    <div style={styles.benchmarkNpc}>{item.npcName}</div>
+                    {item.bars.map((bar) => (
+                      <div key={bar.key} style={styles.benchmarkRow}>
+                        <div
+                          style={{
+                            ...styles.benchmarkLabel,
+                            ...(bar.isPlayerChoice ? styles.benchmarkLabelActive : {}),
+                          }}
+                        >
+                          {bar.isPlayerChoice && <span style={styles.benchmarkYou}>you</span>}
+                          {bar.label}
+                        </div>
+                        <div style={styles.benchmarkTrack}>
+                          <div
+                            style={{
+                              ...styles.benchmarkFill,
+                              width: `${bar.percent}%`,
+                              background: bar.isPlayerChoice
+                                ? "linear-gradient(90deg, #6a9e78, #4e7a5d)"
+                                : "linear-gradient(90deg, #bcc8b8, #a3b09e)",
+                            }}
+                          />
+                        </div>
+                        <div style={styles.benchmarkPct}>{bar.percent}%</div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {report.reflectionAnswers.length > 0 && (
             <section style={styles.section}>
               <div style={styles.sectionTitle}>Written reflections</div>
@@ -370,5 +409,78 @@ const styles = {
     lineHeight: 1.7,
     color: "#2d3b34",
     whiteSpace: "pre-wrap",
+  },
+  benchmarkDisclaimer: {
+    margin: "0 0 10px",
+    fontSize: 11,
+    color: "#9aa394",
+    letterSpacing: 0.3,
+  },
+  benchmarkStack: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+  },
+  benchmarkCard: {
+    padding: "14px 16px",
+    borderRadius: 14,
+    background: "#fffdf8",
+    border: "1px solid rgba(111, 127, 109, 0.14)",
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+  benchmarkNpc: {
+    fontSize: 12,
+    fontWeight: 800,
+    color: "#4e5f55",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 4,
+  },
+  benchmarkRow: {
+    display: "grid",
+    gridTemplateColumns: "180px 1fr 36px",
+    alignItems: "center",
+    gap: 10,
+  },
+  benchmarkLabel: {
+    fontSize: 12,
+    color: "#607067",
+    lineHeight: 1.35,
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  },
+  benchmarkLabelActive: {
+    color: "#2f4338",
+    fontWeight: 700,
+  },
+  benchmarkYou: {
+    fontSize: 10,
+    fontWeight: 800,
+    color: "#fff",
+    background: "#4e7a5d",
+    borderRadius: 4,
+    padding: "2px 5px",
+    letterSpacing: 0.3,
+    flexShrink: 0,
+  },
+  benchmarkTrack: {
+    height: 10,
+    borderRadius: 999,
+    background: "#e3e8e0",
+    overflow: "hidden",
+  },
+  benchmarkFill: {
+    height: "100%",
+    borderRadius: 999,
+    transition: "width 0.4s ease",
+  },
+  benchmarkPct: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: "#4e5f55",
+    textAlign: "right",
   },
 };
