@@ -27,7 +27,7 @@ import {
 import { COUNCIL_SEAT } from "../data/townMap";
 import { keyFor } from "../engine/mapUtils";
 import { chooseNpcMove } from "../engine/npcLogic";
-import { logChoice, logProfile } from "../engine/logger";
+import { logChoice, logProfile, logFinalReport } from "../engine/logger";
 import { buildResultsReport, extractQuestionPrompt } from "../engine/results";
 import { makePlayerChoiceSegment, parseSpeechSegments } from "../engine/dialogSegments";
 
@@ -86,6 +86,7 @@ export function useGameState() {
   const [reportOpen, setReportOpen] = useState(false);
   const [councilOpen, setCouncilOpen] = useState(false);
   const [learningHouseOpen, setLearningHouseOpen] = useState(false);
+  const finalReportSentRef = useRef(false);
 
   playerRef.current = player;
   townNpcsRef.current = townNpcs;
@@ -187,6 +188,9 @@ export function useGameState() {
 
   function closeCouncil() {
     setCouncilOpen(false);
+    setReportOpen(true);
+    resultsAutoOpenedRef.current = true;
+    flashBanner("Report ready", "your sustainability report is ready.", 2600);
     setQuest((prev) => applyQuestAdvance(prev, QUEST_STAGES.COMPLETE));
   }
 
@@ -383,7 +387,18 @@ export function useGameState() {
         const nextStep = current.steps[nextStepIndex];
 
         if (nextStep) {
-          // Move to next step in sequence
+          if (choice.reaction) {
+            // Show NPC reaction before advancing to the next question in the sequence
+            setDialog({
+              ...current,
+              phase: "reaction",
+              history,
+              reaction: choice.reaction,
+              stepIndex: nextStepIndex, // already pointing at next step
+            });
+            return next;
+          }
+          // No reaction — go directly to next step
           setDialog({
             ...current,
             history,
@@ -404,7 +419,8 @@ export function useGameState() {
           const delawareChoice = allChoices.find((c) => c.stepId === `${prefix}_scenario_delaware`);
 
           if (personalChoice && delawareChoice && personalChoice.choiceKey !== delawareChoice.choiceKey) {
-            // Gap found — show adaptive follow-up
+            // Gap found — flash a banner and show the adaptive follow-up question
+            flashBanner("Pixel Gap", "Your personal choice differs from what you'd expect here.", 3200);
             const adaptiveStep = current.adaptiveGapStep;
             setDialog({
               ...current,
@@ -457,6 +473,21 @@ export function useGameState() {
   function handleAdvanceDialog() {
     const current = dialogRef.current;
     if (!current) return;
+
+    // Mid-sequence reaction: advance to the next question without closing the dialog
+    if (current.phase === "reaction" && current.type === "sequence") {
+      const nextStep = current.steps[current.stepIndex];
+      if (nextStep) {
+        setDialog({
+          ...current,
+          phase: "question",
+          stepId: nextStep.id,
+          message: nextStep.message,
+          choices: nextStep.choices,
+        });
+        return;
+      }
+    }
 
     // Empty-choices step (intro or outro) in question phase — no player choice to make
     if (current.phase === "question" && (!current.choices || current.choices.length === 0)) {
@@ -603,7 +634,7 @@ export function useGameState() {
 
     resultsAutoOpenedRef.current = true;
     setReportOpen(true);
-    flashBanner("Report ready", "Your Delaware sustainability report is ready.", 2600);
+    flashBanner("Report ready", "your sustainability report is ready.", 2600);
   }, [quest.stage, dialog]);
 
   // Move all NPCs to council positions for the final stages
@@ -670,6 +701,22 @@ export function useGameState() {
       window.localStorage.setItem("pixel-gap-latest-report", JSON.stringify(resultsReport));
     } catch { /* ignore */ }
   }, [quest.stage, resultsReport]);
+
+  // Send the completed session data to the external logging backend.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (quest.stage !== QUEST_STAGES.COMPLETE) return;
+    if (finalReportSentRef.current) return;
+    finalReportSentRef.current = true;
+
+    logFinalReport({
+      report: resultsReport,
+      questStage: quest.stage,
+      playerProfile: quest.playerProfile,
+      choices: quest.choices,
+      reflections: quest.reflections,
+    });
+  }, [quest.stage, resultsReport, quest.choices, quest.reflections, quest.playerProfile]);
 
   // Auto-trigger NPC interaction when player is adjacent to objective
   useEffect(() => {

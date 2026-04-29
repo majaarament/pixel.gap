@@ -1,44 +1,59 @@
-// Bottom info cards — static descriptive copy below the canvas.
+// Controls reference strip shown below the game canvas.
 
 import React from "react";
 
+const CONTROLS = [
+  { key: "↑ ↓ ← →  /  W A S D", label: "move" },
+  { key: "walk near NPC", label: "start conversation" },
+  { key: "Space / Enter", label: "continue dialogue" },
+  { key: "1  2  3  4  or click", label: "choose answer" },
+  { key: "Space (while moving)", label: "show objective" },
+];
+
 export default function InfoRow() {
   return (
-    <div style={styles.infoRow}>
-      <div style={styles.infoCard}>
-        <div style={styles.infoLabel}>vibe</div>
-        <div style={styles.infoValue}>small town, soft colors, helpful little coworkers</div>
-      </div>
-      <div style={styles.infoCard}>
-        <div style={styles.infoLabel}>goal</div>
-        <div style={styles.infoValue}>keep things cozy and readable while you explore</div>
-      </div>
+    <div style={styles.strip}>
+      {CONTROLS.map(({ key, label }, i) => (
+        <div key={i} style={styles.item}>
+          <span style={styles.key}>{key}</span>
+          <span style={styles.label}>{label}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
 const styles = {
-  infoRow: {
+  strip: {
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "stretch",
-    gap: 16,
     flexWrap: "wrap",
+    justifyContent: "center",
+    gap: "8px 18px",
+    padding: "10px 18px",
+    borderRadius: 10,
+    background: "rgba(245, 243, 238, 0.72)",
+    border: "1px solid rgba(149,169,132,0.22)",
+    fontFamily: '"Courier New", "Lucida Console", monospace',
   },
-  infoCard: {
-    flex: "1 1 280px",
-    padding: "14px 16px",
-    borderRadius: 22,
-    background: "rgba(255,250,241,0.7)",
-    border: "1px solid rgba(149,169,132,0.26)",
-    boxShadow: "0 12px 28px rgba(71,92,77,0.1)",
+  item: {
+    display: "flex",
+    alignItems: "center",
+    gap: 7,
   },
-  infoLabel: {
-    textTransform: "uppercase",
-    letterSpacing: 1.4,
+  key: {
     fontSize: 11,
-    color: "#8a7b57",
-    marginBottom: 6,
+    fontWeight: 800,
+    color: "#3e5c48",
+    background: "rgba(122,176,104,0.12)",
+    border: "1px solid rgba(88,140,76,0.28)",
+    borderRadius: 4,
+    padding: "3px 8px",
+    whiteSpace: "nowrap",
+    letterSpacing: 0.3,
   },
-  infoValue: { fontSize: 14, lineHeight: 1.5, color: "#5d6f5f" },
+  label: {
+    fontSize: 11,
+    color: "#6a776d",
+    whiteSpace: "nowrap",
+  },
 };

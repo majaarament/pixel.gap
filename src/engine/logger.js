@@ -129,6 +129,14 @@ export function logChoice({
   });
 }
 
+export function logFinalReport({ report, questStage, playerProfile, choices, reflections }) {
+  logEvent("final_report", {
+    questStage: questStage || "",
+    text: JSON.stringify({ report, choices, reflections }),
+    ...profileFields(playerProfile),
+  });
+}
+
 export function logCouncilMessage({
   turnIndex,
   conversationRole,

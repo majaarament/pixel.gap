@@ -124,15 +124,15 @@ export default function IntroScreen({ onStart }) {
           <p style={styles.subtitle}>
             a short interactive workplace
             <br />
-            simulation about ESG decisions
+            simulation about decisions that matter
           </p>
 
           <div style={styles.bodyCopy}>
             <p style={styles.bodyLine}>explore a workplace, meet different characters, and respond</p>
-            <p style={styles.bodyLine}>to everyday situations connected to environmental, social,</p>
-            <p style={styles.bodyLine}>and governance issues. each conversation reflects a real</p>
-            <p style={styles.bodyLine}>tension that can happen inside organizations, and each choice</p>
-            <p style={styles.bodyLine}>helps reveal how esg is understood in practice.</p>
+            <p style={styles.bodyLine}>to everyday situations that shape your team's culture, your</p>
+            <p style={styles.bodyLine}>impact on people, and delaware's long-term future-readiness.</p>
+            <p style={styles.bodyLine}>each choice reveals how values are understood — and lived —</p>
+            <p style={styles.bodyLine}>inside real organisations.</p>
           </div>
 
           <div style={styles.noticeWrap}>

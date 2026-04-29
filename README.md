@@ -48,6 +48,14 @@ Example:
 SHEETS_ENDPOINT="https://script.google.com/macros/s/your-script-id/exec"
 ```
 
+Also update `docs/google-apps-script.gs` before deployment:
+
+- set `SPREADSHEET_ID` to your target Google Sheet ID
+- keep `SHEET_NAME` as `gap_report_answers`
+- deploy the web app with
+  - `Execute as: Me`
+  - `Who has access: Anyone, even anonymous`
+
 The app now logs:
 
 - `profile_submitted` when the player starts

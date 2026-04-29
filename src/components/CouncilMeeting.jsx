@@ -6,6 +6,7 @@ import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import { COUNCIL_NPCS, callCouncilAI, parseCouncilResponse } from "../engine/councilAI";
 import { logCouncilMessage } from "../engine/logger";
 import { drawCritter } from "../renderer/characters";
+import { getOpeningPov } from "../data/npcs";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,10 @@ const PIXEL_OVAL_CLIP =
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function CouncilMeeting({ quest, onClose }) {
+  // Gathering transition phase — "gathering" shows the assembly screen; "active" starts the AI conversation
+  const [phase, setPhase]               = useState("gathering");
+  const [meetingStarted, setMeetingStarted] = useState(false);
+
   // Conversation state
   const [apiHistory, setApiHistory]       = useState([]);
   const [displayMsgs, setDisplayMsgs]     = useState([]);
@@ -236,9 +241,10 @@ export default function CouncilMeeting({ quest, onClose }) {
   }, [hasVoice]);
 
   useEffect(() => {
+    if (!meetingStarted) return;
     const timeoutId = window.setTimeout(() => { startOpeningTurn(); }, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [meetingStarted]);
 
   useEffect(() => {
     return () => {
@@ -324,6 +330,14 @@ export default function CouncilMeeting({ quest, onClose }) {
       return next;
     });
   }
+  function handleBeginMeeting() {
+    setPhase("active");
+    setMeetingStarted(true);
+    if (canHandsFree) {
+      scheduleListeningRestart(2400); // give the first AI response time to arrive
+    }
+  }
+
   function handleConclude() {
     clearListeningRestart();
     if (recognitionRef.current) recognitionRef.current.abort();
@@ -333,11 +347,13 @@ export default function CouncilMeeting({ quest, onClose }) {
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────────
+  const isGathering      = phase === "gathering";
   const canConclude      = userTurns > 0 && !isLoading;
   const inputValue       = isListening ? (textInput + interimText) : textInput;
   const latestNpcMessage = [...displayMsgs].reverse().find((msg) => msg.type === "npc") || null;
   const activeNpcId      = latestNpcMessage?.npcId || "olive";
   const activeNpc        = COUNCIL_NPCS.find((npc) => npc.id === activeNpcId) || COUNCIL_NPCS[0];
+  const pov              = getOpeningPov(quest?.openingPov);
 
   return (
     <div style={styles.overlay}>
@@ -345,7 +361,7 @@ export default function CouncilMeeting({ quest, onClose }) {
       {/* ── Title header ── */}
       <div style={styles.titleBar}>
         <div style={styles.titleBarEdge}>
-          {canHandsFree && (
+          {!isGathering && canHandsFree && (
             <button
               type="button"
               style={{ ...styles.pixelBtn, ...(handsFreeMode ? styles.pixelBtnActive : null) }}
@@ -358,134 +374,169 @@ export default function CouncilMeeting({ quest, onClose }) {
 
         <div style={styles.titleCenter}>
           <span style={styles.titleDecor}>◆</span>
-          <span style={styles.titleText}>Council Meeting</span>
+          <span style={styles.titleText}>{isGathering ? "The Council Gathers" : "Council Meeting"}</span>
           <span style={styles.titleDecor}>◆</span>
         </div>
 
         <div style={{ ...styles.titleBarEdge, justifyContent: "flex-end" }}>
-          <button
-            type="button"
-            style={{
-              ...styles.pixelBtn,
-              ...styles.leaveBtn,
-              ...(!canConclude ? styles.pixelBtnDisabled : null),
-            }}
-            onClick={handleConclude}
-            disabled={!canConclude}
-            title={canConclude ? "leave the council" : "share at least one reply first"}
-          >
-            Leave ▶
-          </button>
+          {!isGathering && (
+            <button
+              type="button"
+              style={{
+                ...styles.pixelBtn,
+                ...styles.leaveBtn,
+                ...(!canConclude ? styles.pixelBtnDisabled : null),
+              }}
+              onClick={handleConclude}
+              disabled={!canConclude}
+              title={canConclude ? "leave the council" : "share at least one reply first"}
+            >
+              Leave ▶
+            </button>
+          )}
         </div>
       </div>
 
       {/* ── Stage ── */}
       <div style={styles.stageWrap}>
-        <CouncilScene activeNpcId={activeNpcId} />
+        <CouncilScene activeNpcId={isGathering ? null : activeNpcId} isGathering={isGathering} />
       </div>
 
-      {/* ── Speaker nameplate ── */}
-      <div style={styles.nameplate}>
-        {latestNpcMessage ? (
-          <div style={styles.nameplateInner}>
-            <div style={{ ...styles.nameplateDot, background: activeNpc.accent }} />
-            <span style={{ ...styles.nameplateName, color: activeNpc.accent }}>
-              {activeNpc.name}
-            </span>
-            <span style={styles.nameplateRole}>&nbsp;·&nbsp;{activeNpc.role}</span>
-            {isSpeaking && (
-              <span style={styles.nameplateStatus}>speaking</span>
-            )}
-            {isListening && !isSpeaking && (
-              <span style={styles.nameplateStatus}>listening</span>
-            )}
-          </div>
-        ) : (
-          <div style={styles.nameplateIdle}>the council is gathering...</div>
-        )}
-      </div>
-
-      {/* ── Meeting record (transcript + input) ── */}
-      <div style={styles.recordPanel}>
-        <div style={styles.recordHeader}>
-          <span style={styles.recordHeaderLabel}>Meeting Record</span>
-          <div style={styles.recordHeaderLine} />
-        </div>
-
-        <div style={styles.transcriptBody}>
-          {displayMsgs.length === 0 && !isLoading && (
-            <div style={styles.emptyState}>
-              Olive will open the conversation.
+      {/* ── Gathering card (replaces nameplate + record panel before meeting begins) ── */}
+      {isGathering && (
+        <div style={styles.gatheringPanel}>
+          {pov && (
+            <div style={styles.gatheringRoute}>
+              <span style={styles.gatheringRouteLabel}>your lens</span>
+              <span style={styles.gatheringRouteTitle}>{pov.profileTitle}</span>
             </div>
           )}
-          {displayMsgs.map((msg) => (
-            <TranscriptLine key={msg.id} msg={msg} />
-          ))}
-          {isLoading && <LoadingDots />}
-          {error && <ErrorLine text={error} />}
-          <div ref={listEndRef} />
-        </div>
-
-        <div style={styles.inputDock}>
-          {hasVoice && (
+          <p style={styles.gatheringBody}>
+            {pov
+              ? pov.profileSummary
+              : "You've walked through all four zones and spoken with each guide."}
+          </p>
+          <p style={styles.gatheringBody} >
+            The council has followed your journey. They're ready to reflect on what you found.
+          </p>
+          <div style={styles.gatheringFooter}>
             <button
               type="button"
-              style={{
-                ...styles.pixelBtn,
-                ...styles.micBtn,
-                ...(isListening ? styles.micBtnActive : null),
-              }}
-              onClick={toggleMic}
-              disabled={isLoading || isSpeaking}
-              title={isListening ? "stop listening" : "start listening"}
+              style={styles.beginBtn}
+              onClick={handleBeginMeeting}
             >
-              {isListening ? "● LIVE" : "MIC"}
+              Begin the Meeting ▶
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Speaker nameplate ── */}
+      {!isGathering && (
+        <div style={styles.nameplate}>
+          {latestNpcMessage ? (
+            <div style={styles.nameplateInner}>
+              <div style={{ ...styles.nameplateDot, background: activeNpc.accent }} />
+              <span style={{ ...styles.nameplateName, color: activeNpc.accent }}>
+                {activeNpc.name}
+              </span>
+              <span style={styles.nameplateRole}>&nbsp;·&nbsp;{activeNpc.role}</span>
+              {isSpeaking && (
+                <span style={styles.nameplateStatus}>speaking</span>
+              )}
+              {isListening && !isSpeaking && (
+                <span style={styles.nameplateStatus}>listening</span>
+              )}
+            </div>
+          ) : (
+            <div style={styles.nameplateIdle}>the council is opening...</div>
           )}
-          <div style={styles.inputWrapper}>
-            <textarea
-              ref={inputRef}
-              style={{
-                ...styles.input,
-                ...(handsFreeMode && canHandsFree ? styles.inputHandsFree : null),
-              }}
-              value={inputValue}
-              onChange={(e) => !isListening && setTextInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                handsFreeMode && canHandsFree
-                  ? isSpeaking
-                    ? `${activeNpc.name.split(" ")[0]} is speaking...`
+        </div>
+      )}
+
+      {/* ── Meeting record (transcript + input) ── */}
+      {!isGathering && (
+        <div style={styles.recordPanel}>
+          <div style={styles.recordHeader}>
+            <span style={styles.recordHeaderLabel}>Meeting Record</span>
+            <div style={styles.recordHeaderLine} />
+          </div>
+
+          <div style={styles.transcriptBody}>
+            {displayMsgs.length === 0 && !isLoading && (
+              <div style={styles.emptyState}>
+                Olive will open the conversation.
+              </div>
+            )}
+            {displayMsgs.map((msg) => (
+              <TranscriptLine key={msg.id} msg={msg} />
+            ))}
+            {isLoading && <LoadingDots />}
+            {error && <ErrorLine text={error} />}
+            <div ref={listEndRef} />
+          </div>
+
+          <div style={styles.inputDock}>
+            {hasVoice && (
+              <button
+                type="button"
+                style={{
+                  ...styles.pixelBtn,
+                  ...styles.micBtn,
+                  ...(isListening ? styles.micBtnActive : null),
+                }}
+                onClick={toggleMic}
+                disabled={isLoading || isSpeaking}
+                title={isListening ? "stop listening" : "start listening"}
+              >
+                {isListening ? "● LIVE" : "MIC"}
+              </button>
+            )}
+            <div style={styles.inputWrapper}>
+              <textarea
+                ref={inputRef}
+                style={{
+                  ...styles.input,
+                  ...(handsFreeMode && canHandsFree ? styles.inputHandsFree : null),
+                }}
+                value={inputValue}
+                onChange={(e) => !isListening && setTextInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={
+                  handsFreeMode && canHandsFree
+                    ? isSpeaking
+                      ? `${activeNpc.name.split(" ")[0]} is speaking...`
+                      : isListening
+                      ? "Listening... reply sends automatically"
+                      : "Voice mode on — you can still type"
                     : isListening
-                    ? "Listening... reply sends automatically"
-                    : "Voice mode on — you can still type"
-                  : isListening
-                  ? "Listening..."
-                  : "Speak your mind..."
-              }
-              rows={2}
-              disabled={isListening || isLoading || isSpeaking}
-            />
-            {isListening && interimText && (
-              <div style={styles.interimOverlay}>{interimText}</div>
+                    ? "Listening..."
+                    : "Speak your mind..."
+                }
+                rows={2}
+                disabled={isListening || isLoading || isSpeaking}
+              />
+              {isListening && interimText && (
+                <div style={styles.interimOverlay}>{interimText}</div>
+              )}
+            </div>
+            {!(handsFreeMode && canHandsFree) && (
+              <button
+                type="button"
+                style={{
+                  ...styles.pixelBtn,
+                  ...styles.sendBtn,
+                  ...(!textInput.trim() || isLoading || isSpeaking ? styles.pixelBtnDisabled : null),
+                }}
+                onClick={handleSubmit}
+                disabled={!textInput.trim() || isLoading || isSpeaking}
+              >
+                Send ▶
+              </button>
             )}
           </div>
-          {!(handsFreeMode && canHandsFree) && (
-            <button
-              type="button"
-              style={{
-                ...styles.pixelBtn,
-                ...styles.sendBtn,
-                ...(!textInput.trim() || isLoading || isSpeaking ? styles.pixelBtnDisabled : null),
-              }}
-              onClick={handleSubmit}
-              disabled={!textInput.trim() || isLoading || isSpeaking}
-            >
-              Send ▶
-            </button>
-          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -528,7 +579,7 @@ function ErrorLine({ text }) {
   return <div style={styles.errorLine}>{text}</div>;
 }
 
-function CouncilScene({ activeNpcId }) {
+function CouncilScene({ activeNpcId, isGathering }) {
   return (
     <div style={styles.stageArea}>
       <div style={styles.stageGlow} />
@@ -573,7 +624,7 @@ function CouncilScene({ activeNpcId }) {
       <div style={styles.tableGrainBottom} />
       <div style={styles.tableRightShade} />
 
-      {COUNCIL_NPCS.map((npc) => {
+      {COUNCIL_NPCS.map((npc, idx) => {
         const layout = COUNCIL_STAGE_LAYOUT[npc.id];
         return (
           <div
@@ -584,6 +635,9 @@ function CouncilScene({ activeNpcId }) {
               top: layout.top,
               zIndex: layout.layer,
               transform: `translate(-50%, -50%) scale(${layout.scale})`,
+              animation: isGathering
+                ? `council-gather-in 0.55s ease-out ${idx * 160}ms both`
+                : undefined,
             }}
           >
             <PixelCritterAvatar
@@ -1331,6 +1385,63 @@ const styles = {
     borderLeft: "3px solid rgba(180,60,60,0.3)",
   },
 
+  // ── Gathering panel (shown before meeting begins) ─────────────────────────
+  gatheringPanel: {
+    flexShrink: 0,
+    padding: "18px 24px 20px",
+    background: "#efe0bb",
+    borderTop: "4px solid #8d643d",
+    boxShadow: "inset 0 3px 0 #fff3cf",
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    fontFamily: '"Courier New", "Lucida Console", monospace',
+  },
+  gatheringRoute: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: 10,
+  },
+  gatheringRouteLabel: {
+    fontSize: 9,
+    fontWeight: 900,
+    textTransform: "uppercase",
+    letterSpacing: 1.8,
+    color: "#8d643d",
+  },
+  gatheringRouteTitle: {
+    fontSize: 12,
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    color: "#4a2e10",
+  },
+  gatheringBody: {
+    margin: 0,
+    fontSize: 13,
+    lineHeight: 1.6,
+    color: "#4a3318",
+  },
+  gatheringFooter: {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginTop: 6,
+  },
+  beginBtn: {
+    border: "3px solid #6a4a2e",
+    borderRadius: 0,
+    background: "#2d3f2c",
+    color: "#cde2a6",
+    fontSize: 13,
+    fontWeight: 800,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    fontFamily: "inherit",
+    cursor: "pointer",
+    padding: "10px 22px",
+    boxShadow: "3px 3px 0 #182116",
+  },
+
   // ── Input dock ────────────────────────────────────────────────────────────
   inputDock: {
     display: "flex",
@@ -1452,6 +1563,10 @@ if (typeof document !== "undefined" && !document.getElementById("council-anim"))
     @keyframes council-pulse {
       0%, 100% { opacity: 0.5; }
       50%       { opacity: 1; }
+    }
+    @keyframes council-gather-in {
+      0%   { opacity: 0; transform: translate(-50%, calc(-50% + 10px)); }
+      100% { opacity: 1; transform: translate(-50%, -50%); }
     }
   `;
   document.head.appendChild(style);

@@ -92,7 +92,7 @@ export const townSigns = [
   { x: 20, y: 27, text: "lookout" },
   { x: 17, y: 19, text: "river" },
   { x: 30, y: 15, text: "works" },
-  { x: 30, y: 10, text: "Delaware" },
+  { x: 30, y: 10, text: "delaware" },
   { x: 39, y: 14, text: "terrace" },
 ];
 

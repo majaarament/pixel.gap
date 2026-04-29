@@ -44,11 +44,11 @@ function summarizeChoices(choices) {
 
     lines.push(`\n${PILLAR_LABELS[prefix]}:`);
     if (personal)  lines.push(`  personal choice   → "${personal.choiceLabel}"`);
-    if (delaware)  lines.push(`  Delaware view     → "${delaware.choiceLabel}"`);
+    if (delaware)  lines.push(`  delaware view     → "${delaware.choiceLabel}"`);
     if (personal && delaware) {
       lines.push(personal.choiceKey === delaware.choiceKey
         ? `  (aligned — same answer for both)`
-        : `  (gap — personal and Delaware views differed)`);
+        : `  (gap — personal and delaware views differed)`);
     }
     if (scale) lines.push(`  visibility at work → ${scale.choiceKey}/5`);
   }
@@ -61,10 +61,10 @@ function summarizeChoices(choices) {
 
   // Final reflection
   const finalPairs = [
-    ["final_strongest",  "Strongest pillar at Delaware"],
+    ["final_strongest",  "Strongest pillar at delaware"],
     ["final_important",  "Most important personally"],
     ["final_gap",        "Biggest gap identified"],
-    ["final_focus",      "Delaware should focus on"],
+    ["final_focus",      "delaware should focus on"],
   ];
   const finalLines = finalPairs
     .map(([id, label]) => {
@@ -95,7 +95,7 @@ export function buildCouncilSystemPrompt(quest) {
   return `You are the AI running an interactive council meeting inside a pixel-art sustainability learning game built for delaware, an international business and technology consultancy.
 
 SETTING
-The player has just completed a journey through Delaware's four sustainability pillars — Environmental Stewardship, People & Culture, Business Conduct, and Responsible Value Chain. They are now seated at the council table for an open reflective discussion with the sustainability characters they met during the game.
+The player has just completed a journey through delaware's four sustainability pillars — Environmental Stewardship, People & Culture, Business Conduct, and Responsible Value Chain. They are now seated at the council table for an open reflective discussion with the sustainability characters they met during the game.
 
 PLAYER PROFILE
 - Role: ${profile.roleLevel || "employee"}

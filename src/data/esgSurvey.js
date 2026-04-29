@@ -1,585 +1,321 @@
 /**
- * ESG Pillar Survey Dialogue Data
- * Defines branching conversations for the 4 main NPCs (frank, otis, suzy, hazel)
- * Each NPC represents a pillar: Environment, People, Conduct, Value Chain
+ * ESG Pillar Survey Dialogue — streamlined edition.
+ *
+ * Each NPC has exactly 5 steps:
+ *   1. intro   — NPC presents a concrete scenario (no choices, player presses continue)
+ *   2. personal — "what would you do?" (4 choices, each with an NPC reaction)
+ *   3. delaware — "what do you think would actually happen here?" (4 choices, no reactions)
+ *   4. scale   — "how often do you see this in practice?" (1-5 scale)
+ *   5. outro   — brief NPC sign-off (no choices, player presses continue)
+ *
+ * Step IDs use the prefix_scenario_personal / prefix_scenario_delaware pattern
+ * so the gap-detection logic in useGameState can compare the two answers automatically.
  */
 
+const SCALE_CHOICES = [
+  { key: "1", label: "1 — rarely or never" },
+  { key: "2", label: "2 — occasionally" },
+  { key: "3", label: "3 — sometimes" },
+  { key: "4", label: "4 — fairly often" },
+  { key: "5", label: "5 — consistently" },
+];
+
 // ============================================================================
-// PILLAR 1: ENVIRONMENTAL STEWARDSHIP (frank)
+// PILLAR 1: ENVIRONMENTAL STEWARDSHIP — Frank the Fish
 // ============================================================================
 
 export const FRANK_SURVEY = {
   npcId: "frank",
-  npcName: "Frank",
-  npcRole: "Environmental Lead",
+  npcName: "Frank the Fish",
+  npcRole: "Environmental Stewardship",
   pillarKey: "env",
+  finalReaction: "\"Digital decisions are the new invisible environmental ones. Nobody sees the data centre. Nobody feels the compute cost. That's why it matters that someone doesn't look away.\"",
   steps: [
     {
       id: "env_intro",
       speaker: "Frank",
       message:
-        "Hey… good thing you're here. We're about to finish this project, but there's a shortcut that would save us some time. Only thing is, it creates quite a bit more waste than usual. No one's really questioning it.",
+        "\"Good timing. I've been sitting on a recommendation I need to make.\"\n\nPlayer\n\"What's the situation?\"\n\nFrank\n\"A client project. We're choosing between two AI models. The high-accuracy one requires roughly eight times more compute — more energy, more carbon cost. The lighter model covers most use cases well enough. The client hasn't asked about environmental cost. They've only asked about performance.\"",
       choices: [],
     },
     {
-      id: "env_behavioral",
+      id: "env_scenario_personal",
       speaker: "Frank",
-      message: "What feels like the best move for you?",
+      message: "\"If this were your recommendation to make — what would you lean toward?\"",
       choices: [
         {
-          key: "env_b_fast",
-          label:
-            "Stick with the faster option, deadlines matter too",
-          reaction:
-            '"Yeah… deadlines do have a way of taking over everything."',
-          value: 1,
+          key: "flag_energy",
+          label: "Flag the energy cost to the client and factor it into the recommendation.",
+          reaction: "\"That's the harder conversation to have. Most clients haven't asked for it. But once you name it, they usually want to know.\"",
         },
         {
-          key: "env_b_suggest",
-          label: "Bring it up and suggest a less wasteful approach",
-          reaction:
-            '"That\'s fair. It can be tricky to bring that up though."',
-          value: 3,
+          key: "lighter_model",
+          label: "Recommend the lighter model as default — performance is sufficient and the footprint is lower.",
+          reaction: "\"Pragmatic. You're still making a sustainability call — just making it quietly.\"",
         },
         {
-          key: "env_b_follow",
-          label: "Follow what the team is already doing",
-          reaction:
-            '"I get that. It\'s not always easy to go against the flow."',
-          value: 2,
+          key: "note_internally",
+          label: "Note it internally as a sustainability consideration but lead with performance in the client conversation.",
+          reaction: "\"It's in the record, at least. Though if no one reads the footnote, the same model gets chosen again next time.\"",
         },
         {
-          key: "env_b_reduce",
-          label: "Try to reduce the waste a bit without slowing things down",
-          reaction:
-            '"Subtle… sometimes that feels like the only realistic option."',
-          value: 2,
+          key: "full_info",
+          label: "Give the client full cost information — performance and carbon — and let them decide.",
+          reaction: "\"That's putting it back where it belongs. They commissioned the work — they should own the full picture.\"",
         },
       ],
     },
     {
-      id: "env_org_perception",
+      id: "env_scenario_delaware",
       speaker: "Frank",
-      message:
-        'Out of curiosity… what do you think would actually be prioritised in this situation?',
+      message: "\"And what do you think delaware would expect a consultant to do in a situation like this?\"",
       choices: [
-        {
-          key: "env_o_deliver",
-          label:
-            "Delivering on time, even if it's less sustainable",
-          value: 1,
-        },
-        {
-          key: "env_o_balance",
-          label: "Finding a balance between speed and environmental impact",
-          value: 2,
-        },
-        {
-          key: "env_o_impact",
-          label: "Reducing environmental impact, even if it takes longer",
-          value: 3,
-        },
-        {
-          key: "env_o_depends",
-          label: "It depends on the team or manager",
-          value: null,
-        },
+        { key: "flag_energy",    label: "Flag the energy cost — include it in the recommendation." },
+        { key: "lighter_model",  label: "Default to the lighter model where performance allows." },
+        { key: "note_internally", label: "Note it internally but lead with performance externally." },
+        { key: "full_info",      label: "Give the client the full picture and let them decide." },
       ],
     },
     {
-      id: "env_visibility",
+      id: "env_scale",
       speaker: "Frank",
-      message:
-        "And thinking more generally… how often do people around you actually think about environmental impact when making decisions at work?",
-      choices: [
-        { key: "env_v_often", label: "Very often", value: 4 },
-        { key: "env_v_sometimes", label: "Sometimes", value: 3 },
-        { key: "env_v_rarely", label: "Rarely", value: 2 },
-        { key: "env_v_never", label: "Almost never", value: 1 },
-      ],
-    },
-    {
-      id: "env_reflection",
-      speaker: "Frank",
-      message:
-        '"There\'s often a bit of a gap between what\'s said and what happens. Where do you notice the biggest difference between environmental goals that are talked about and what actually happens in practice at work?"',
-      choices: [
-        {
-          key: "env_r_free",
-          label: "[Open reflection - text response]",
-          isOpenEnded: true,
-        },
-      ],
+      message: "\"Last question from me. How often do you see environmental considerations genuinely shaping real decisions where you work?\"",
+      choices: SCALE_CHOICES,
     },
     {
       id: "env_outro",
       speaker: "Frank",
       message:
-        '"Funny how it\'s rarely one big decision, right… it\'s all these small choices that quietly shape what actually happens. Anyway, might be worth seeing how things play out elsewhere too: I heard the next guide has been wanting to talk to you, go pay them a visit."',
+        "\"Digital decisions leave no visible trace — no runoff, no smoke — but they accumulate quietly. That's worth seeing how it looks in the other zones too.\"",
       choices: [],
     },
   ],
 };
 
 // ============================================================================
-// PILLAR 2: PEOPLE & CULTURE (otis)
+// PILLAR 2: PEOPLE & CULTURE — Otis the Otter
 // ============================================================================
 
 export const OTIS_SURVEY = {
   npcId: "otis",
-  npcName: "Otis",
-  npcRole: "People Operations",
+  npcName: "Otis the Otter",
+  npcRole: "People & Culture",
   pillarKey: "people",
+  finalReaction: "\"People situations don't resolve neatly. Thanks for thinking it through honestly.\"",
   steps: [
     {
       id: "people_intro",
       speaker: "Otis",
       message:
-        "Hey, I was looking for you! Can I get your take on something? We've been pushing hard to meet deadlines lately… One of our teammates clearly looks overwhelmed, but no one's really saying anything.",
+        "\"Hey, I was hoping to get your take on something. Project pressure is high this sprint, and one person on the team has been quietly absorbing extra load for weeks.\"\n\nPlayer\n\"Have they said anything?\"\n\nOtis\n\"Not officially. They say they're fine. But it's obvious to anyone paying attention — leadership is just focused on the deadline.\"",
       choices: [],
     },
     {
-      id: "people_behavioral",
+      id: "people_scenario_personal",
       speaker: "Otis",
-      message: "What would you do in this moment?",
+      message: "\"What would you do in this moment?\"",
       choices: [
         {
-          key: "people_b_checkin",
-          label: "Check in with them and offer support",
-          reaction:
-            '"Yeah… even a small check-in can mean a lot sometimes."',
-          value: 3,
+          key: "raise_now",
+          label: "Raise it now — waiting makes the pattern harder to break.",
+          reaction: "\"That takes real willingness to make things uncomfortable before they get worse. Not everyone does.\"",
         },
         {
-          key: "people_b_manager",
-          label: "Mention it to the team or manager",
-          reaction:
-            '"That makes sense. Managers are supposed to keep an eye on this kind of thing after all."',
-          value: 2,
+          key: "check_in",
+          label: "Check in with them privately first, then decide how to escalate.",
+          reaction: "\"A quiet check-in first — that at least gives the person some agency in how the situation gets raised.\"",
         },
         {
-          key: "people_b_assume",
-          label: "Assume they'll speak up if it's serious",
-          reaction:
-            '"I understand… but not everyone finds it easy to speak up."',
-          value: 1,
+          key: "let_lead",
+          label: "Leave it for the team lead or manager — that's their role.",
+          reaction: "\"Relying on the chain of command. Fair, if the chain is actually paying attention.\"",
         },
         {
-          key: "people_b_focus",
-          label: "Focus on your own tasks for now",
-          reaction: '"I get it. When things are busy, it\'s hard to take on more."',
-          value: 0,
+          key: "document",
+          label: "Note what you're seeing and flag it after the immediate pressure passes.",
+          reaction: "\"Watching and waiting. Sometimes the right call — sometimes it's already too late by the time the deadline lifts.\"",
         },
       ],
     },
     {
-      id: "people_org_perception",
+      id: "people_scenario_delaware",
       speaker: "Otis",
-      message:
-        "In your opinion, what usually happens in situations like this?",
+      message: "\"What do you think happens in situations like this here, usually? What would delaware expect someone to do?\"",
       choices: [
-        {
-          key: "people_o_support",
-          label: "People actively support each other",
-          value: 3,
-        },
-        {
-          key: "people_o_noticed",
-          label: "It gets noticed, but not always addressed",
-          value: 2,
-        },
-        {
-          key: "people_o_individual",
-          label: "It's mostly left to individuals to manage",
-          value: 1,
-        },
-        {
-          key: "people_o_depends",
-          label: "It depends on the team",
-          value: null,
-          followUp: "people_org_depends",
-        },
+        { key: "raise_now",  label: "Raise it now — don't wait." },
+        { key: "check_in",   label: "Check in privately first, then escalate if needed." },
+        { key: "let_lead",   label: "Leave it to the line manager to notice and handle." },
+        { key: "document",   label: "Document and flag after the immediate pressure passes." },
       ],
     },
     {
-      id: "people_org_depends",
+      id: "people_scale",
       speaker: "Otis",
-      message:
-        '"Yeah… I hear that a lot actually. It can feel pretty different depending on where you are. And just thinking about your own team… what do you think makes that difference?"',
-      choices: [
-        {
-          key: "people_od_culture",
-          label: "[Open reflection - what makes the difference]",
-          isOpenEnded: true,
-        },
-      ],
-    },
-    {
-      id: "people_safety",
-      speaker: "Otis",
-      message:
-        "How safe do you feel to speak up about issues like this in your team?",
-      choices: [
-        {
-          key: "people_s_very",
-          label: "Very safe",
-          value: 4,
-        },
-        {
-          key: "people_s_somewhat",
-          label: "Somewhat safe",
-          value: 3,
-          followUp: "people_safety_followup",
-        },
-        {
-          key: "people_s_notvery",
-          label: "Not very safe",
-          value: 2,
-          followUp: "people_safety_followup",
-        },
-        {
-          key: "people_s_notsafe",
-          label: "Not safe at all",
-          value: 1,
-          followUp: "people_safety_followup",
-        },
-      ],
-    },
-    {
-      id: "people_safety_followup",
-      speaker: "Otis",
-      message:
-        '"Ah… yeah, that\'s honestly something I hear quite often. It\'s not always easy to speak up, even when something feels off. (Please be honest here—your answer isn\'t linked back to you.) What tends to make it harder to speak up in situations like this?"',
-      choices: [
-        {
-          key: "people_sf_harder",
-          label:
-            "[Open reflection - what makes it harder? (topics, situations, dynamics)]",
-          isOpenEnded: true,
-        },
-      ],
-    },
-    {
-      id: "people_support_themes",
-      speaker: "Otis",
-      message:
-        '"It\'s interesting how much these things depend on the environment people are in. What do you think would make people feel more supported in situations like these?"',
-      choices: [
-        {
-          key: "people_st_support",
-          label: "[Open reflection - what would help]",
-          isOpenEnded: true,
-        },
-      ],
+      message: "\"One more. How safe does it feel to express a different view or raise a concern in your team?\"",
+      choices: SCALE_CHOICES,
     },
     {
       id: "people_outro",
       speaker: "Otis",
       message:
-        '"It\'s strange… people talk a lot about team culture, but in the end it\'s really just moments like these that define it. I guess it makes you wonder how things feel in other parts of the company too. The next guide might have some insight on that now that I\'m thinking about it."',
+        "\"It's strange. People talk a lot about team culture, but in the end it's really just moments like these that define it. The next guide might have some thoughts on how it looks elsewhere.\"",
       choices: [],
     },
   ],
 };
 
 // ============================================================================
-// PILLAR 3: BUSINESS CONDUCT (suzy)
+// PILLAR 3: BUSINESS CONDUCT — Suzy the Sheep
 // ============================================================================
 
 export const SUZY_SURVEY = {
   npcId: "suzy",
-  npcName: "Suzy",
-  npcRole: "Compliance & Ethics",
+  npcName: "Suzy the Sheep",
+  npcRole: "Business Conduct",
   pillarKey: "conduct",
+  finalReaction: "\"It's never really about one big rule being broken. It's what people get used to over time.\"",
   steps: [
     {
       id: "conduct_intro",
       speaker: "Suzy",
       message:
-        "Hey there, didn't see you there! Funny thing… I've been watching how things run around here lately and I've noticed a pattern. Little shortcuts here, a rule bent there… nothing that stops things from working, just things that technically shouldn't happen either. And for most people it just becomes normal.",
+        "\"I've been watching how things run around here lately. A colleague shows you a workaround that saves three days of compliance checks. It's not against any written rule — but it bypasses the spirit of the process.\"\n\nPlayer\n\"Is there any risk?\"\n\nSuzy\n\"Not immediately. But if something goes wrong later, there's no paper trail for why it was skipped. And apparently other teams do it regularly.\"",
       choices: [],
     },
     {
-      id: "conduct_behavioral",
+      id: "conduct_scenario_personal",
       speaker: "Suzy",
-      message: 'What would feel like the right response for you in this scenario?',
+      message: "\"What would feel like the right response for you?\"",
       choices: [
         {
-          key: "conduct_b_direct",
-          label: "Speak up and address it directly",
-          reaction:
-            '"That takes a bit of courage… especially if no one else is saying anything."',
-          value: 3,
+          key: "follow_proper",
+          label: "Follow the full process — the shortcut isn't worth the downstream risk.",
+          reaction: "\"That's the textbook answer. It's also the slower one. Takes real conviction to hold that line when everyone else is moving fast.\"",
         },
         {
-          key: "conduct_b_advice",
-          label: "Ask someone else for advice first",
-          reaction:
-            '"Yeah, keeping an eye on it first can feel like the safer move."',
-          value: 2,
+          key: "flag_up",
+          label: "Flag the workaround to a manager before deciding — get clarity on whether it's acceptable.",
+          reaction: "\"Checking before acting. Harder than it sounds when the deadline is tomorrow and no one else seems bothered.\"",
         },
         {
-          key: "conduct_b_ignore",
-          label: "Ignore it unless it becomes a bigger issue",
-          reaction:
-            '"I get that… it\'s easy to let small things slide when nothing seems urgent."',
-          value: 1,
+          key: "use_workaround",
+          label: "Use the workaround this time — it's common practice and the deadline matters.",
+          reaction: "\"'Common practice' is doing a lot of work there. But I understand how it happens. It usually starts exactly like this.\"",
         },
         {
-          key: "conduct_b_trust",
-          label: "Trust that someone else will handle it",
-          reaction:
-            '"That happens a lot more than people like to admit."',
-          value: 0,
+          key: "suggest_review",
+          label: "Use it now but push for a formal review so it's either approved or fixed properly.",
+          reaction: "\"Pragmatic and constructive — if the review actually happens. That second half is where it usually falls apart.\"",
         },
       ],
     },
     {
-      id: "conduct_org_perception",
+      id: "conduct_scenario_delaware",
       speaker: "Suzy",
-      message:
-        "What have you usually seen happening at work in these cases?",
+      message: "\"What do you think delaware's leadership would expect someone to do here?\"",
       choices: [
-        {
-          key: "conduct_o_serious",
-          label: "Issues like this are taken seriously and addressed",
-          value: 3,
-        },
-        {
-          key: "conduct_o_acknowledged",
-          label: "They're acknowledged but not always followed up",
-          value: 2,
-        },
-        {
-          key: "conduct_o_overlooked",
-          label: "They're often overlooked unless they escalate",
-          value: 1,
-        },
-        {
-          key: "conduct_o_depends",
-          label: "It depends on who is involved",
-          value: null,
-          followUp: "conduct_org_depends",
-        },
+        { key: "follow_proper",   label: "Always follow the full process — no shortcuts." },
+        { key: "flag_up",         label: "Flag it and seek guidance before proceeding." },
+        { key: "use_workaround",  label: "Use common-practice workarounds if everyone else does." },
+        { key: "suggest_review",  label: "Use it and raise a process review — pragmatic but constructive." },
       ],
     },
     {
-      id: "conduct_org_depends",
+      id: "conduct_scale",
       speaker: "Suzy",
-      message:
-        '"Yeah… that\'s interesting. It can feel pretty inconsistent sometimes. What do you think it depends on most?"',
-      choices: [
-        {
-          key: "conduct_od_depends",
-          label: "[Open reflection - what does it depend on]",
-          isOpenEnded: true,
-        },
-      ],
-    },
-    {
-      id: "conduct_safety",
-      speaker: "Suzy",
-      message:
-        '"How comfortable would you feel raising something like this?"',
-      choices: [
-        {
-          key: "conduct_s_very",
-          label: "Very comfortable",
-          value: 4,
-        },
-        {
-          key: "conduct_s_somewhat",
-          label: "Somewhat comfortable",
-          value: 3,
-        },
-        {
-          key: "conduct_s_notvery",
-          label: "Not very comfortable",
-          value: 2,
-        },
-        {
-          key: "conduct_s_notsafe",
-          label: "Not comfortable at all",
-          value: 1,
-        },
-      ],
-    },
-    {
-      id: "conduct_reflection",
-      speaker: "Suzy",
-      message:
-        '"Yeah… it\'s rarely as simple as just speaking up or staying quiet. A lot of little things can make a difference in that moment. What makes it easier or harder to speak up in practice?"',
-      choices: [
-        {
-          key: "conduct_r_factors",
-          label: "[Open reflection - what makes it easier or harder]",
-          isOpenEnded: true,
-        },
-      ],
+      message: "\"And how safe would it feel to raise a concern about a process or compliance issue in your context?\"",
+      choices: SCALE_CHOICES,
     },
     {
       id: "conduct_outro",
       speaker: "Suzy",
       message:
-        '"Well, ultimately it\'s never really about one big rule being broken… it\'s more about what people get used to over time. You start to notice patterns, once you\'re looking for them. {nextNpc} might have some thoughts on this too."',
+        "\"You start to notice patterns, once you're looking for them. The next guide has been thinking about a different angle on this — might be worth a conversation.\"",
       choices: [],
     },
   ],
 };
 
 // ============================================================================
-// PILLAR 4: RESPONSIBLE VALUE CHAIN (hazel)
+// PILLAR 4: RESPONSIBLE VALUE CHAIN — Hazel the Hedgehog
 // ============================================================================
 
 export const HAZEL_SURVEY = {
   npcId: "hazel",
-  npcName: "Hazel",
-  npcRole: "Supply Chain Sustainability",
+  npcName: "Hazel the Hedgehog",
+  npcRole: "Responsible Value Chain",
   pillarKey: "chain",
+  finalReaction: "\"Decisions like these don't stay here. They ripple outward in ways people don't always see.\"",
   steps: [
     {
       id: "chain_intro",
       speaker: "Hazel",
       message:
-        "Haven't seen you in a while, I need to tell you about this pickle I've been in. We're about to choose a partner for an upcoming project. One option is fast, reliable, and cheaper. The other takes a bit more effort to work with, but they're known for treating people fairly and working more sustainably. There's no obvious right answer. It just depends on what you focus on.",
+        "\"I need to tell you about this supplier decision we're facing. One option is fast, reliable, and 12% cheaper. The other takes more effort to onboard, but they're known for treating people fairly and operating sustainably.\"\n\nPlayer\n\"Is there pressure to go with the cheaper option?\"\n\nHazel\n\"There's always pressure. And the contract is long-term — whatever we choose, we're committed to it for years.\"",
       choices: [],
     },
     {
-      id: "chain_behavioral",
+      id: "chain_scenario_personal",
       speaker: "Hazel",
-      message:
-        "What would you lean toward in this situation?",
+      message: "\"What would you lean toward in this decision?\"",
       choices: [
         {
-          key: "chain_b_efficient",
-          label: "The faster, more efficient option",
-          reaction:
-            '"Yeah… when things are moving quickly, that\'s often what wins."',
-          value: 1,
+          key: "responsible",
+          label: "Go with the responsible supplier — the cost difference is worth the alignment.",
+          reaction: "\"That's a harder argument to make when procurement is watching the numbers. Takes real conviction to hold the line there.\"",
         },
         {
-          key: "chain_b_sustainable",
-          label: "The more sustainable option",
-          reaction:
-            '"That can take extra effort… but it does say something about priorities."',
-          value: 3,
+          key: "negotiate",
+          label: "Try to negotiate the lower-cost supplier to improve their standards as a condition.",
+          reaction: "\"Using procurement leverage. It works when you actually have it — and when you're willing to walk away if they don't move.\"",
         },
         {
-          key: "chain_b_balance",
-          label: "Try to balance both",
-          reaction:
-            '"Makes sense. Most decisions end up somewhere in the middle."',
-          value: 2,
+          key: "cost",
+          label: "Go with the lower-cost option — the business case has to hold up.",
+          reaction: "\"The business case wins. That's honest. It's how most of these decisions actually land, whatever the sustainability statement says.\"",
         },
         {
-          key: "chain_b_follow",
-          label: "Follow what's already been decided",
-          reaction: '"Fair. These decisions often don\'t feel fully in your control."',
-          value: 0,
+          key: "escalate",
+          label: "Escalate the trade-off to leadership — this decision is too significant for this level.",
+          reaction: "\"Pushing it upward. That at least makes the trade-off visible rather than invisible — which is already something.\"",
         },
       ],
     },
     {
-      id: "chain_org_perception",
+      id: "chain_scenario_delaware",
       speaker: "Hazel",
-      message:
-        "What do you think is usually prioritised at work?",
+      message: "\"What do you think delaware would actually prioritise in a supplier decision like this?\"",
       choices: [
-        {
-          key: "chain_o_efficiency",
-          label: "Efficiency and cost",
-          value: 1,
-        },
-        {
-          key: "chain_o_balance",
-          label: "A balance between responsibility and performance",
-          value: 2,
-        },
-        {
-          key: "chain_o_responsibility",
-          label: "Responsibility, even if it's slower",
-          value: 3,
-        },
-        {
-          key: "chain_o_varies",
-          label: "It varies a lot",
-          value: null,
-          followUp: "chain_org_varies",
-        },
+        { key: "responsible", label: "Choose the responsible supplier even at higher cost." },
+        { key: "negotiate",   label: "Use procurement leverage to push suppliers to improve." },
+        { key: "cost",        label: "Prioritise the business case — sustainability is secondary." },
+        { key: "escalate",    label: "Escalate significant trade-offs to senior leadership." },
       ],
     },
     {
-      id: "chain_org_varies",
+      id: "chain_scale",
       speaker: "Hazel",
-      message:
-        '"Yeah… that makes sense, it\'s rarely the same everywhere. Different teams, different pressures… things don\'t always play out the same way. I\'m curious… can you think of moments where priorities shifted? What influenced that?"',
-      choices: [
-        {
-          key: "chain_ov_shifts",
-          label: "[Open reflection - moments where priorities shifted]",
-          isOpenEnded: true,
-        },
-      ],
-    },
-    {
-      id: "chain_visibility",
-      speaker: "Hazel",
-      message:
-        '"How often are sustainability or long-term impact considered when choosing partners or suppliers?"',
-      choices: [
-        {
-          key: "chain_v_visible",
-          label: "Very visible",
-          value: 4,
-        },
-        {
-          key: "chain_v_sometimes",
-          label: "Sometimes visible",
-          value: 3,
-        },
-        {
-          key: "chain_v_rarely",
-          label: "Rarely visible",
-          value: 2,
-        },
-        {
-          key: "chain_v_notatall",
-          label: "Not visible at all",
-          value: 1,
-        },
-      ],
-    },
-    {
-      id: "chain_impact",
-      speaker: "Hazel",
-      message:
-        '"A lot of impact happens through the choices companies make with others. Where do you think the company could make a bigger difference outside of its own work?"',
-      choices: [
-        {
-          key: "chain_i_impact",
-          label: "[Open reflection - bigger difference outside]",
-          isOpenEnded: true,
-        },
-      ],
+      message: "\"Last one. How visible is responsible external decision-making — around suppliers, partners, and longer-term impact — in your everyday work?\"",
+      choices: SCALE_CHOICES,
     },
     {
       id: "chain_outro",
       speaker: "Hazel",
       message:
-        '"Very interesting! I believe that decisions like these don\'t just stay here… they ripple outward in ways people don\'t always see. I guess it depends on what kind of impact you want to leave behind though. Either way, it might be worth taking a step back and looking at the bigger picture now."',
+        "\"I believe the choices a company makes with others say more than the choices it makes about itself. Worth taking that thought into the next part of the journey.\"",
       choices: [],
     },
   ],
 };
 
 // ============================================================================
-// Helper function to get survey data by NPC ID
+// Lookup helpers
 // ============================================================================
 
 const SURVEY_MAP = {
   frank: FRANK_SURVEY,
-  otis: OTIS_SURVEY,
-  suzy: SUZY_SURVEY,
+  otis:  OTIS_SURVEY,
+  suzy:  SUZY_SURVEY,
   hazel: HAZEL_SURVEY,
 };
 
@@ -588,87 +324,51 @@ export function getSurveySectionForNpc(npcId) {
 }
 
 // ============================================================================
-// Scoring and Results Mapping
+// Scoring map (kept for results reporting)
 // ============================================================================
 
 export const SURVEY_SCORING = {
   env: {
     pillar: "Environmental Stewardship",
-    behavior_key: "env_behavioral",
-    org_key: "env_org_perception",
-    visibility_key: "env_visibility",
-    themes_key: "env_reflection",
+    behavior_key:  "env_scenario_personal",
+    org_key:       "env_scenario_delaware",
   },
   people: {
     pillar: "People & Culture",
-    behavior_key: "people_behavioral",
-    org_key: "people_org_perception",
-    safety_key: "people_safety",
-    themes_key: "people_support_themes",
+    behavior_key:  "people_scenario_personal",
+    org_key:       "people_scenario_delaware",
   },
   conduct: {
     pillar: "Business Conduct",
-    behavior_key: "conduct_behavioral",
-    org_key: "conduct_org_perception",
-    safety_key: "conduct_safety",
-    themes_key: "conduct_reflection",
+    behavior_key:  "conduct_scenario_personal",
+    org_key:       "conduct_scenario_delaware",
   },
   chain: {
     pillar: "Responsible Value Chain",
-    behavior_key: "chain_behavioral",
-    org_key: "chain_org_perception",
-    visibility_key: "chain_visibility",
-    themes_key: "chain_impact",
+    behavior_key:  "chain_scenario_personal",
+    org_key:       "chain_scenario_delaware",
   },
 };
 
 /**
- * Convert survey steps to dialog sequence format for the game
- * Extracts choice values and assigns them to steps
+ * Convert survey steps to the sequence dialog format.
+ * With the streamlined surveys, there are no conditional follow-up branches.
  */
 export function convertSurveyToDialogSequence(surveyData) {
-  // Collect step IDs that are only shown conditionally (referenced via choice.followUp)
-  const followUpIds = new Set();
-  for (const step of surveyData.steps) {
-    for (const choice of step.choices) {
-      if (choice.followUp) followUpIds.add(choice.followUp);
-    }
-  }
-
-  // Build a map so the dialog engine can inject them on demand
-  const followUpStepsMap = {};
-  for (const step of surveyData.steps) {
-    if (followUpIds.has(step.id)) {
-      followUpStepsMap[step.id] = {
-        ...step,
-        choices: step.choices.map((choice) => ({
-          ...choice,
-          choiceValue: choice.value !== undefined ? choice.value : null,
-          reaction: choice.reaction || null,
-        })),
-      };
-    }
-  }
-
-  // Only include the main (non-conditional) steps in the default sequence
-  const mainSteps = surveyData.steps
-    .filter((step) => !followUpIds.has(step.id))
-    .map((step) => ({
-      ...step,
-      choices: step.choices.map((choice) => ({
-        ...choice,
-        choiceValue: choice.value !== undefined ? choice.value : null,
-        reaction: choice.reaction || null,
-      })),
-    }));
-
-  const pillarName = SURVEY_SCORING[surveyData.pillarKey]?.pillar || surveyData.pillarKey;
+  const steps = surveyData.steps.map((step) => ({
+    ...step,
+    choices: step.choices.map((choice) => ({
+      ...choice,
+      choiceValue: null,
+      reaction: choice.reaction || null,
+    })),
+  }));
 
   return {
     type: "sequence",
-    steps: mainSteps,
-    followUpStepsMap,
-    reaction: `"Thank you for sharing your perspective on ${pillarName}. It helps understand how these values actually show up in practice."`,
+    steps,
+    followUpStepsMap: {},
+    reaction: surveyData.finalReaction || "\"Thank you. That perspective helps.\"",
     pillarNpcId: surveyData.npcId,
   };
 }

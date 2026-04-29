@@ -180,7 +180,7 @@ export default function LearningHouse({ quest, onClose }) {
             <div style={styles.noteCard}>
               <div style={styles.sideTitle}>anonymous note for this demo</div>
               <p style={styles.noteCopy}>
-                this saves only on your device in this demo. it does not send a real report to delaware north.
+                this saves only on your device in this demo. it does not send a real report to delaware.
               </p>
               <textarea
                 value={anonymousNote}

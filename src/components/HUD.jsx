@@ -17,7 +17,7 @@ export default function HUD({ scene, status }) {
           border: `1px solid ${isTown ? "rgba(88, 128, 76, 0.24)" : "rgba(68, 112, 160, 0.24)"}`,
           color: isTown ? "#3e6836" : "#2e5878",
         }}>
-          {isTown ? "Campus Route" : "Delaware Building"}
+          {isTown ? "Campus Route" : "delaware Building"}
         </div>
         <div style={styles.status}>{status}</div>
       </div>

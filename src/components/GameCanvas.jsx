@@ -2,7 +2,7 @@
 // Receives all render-relevant state as props so the draw loop is
 // always working with current values.
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { VIEW_COLS, VIEW_ROWS, TILE, SCALE } from "../constants/game";
 import { SCENES } from "../data/scenes";
 import { owlHouseGuide } from "../data/owlHouseMap";
@@ -42,7 +42,17 @@ export default function GameCanvas({
   const viewportWidth  = VIEW_COLS * TILE;
   const viewportHeight = VIEW_ROWS * TILE;
   const [displayScale, setDisplayScale] = useState(SCALE);
+  const [showTutorial, setShowTutorial] = useState(true);
   const npcLabels = getNpcLabels({ scene, player, townNpcs, officeNpcs, displayScale, viewportWidth });
+
+  const dismissTutorial = useCallback(() => setShowTutorial(false), []);
+
+  useEffect(() => {
+    if (!showTutorial) return;
+    function onKey() { setShowTutorial(false); }
+    window.addEventListener("keydown", onKey, { once: true });
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showTutorial]);
 
   useEffect(() => {
     function updateScale() {
@@ -125,6 +135,26 @@ export default function GameCanvas({
               player={playerRef.current}
               objectiveTarget={objectiveTarget}
             />
+          )}
+          {showTutorial && (
+            <div style={styles.tutorialOverlay} onClick={dismissTutorial}>
+              <div style={styles.tutorialCard}>
+                <div style={styles.tutorialTitle}>how to play</div>
+                <div style={styles.tutorialGrid}>
+                  <span style={styles.tutorialKey}>↑ ↓ ← →</span>
+                  <span style={styles.tutorialDesc}>move around (or W A S D)</span>
+                  <span style={styles.tutorialKey}>walk near an NPC</span>
+                  <span style={styles.tutorialDesc}>starts conversation automatically</span>
+                  <span style={styles.tutorialKey}>Space / Enter</span>
+                  <span style={styles.tutorialDesc}>continue dialogue</span>
+                  <span style={styles.tutorialKey}>1 · 2 · 3 · 4</span>
+                  <span style={styles.tutorialDesc}>choose an answer (or click)</span>
+                  <span style={styles.tutorialKey}>Space (while moving)</span>
+                  <span style={styles.tutorialDesc}>flash current objective</span>
+                </div>
+                <div style={styles.tutorialDismiss}>press any key or click to start</div>
+              </div>
+            </div>
           )}
           <DialogOverlay
             dialog={dialog}
@@ -278,6 +308,67 @@ const styles = {
     letterSpacing: 0.2,
     cursor: "pointer",
     boxShadow: "0 10px 24px rgba(38, 54, 42, 0.2)",
+  },
+  tutorialOverlay: {
+    position: "absolute",
+    inset: 0,
+    zIndex: 200,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(8, 14, 10, 0.82)",
+    backdropFilter: "blur(3px)",
+    cursor: "pointer",
+    fontFamily: '"Courier New", "Lucida Console", monospace',
+  },
+  tutorialCard: {
+    width: "min(420px, calc(100% - 32px))",
+    background: "rgba(14, 22, 16, 0.98)",
+    border: "2px solid rgba(122, 176, 104, 0.6)",
+    borderRadius: 10,
+    padding: "22px 24px 20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+    boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+  },
+  tutorialTitle: {
+    fontSize: 12,
+    fontWeight: 900,
+    textTransform: "uppercase",
+    letterSpacing: 2.5,
+    color: "#7ab068",
+    textAlign: "center",
+  },
+  tutorialGrid: {
+    display: "grid",
+    gridTemplateColumns: "auto 1fr",
+    gap: "10px 16px",
+    alignItems: "start",
+  },
+  tutorialKey: {
+    fontSize: 12,
+    fontWeight: 800,
+    color: "#ddeedd",
+    background: "rgba(122,176,104,0.15)",
+    border: "1px solid rgba(122,176,104,0.35)",
+    borderRadius: 5,
+    padding: "4px 8px",
+    whiteSpace: "nowrap",
+    lineHeight: 1.4,
+  },
+  tutorialDesc: {
+    fontSize: 13,
+    color: "rgba(190, 220, 185, 0.85)",
+    lineHeight: 1.5,
+    paddingTop: 4,
+  },
+  tutorialDismiss: {
+    textAlign: "center",
+    fontSize: 11,
+    color: "rgba(140, 170, 135, 0.6)",
+    letterSpacing: 0.5,
+    marginTop: 4,
   },
 };
 
