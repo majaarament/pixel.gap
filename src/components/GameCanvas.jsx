@@ -105,7 +105,7 @@ export default function GameCanvas({
             style={{
               width: viewportWidth * displayScale,
               height: viewportHeight * displayScale,
-              imageRendering: "auto",
+              imageRendering: "pixelated",
               display: "block",
             }}
           />

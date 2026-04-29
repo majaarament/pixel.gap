@@ -253,15 +253,15 @@ export const OFFICE_STATION_IDS = ["suzy", "hazel"];
 
 const OLIVE_INTRO_STEPS = [
   {
-    id: "baseline_familiarity",
+    id: "baseline_understanding",
     message:
       "Olive the Owl — Sustainability Guide\n\n\"welcome. one question before we begin — delaware's work is built around five values: entrepreneurship, team spirit, respect, commitment, and care. thinking about where you work today, how much do you see those values shape real decisions?\"",
     choices: [
-      { key: "1", label: "1 — little to no familiarity" },
-      { key: "2", label: "2 — i know a little, but not deeply" },
-      { key: "3", label: "3 — a moderate understanding" },
-      { key: "4", label: "4 — i understand them fairly well" },
-      { key: "5", label: "5 — i know them very well" },
+      { key: "1", label: "1 — rarely, if ever" },
+      { key: "2", label: "2 — occasionally" },
+      { key: "3", label: "3 — sometimes" },
+      { key: "4", label: "4 — fairly often" },
+      { key: "5", label: "5 — consistently" },
     ],
   },
   {
@@ -289,7 +289,12 @@ const FINAL_REFLECTION_STEPS = [
   {
     id: "final_important",
     message: "\"and which pillar matters most to you personally?\"",
-    choices: PILLAR_CHOICES,
+    choices: [
+      { key: "env", label: "Environmental Stewardship — it's the area I care about most." },
+      { key: "people", label: "People & Culture — the human dimension matters most to me." },
+      { key: "conduct", label: "Business Conduct — acting with integrity is my core concern." },
+      { key: "chain", label: "Responsible Value Chain — how we affect the wider world matters most to me." },
+    ],
   },
   {
     id: "final_gap",

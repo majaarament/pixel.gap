@@ -1,15 +1,24 @@
 /**
  * ESG Pillar Survey Dialogue — streamlined edition.
  *
- * Each NPC has exactly 4 steps:
+ * Each NPC has exactly 5 steps:
  *   1. intro   — NPC presents a concrete scenario (no choices, player presses continue)
  *   2. personal — "what would you do?" (4 choices, each with an NPC reaction)
  *   3. delaware — "what do you think would actually happen here?" (4 choices, no reactions)
- *   4. outro   — brief NPC sign-off (no choices, player presses continue)
+ *   4. scale   — "how often do you see this in practice?" (1-5 scale)
+ *   5. outro   — brief NPC sign-off (no choices, player presses continue)
  *
  * Step IDs use the prefix_scenario_personal / prefix_scenario_delaware pattern
  * so the gap-detection logic in useGameState can compare the two answers automatically.
  */
+
+const SCALE_CHOICES = [
+  { key: "1", label: "1 — rarely or never" },
+  { key: "2", label: "2 — occasionally" },
+  { key: "3", label: "3 — sometimes" },
+  { key: "4", label: "4 — fairly often" },
+  { key: "5", label: "5 — consistently" },
+];
 
 // ============================================================================
 // PILLAR 1: ENVIRONMENTAL STEWARDSHIP — Frank the Fish
@@ -66,6 +75,12 @@ export const FRANK_SURVEY = {
         { key: "note_internally", label: "Note it internally but lead with performance externally." },
         { key: "full_info",      label: "Give the client the full picture and let them decide." },
       ],
+    },
+    {
+      id: "env_scale",
+      speaker: "Frank",
+      message: "\"Last question from me. How often do you see environmental considerations genuinely shaping real decisions where you work?\"",
+      choices: SCALE_CHOICES,
     },
     {
       id: "env_outro",
@@ -134,6 +149,12 @@ export const OTIS_SURVEY = {
       ],
     },
     {
+      id: "people_scale",
+      speaker: "Otis",
+      message: "\"One more. How safe does it feel to express a different view or raise a concern in your team?\"",
+      choices: SCALE_CHOICES,
+    },
+    {
       id: "people_outro",
       speaker: "Otis",
       message:
@@ -200,6 +221,12 @@ export const SUZY_SURVEY = {
       ],
     },
     {
+      id: "conduct_scale",
+      speaker: "Suzy",
+      message: "\"And how safe would it feel to raise a concern about a process or compliance issue in your context?\"",
+      choices: SCALE_CHOICES,
+    },
+    {
       id: "conduct_outro",
       speaker: "Suzy",
       message:
@@ -264,6 +291,12 @@ export const HAZEL_SURVEY = {
         { key: "cost",        label: "Prioritise the business case — sustainability is secondary." },
         { key: "escalate",    label: "Escalate significant trade-offs to senior leadership." },
       ],
+    },
+    {
+      id: "chain_scale",
+      speaker: "Hazel",
+      message: "\"Last one. How visible is responsible external decision-making — around suppliers, partners, and longer-term impact — in your everyday work?\"",
+      choices: SCALE_CHOICES,
     },
     {
       id: "chain_outro",
