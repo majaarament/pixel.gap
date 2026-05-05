@@ -1,0 +1,3 @@
+sessionId,userId,team,branch,roleLevel,env_GAP_I,people_GAP_I,conduct_GAP_I,chain_GAP_I,GAP_I_overall,pca_1,pca_2,persona_cluster
+session_e9806714-1e1b-4ef0-9be9-ff5ae8bad19f,user_0deff27b-58a5-4994-843b-f90f2fce731f,,Netherlands,manager,15.0,15.0,15.0,65.0,27.5,-0.9999999999999997,0,1
+session_b67d16dc-ab91-472c-b493-466b2a89c8aa,user_03314f18-fcff-45f1-a106-efc4e8c71c5b,,Germany,team_lead,15.0,65.0,15.0,65.0,40.0,1.0,0,0
