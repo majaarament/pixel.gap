@@ -6,15 +6,29 @@ import { useGameState } from "./hooks/useGameState";
 import GameCanvas     from "./components/GameCanvas";
 import IntroScreen    from "./components/IntroScreen";
 import PrivacyScreen  from "./components/PrivacyScreen";
+import PrivacyModal   from "./components/PrivacyModal";
 import ProfileScreen  from "./components/ProfileScreen";
 import InfoRow        from "./components/InfoRow";
 
 export default function App() {
   const [screen, setScreen] = useState("start");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const game = useGameState();
   const isDev = import.meta.env.DEV;
 
-  if (screen === "start")   return <PrivacyScreen onConsent={() => setScreen("intro")} />;
+  function handlePrivacyAccept() { setPrivacyAccepted(true); }
+  function handlePrivacyExit()   { window.location.href = "about:blank"; }
+
+  if (screen === "start") {
+    return (
+      <>
+        <PrivacyScreen onConsent={() => setScreen("intro")} />
+        {!privacyAccepted && (
+          <PrivacyModal onAccept={handlePrivacyAccept} onExit={handlePrivacyExit} />
+        )}
+      </>
+    );
+  }
   if (screen === "intro")   return <IntroScreen onStart={() => setScreen("profile")} />;
   if (screen === "profile") {
     return (

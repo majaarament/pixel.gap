@@ -20,6 +20,14 @@ const SCALE_CHOICES = [
   { key: "5", label: "5 — consistently" },
 ];
 
+const SAFETY_SCALE_CHOICES = [
+  { key: "1", label: "1 — not safe at all" },
+  { key: "2", label: "2 — rarely safe" },
+  { key: "3", label: "3 — sometimes safe" },
+  { key: "4", label: "4 — mostly safe" },
+  { key: "5", label: "5 — very safe" },
+];
+
 // ============================================================================
 // PILLAR 1: ENVIRONMENTAL STEWARDSHIP — Frank the Fish
 // ============================================================================
@@ -29,13 +37,13 @@ export const FRANK_SURVEY = {
   npcName: "Frank the Fish",
   npcRole: "Environmental Stewardship",
   pillarKey: "env",
-  finalReaction: "\"Digital decisions are the new invisible environmental ones. Nobody sees the data centre. Nobody feels the compute cost. That's why it matters that someone doesn't look away.\"",
+  finalReaction: "\"Digital decisions are the new invisible environmental ones. Nobody sees the data centre. Nobody feels the compute cost. That's why it matters that someone doesn't look away. The question you'll keep facing isn't whether to care — it's whether you can hold that care when performance is what's being measured.\"",
   steps: [
     {
       id: "env_intro",
       speaker: "Frank",
       message:
-        "\"Good timing. I've been sitting on a recommendation I need to make.\"\n\nPlayer\n\"What's the situation?\"\n\nFrank\n\"A client project. We're choosing between two AI models. The high-accuracy one requires roughly eight times more compute — more energy, more carbon cost. The lighter model covers most use cases well enough. The client hasn't asked about environmental cost. They've only asked about performance.\"",
+        "\"Glad you made it. I've been sitting on a decision I need to think through out loud.\"\n\nPlayer\n\"What's going on?\"\n\nFrank\n\"A client project. We're choosing between two AI models. The high-accuracy one requires roughly eight times more compute — more energy, more carbon cost. The lighter model covers most use cases well enough. The client hasn't asked about environmental cost. They've only asked about performance.\"\n\nPlayer\n\"So the environmental cost is invisible to them.\"\n\nFrank\n\"Completely. Unless someone names it.\"",
       choices: [],
     },
     {
@@ -68,7 +76,7 @@ export const FRANK_SURVEY = {
     {
       id: "env_scenario_delaware",
       speaker: "Frank",
-      message: "\"And what do you think delaware would expect a consultant to do in a situation like this?\"",
+      message: "\"Next question — and this one is a perception check, not a test. There's no right answer here. We're mapping the gap between what people would do personally and what they expect the organisation would want.\"\n\n\"What do you think delaware would expect a consultant to do in a situation like this?\"",
       choices: [
         { key: "flag_energy",    label: "Flag the energy cost — include it in the recommendation." },
         { key: "lighter_model",  label: "Default to the lighter model where performance allows." },
@@ -86,7 +94,7 @@ export const FRANK_SURVEY = {
       id: "env_outro",
       speaker: "Frank",
       message:
-        "\"Digital decisions leave no visible trace — no runoff, no smoke — but they accumulate quietly. That's worth seeing how it looks in the other zones too.\"",
+        "\"That's what I needed to hear. The data centre stays invisible — no smoke, no runoff — and that invisibility is exactly what makes these calls so easy to defer. You're the person in the room who can see it. That changes the question from whether to care to whether to speak.\"",
       choices: [],
     },
   ],
@@ -101,13 +109,13 @@ export const OTIS_SURVEY = {
   npcName: "Otis the Otter",
   npcRole: "People & Culture",
   pillarKey: "people",
-  finalReaction: "\"People situations don't resolve neatly. Thanks for thinking it through honestly.\"",
+  finalReaction: "\"People situations don't resolve neatly. What you just described — the instinct to act, or to wait, or to let the system handle it — that's the choice that defines what culture actually feels like from the inside. Thanks for thinking it through honestly.\"",
   steps: [
     {
       id: "people_intro",
       speaker: "Otis",
       message:
-        "\"Hey, I was hoping to get your take on something. Project pressure is high this sprint, and one person on the team has been quietly absorbing extra load for weeks.\"\n\nPlayer\n\"Have they said anything?\"\n\nOtis\n\"Not officially. They say they're fine. But it's obvious to anyone paying attention — leadership is just focused on the deadline.\"",
+        "\"Good timing — I've been sitting with something and I could use a different perspective.\"\n\nPlayer\n\"What's on your mind?\"\n\nOtis\n\"Project pressure is high this sprint, and one person on the team has been quietly absorbing extra load for weeks. Nobody's said anything officially.\"\n\nPlayer\n\"Have they asked for help?\"\n\nOtis\n\"They say they're fine. But it's visible to anyone paying close attention. Leadership is focused on the deadline — and the person is just... keeping their head down.\"",
       choices: [],
     },
     {
@@ -140,7 +148,7 @@ export const OTIS_SURVEY = {
     {
       id: "people_scenario_delaware",
       speaker: "Otis",
-      message: "\"What do you think happens in situations like this here, usually? What would delaware expect someone to do?\"",
+      message: "\"This next question is a perception check — not a test, and not a measure of the right answer. We're looking at the gap between how people would act personally and what they expect the organisation typically does.\"\n\n\"In situations like this, what do you think delaware would expect someone to do?\"",
       choices: [
         { key: "raise_now",  label: "Raise it now — don't wait." },
         { key: "check_in",   label: "Check in privately first, then escalate if needed." },
@@ -152,13 +160,13 @@ export const OTIS_SURVEY = {
       id: "people_scale",
       speaker: "Otis",
       message: "\"One more. How safe does it feel to express a different view or raise a concern in your team?\"",
-      choices: SCALE_CHOICES,
+      choices: SAFETY_SCALE_CHOICES,
     },
     {
       id: "people_outro",
       speaker: "Otis",
       message:
-        "\"It's strange. People talk a lot about team culture, but in the end it's really just moments like these that define it. The next guide might have some thoughts on how it looks elsewhere.\"",
+        "\"Here's what I keep coming back to: culture isn't what a company says about how people are treated — it's what happens in the specific moment when someone is struggling and the deadline is tomorrow. What you just described tells me something real about where that line sits for you.\"",
       choices: [],
     },
   ],
@@ -173,13 +181,13 @@ export const SUZY_SURVEY = {
   npcName: "Suzy the Sheep",
   npcRole: "Business Conduct",
   pillarKey: "conduct",
-  finalReaction: "\"It's never really about one big rule being broken. It's what people get used to over time.\"",
+  finalReaction: "\"It's never really about one big rule being broken. It's what people get used to over time. The workaround that saved three days this sprint becomes the way things are done by next quarter — and nobody ever made a conscious decision to change the standard.\"",
   steps: [
     {
       id: "conduct_intro",
       speaker: "Suzy",
       message:
-        "\"I've been watching how things run around here lately. A colleague shows you a workaround that saves three days of compliance checks. It's not against any written rule — but it bypasses the spirit of the process.\"\n\nPlayer\n\"Is there any risk?\"\n\nSuzy\n\"Not immediately. But if something goes wrong later, there's no paper trail for why it was skipped. And apparently other teams do it regularly.\"",
+        "\"I've been watching something play out here and I want your read on it.\"\n\nPlayer\n\"Go ahead.\"\n\nSuzy\n\"A colleague shows you a workaround that saves three days of compliance checks. It's not against any written rule — but it bypasses the spirit of the process.\"\n\nPlayer\n\"Is there any actual risk?\"\n\nSuzy\n\"Not immediately. But if something goes wrong later, there's no paper trail for why it was skipped. And apparently other teams do it regularly — which is part of what makes it feel normal.\"",
       choices: [],
     },
     {
@@ -212,7 +220,7 @@ export const SUZY_SURVEY = {
     {
       id: "conduct_scenario_delaware",
       speaker: "Suzy",
-      message: "\"What do you think delaware's leadership would expect someone to do here?\"",
+      message: "\"Before this next question — it's a perception check, not a judgment. There's no correct answer. We're interested in the gap between what you'd do personally and what you believe the organisation expects.\"\n\n\"What do you think delaware's leadership would expect someone to do here?\"",
       choices: [
         { key: "follow_proper",   label: "Always follow the full process — no shortcuts." },
         { key: "flag_up",         label: "Flag it and seek guidance before proceeding." },
@@ -224,13 +232,13 @@ export const SUZY_SURVEY = {
       id: "conduct_scale",
       speaker: "Suzy",
       message: "\"And how safe would it feel to raise a concern about a process or compliance issue in your context?\"",
-      choices: SCALE_CHOICES,
+      choices: SAFETY_SCALE_CHOICES,
     },
     {
       id: "conduct_outro",
       speaker: "Suzy",
       message:
-        "\"You start to notice patterns, once you're looking for them. The next guide has been thinking about a different angle on this — might be worth a conversation.\"",
+        "\"The most revealing thing about conduct isn't the moments when someone deliberately breaks a rule — it's the quiet drift. The shortcut that becomes habit. The exception that becomes standard. What you just reflected on tells me where that drift is most likely to start in your context.\"",
       choices: [],
     },
   ],
@@ -245,13 +253,13 @@ export const HAZEL_SURVEY = {
   npcName: "Hazel the Hedgehog",
   npcRole: "Responsible Value Chain",
   pillarKey: "chain",
-  finalReaction: "\"Decisions like these don't stay here. They ripple outward in ways people don't always see.\"",
+  finalReaction: "\"Decisions like these don't stay here — they ripple outward through every person in that supplier's supply chain, every year the contract runs. Most of the time nobody outside the room ever knows who made that call or why. You just did.\"",
   steps: [
     {
       id: "chain_intro",
       speaker: "Hazel",
       message:
-        "\"I need to tell you about this supplier decision we're facing. One option is fast, reliable, and 12% cheaper. The other takes more effort to onboard, but they're known for treating people fairly and operating sustainably.\"\n\nPlayer\n\"Is there pressure to go with the cheaper option?\"\n\nHazel\n\"There's always pressure. And the contract is long-term — whatever we choose, we're committed to it for years.\"",
+        "\"I'm glad you're here. I've been going back and forth on something and I need to think it through.\"\n\nPlayer\n\"What's the situation?\"\n\nHazel\n\"A supplier decision. One option is fast, reliable, and 12% cheaper. The other takes more effort to onboard — but they're known for treating their people fairly and operating sustainably.\"\n\nPlayer\n\"Is there pressure to go with the cheaper one?\"\n\nHazel\n\"There's always pressure. And the contract is long-term — whatever we choose, we're committed for years. The cost difference compounds.\"",
       choices: [],
     },
     {
@@ -284,7 +292,7 @@ export const HAZEL_SURVEY = {
     {
       id: "chain_scenario_delaware",
       speaker: "Hazel",
-      message: "\"What do you think delaware would actually prioritise in a supplier decision like this?\"",
+      message: "\"A quick note before the next question — this is a perception check, not a test. We're not looking for the 'correct' answer. The goal is to understand the gap between individual judgment and what people expect of the organisation.\"\n\n\"What do you think delaware would actually prioritise in a supplier decision like this?\"",
       choices: [
         { key: "responsible", label: "Choose the responsible supplier even at higher cost." },
         { key: "negotiate",   label: "Use procurement leverage to push suppliers to improve." },
@@ -302,7 +310,7 @@ export const HAZEL_SURVEY = {
       id: "chain_outro",
       speaker: "Hazel",
       message:
-        "\"I believe the choices a company makes with others say more than the choices it makes about itself. Worth taking that thought into the next part of the journey.\"",
+        "\"A company's sustainability story is really the sum of every decision like this one — made at every level, in every procurement conversation, often with nobody watching. What you just shared is part of that picture. It matters more than the sustainability statement.\"",
       choices: [],
     },
   ],

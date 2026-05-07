@@ -4,6 +4,11 @@ import React, { useState } from "react";
 
 const ROLE_OPTIONS = [
   {
+    value: "employee",
+    label: "Employee",
+    detail: "individual contributor, analyst, or team member",
+  },
+  {
     value: "team_lead",
     label: "Team Lead",
     detail: "leads a team or workstream within a project or practice",
@@ -34,21 +39,61 @@ const TEAM_OPTIONS = [
   "Other",
 ];
 
-const ENTITY_OPTIONS = [
-  "Belgium",
-  "Netherlands",
-  "Germany",
-  "France",
-  "United Kingdom",
-  "Luxembourg",
-  "Spain",
-  "Portugal",
-  "Poland",
-  "Romania",
-  "United Arab Emirates",
-  "Saudi Arabia",
-  "Morocco",
-  "Other",
+const ENTITY_GROUPS = [
+  {
+    region: "Europe",
+    offices: [
+      "Belgium — Antwerp",
+      "Belgium — Ghent",
+      "Belgium — Kortrijk",
+      "Belgium — Liège",
+      "Belgium — Lummen",
+      "Belgium — Wavre",
+      "Netherlands — Den Bosch (HQ)",
+      "Netherlands — Naarden",
+      "France — Lille",
+      "France — Lyon (HQ)",
+      "France — Nantes",
+      "France — Paris",
+      "Luxembourg — Belvaux",
+      "Germany — Hamburg",
+      "Germany — Zweibrücken",
+      "United Kingdom — Bristol",
+      "Ireland",
+      "Hungary — Budapest (GDC)",
+    ],
+  },
+  {
+    region: "Asia & Pacific",
+    offices: [
+      "China — Shanghai (GDC)",
+      "China — Suzhou (GDC)",
+      "China — Chengdu (GDC)",
+      "China — Harbin (GDC)",
+      "India — Noida (GDC)",
+      "Malaysia — Kuala Lumpur (GDC)",
+      "Philippines — Taguig (GDC)",
+      "Singapore",
+    ],
+  },
+  {
+    region: "Americas",
+    offices: [
+      "United States",
+      "Brazil — Alphaville (GDC)",
+      "Canada",
+    ],
+  },
+  {
+    region: "Africa",
+    offices: [
+      "Morocco — Casablanca (GDC)",
+    ],
+  },
+  {
+    region: "Other",
+    offices: ["Other"],
+  },
 ];
 
 export default function ProfileScreen({ onSubmit }) {
@@ -141,7 +186,7 @@ export default function ProfileScreen({ onSubmit }) {
                   <div style={styles.questionNumber}>3</div>
                   <div>
                     <label style={styles.label} htmlFor="entity">entity</label>
-                    <p style={styles.helper}>select the delaware entity you are based in.</p>
+                    <p style={styles.helper}>select the office or entity you are based in.</p>
                   </div>
                 </div>
                 <select
@@ -150,9 +195,13 @@ export default function ProfileScreen({ onSubmit }) {
                   onChange={(e) => setEntity(e.target.value)}
                   style={styles.select}
                 >
-                  <option value="">select an entity...</option>
-                  {ENTITY_OPTIONS.map((ent) => (
-                    <option key={ent} value={ent}>{ent}</option>
+                  <option value="">select an office...</option>
+                  {ENTITY_GROUPS.map((group) => (
+                    <optgroup key={group.region} label={group.region}>
+                      {group.offices.map((office) => (
+                        <option key={office} value={office}>{office}</option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </div>

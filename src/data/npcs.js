@@ -598,11 +598,29 @@ export function getNpcDialog(npcId, quest) {
   // ── ROWAN ──────────────────────────────────────────────────────────────────
   if (npcId === "rowan") {
     if (quest.stage === QUEST_STAGES.POST_GAME) {
+      const finalGapChoice  = quest.choices.find((c) => c.stepId === "final_gap");
+      const finalFocusChoice = quest.choices.find((c) => c.stepId === "final_focus");
+
+      const gapLine = {
+        env:     "the gap you named — environmental — is one of the quieter ones. it lives in decisions that leave no visible trace.",
+        people:  "the gap you named in people and culture tends to surface in the spaces between formal channels. under pressure, it's where care disappears first.",
+        conduct: "business conduct as a gap usually shows up in the small moments — the workarounds, the quiet exceptions, the drift that starts to feel normal.",
+        chain:   "the value chain gap is one of the hardest to close, precisely because it reaches beyond what's directly visible from the inside.",
+      }[finalGapChoice?.choiceKey] || "the gap you described is one that doesn't announce itself. it accumulates.";
+
+      const focusLine = {
+        visible_action:  "more visible action is the right next step — ambition that doesn't reach daily practice stays ambition.",
+        culture_safety:  "a culture where people feel safe to speak is foundational. without it, everything else struggles to land.",
+        leadership_model: "modeling matters more than messaging. what leaders do under pressure shapes what everyone else thinks is acceptable.",
+        systems:         "better measurement closes the distance between intention and evidence. that's where real accountability starts.",
+      }[finalFocusChoice?.choiceKey] || "the path forward is clearer now than when you started.";
+
+      const reaction = `"that's everything. ${gapLine} ${focusLine} commitment is one of delaware's five values — 'we have never walked away.' you didn't skip the hard questions. your view is in the record now."`;
+
       return {
         type: "sequence",
         steps: POST_GAME_STEPS,
-        reaction:
-          "\"that's everything. commitment is one of delaware's five values — and their definition is 'we have never walked away.' i think the same applies here. you didn't skip the hard questions. your view is in the record now.\"",
+        reaction,
         advanceTo: QUEST_STAGES.COMPLETE,
       };
     }

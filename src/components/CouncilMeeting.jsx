@@ -1,6 +1,4 @@
-// AI-powered council meeting overlay.
-// Voice input via Web Speech API, text fallback.
-// Calls our backend council AI route to play all NPC characters adaptively.
+// AI-powered council meeting overlay
 
 import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import { COUNCIL_NPCS, callCouncilAI, parseCouncilResponse } from "../engine/councilAI";
@@ -8,7 +6,7 @@ import { logCouncilMessage } from "../engine/logger";
 import { drawCritter } from "../renderer/characters";
 import { getOpeningPov } from "../data/npcs";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+//  Constants 
 
 const KICKSTART_MESSAGE =
   "the council is now gathered and the player has arrived. open the meeting as Olive in a warm, natural, slightly casual way, like she's genuinely glad they're here. ask one reflective question based on a specific choice they made during their journey.";
@@ -17,7 +15,7 @@ const COUNCIL_AUDIO_PLAYBACK_RATE = 1.1;
 const PIXEL_OVAL_CLIP =
   "polygon(10% 0, 90% 0, 95% 4%, 98% 10%, 100% 22%, 100% 78%, 98% 90%, 95% 96%, 90% 100%, 10% 100%, 5% 96%, 2% 90%, 0 78%, 0 22%, 2% 10%, 5% 4%)";
 
-// ── Component ─────────────────────────────────────────────────────────────────
+//  Component 
 
 export default function CouncilMeeting({ quest, onClose }) {
   // Gathering transition phase — "gathering" shows the assembly screen; "active" starts the AI conversation
@@ -201,7 +199,7 @@ export default function CouncilMeeting({ quest, onClose }) {
     }
   }
 
-  // ── Speech recognition ──────────────────────────────────────────────────────
+  //  Speech recognition 
   useEffect(() => {
     if (!hasVoice) return;
     const SR  = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1244,7 +1242,7 @@ const styles = {
     animation: "council-speaker-bob 0.7s steps(1, end) infinite",
   },
 
-  // ── Speaker nameplate ─────────────────────────────────────────────────────
+  // Speaker nameplate 
   nameplate: {
     padding: "6px 16px",
     background: "linear-gradient(180deg, #4a3220 0%, #362417 100%)",

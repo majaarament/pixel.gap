@@ -1,6 +1,4 @@
-// Canvas component: owns the canvas element and the RAF draw loop.
-// Receives all render-relevant state as props so the draw loop is
-// always working with current values.
+
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { VIEW_COLS, VIEW_ROWS, TILE, SCALE } from "../constants/game";
@@ -19,7 +17,7 @@ export default function GameCanvas({
   townNpcs,
   officeNpcs,
   playerRef,
-  npcRefs,      // { town: Ref, office: Ref }
+  npcRefs,     
   quest,
   nearbyTarget,
   objectiveTarget,
@@ -69,7 +67,7 @@ export default function GameCanvas({
 
   // The draw loop restarts whenever these state values change so the RAF
   // closure always captures their latest versions.
-  // playerRef / npcRefs are mutable refs — read fresh on every frame.
+  // playerRef / npcRefs are mutable refs, read fresh on every frame.
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx    = canvas.getContext("2d");

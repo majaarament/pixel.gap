@@ -14,16 +14,22 @@ const NPC_ACCENT = {
   daisy: "#a0c47a",
 };
 
+// How long (ms) to wait between revealing each segment during auto-play
+const SEGMENT_DELAY_MS = 950;
+
 export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitReflection }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
   const [values, setValues]         = useState({});
   const [openText, setOpenText]     = useState("");
+  const [revealedCount, setRevealedCount] = useState(1);
   const historyRef                  = useRef(null);
+  const revealTimerRef              = useRef(null);
 
   useEffect(() => {
     setValues(dialog?.phase === "reflection" ? dialog.initialValues || {} : {});
     setHoveredIdx(null);
     setOpenText("");
+    setRevealedCount(1);
   }, [dialog]);
 
   // Keep history scrolled to bottom
@@ -40,10 +46,26 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
   const isInfo       = phase === "info";
   const bodyText     = isReaction ? dialog?.reaction : dialog?.message;
 
-  const accent   = dialog ? (NPC_ACCENT[dialog.npcId] || "#7ab068") : "#7ab068";
-  const segments = dialog && !isReflection && bodyText ? parseSpeechSegments(dialog, bodyText) : [];
-  const history  = dialog && !isReflection && dialog.history?.length > 0 ? dialog.history : [];
+  const accent       = dialog ? (NPC_ACCENT[dialog.npcId] || "#7ab068") : "#7ab068";
+  const allSegments  = dialog && !isReflection && bodyText ? parseSpeechSegments(dialog, bodyText) : [];
+  const history      = dialog && !isReflection && dialog.history?.length > 0 ? dialog.history : [];
   const hasPromptValues = dialog?.prompts?.every((p) => (values[p.id] || "").trim());
+
+  // Auto-reveal segments one at a time for any multi-speaker exchange.
+  // Applies to all phases (info, question, reaction) — sequence steps all
+  // use phase:"question" internally, so we can't restrict to isInfo only.
+  const isSmallTalk = allSegments.length > 1;
+  const allRevealed = revealedCount >= allSegments.length;
+  const segments    = isSmallTalk ? allSegments.slice(0, revealedCount) : allSegments;
+
+  useEffect(() => {
+    clearTimeout(revealTimerRef.current);
+    if (!isSmallTalk || allRevealed) return;
+    revealTimerRef.current = setTimeout(() => {
+      setRevealedCount((n) => n + 1);
+    }, SEGMENT_DELAY_MS);
+    return () => clearTimeout(revealTimerRef.current);
+  }, [isSmallTalk, allRevealed, revealedCount]);
 
   // Step progress for multi-step sequences
   const totalSteps    = dialog?.steps?.length ?? 0;
@@ -59,14 +81,15 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
     ? history[lastPlayerIdx - 1]
     : null;
 
+  // Whether Tab/Enter should trigger onAdvance (not just reveal-skip)
+  const hasChoices = isQuestion && dialog?.choices?.length > 0;
   const canAdvanceWithShortcut =
-    isInfo ||
-    isReaction ||
-    (isQuestion && (!dialog?.choices || dialog.choices.length === 0));
+    (!hasChoices || (isSmallTalk && !allRevealed)) &&
+    (isInfo || isReaction || isQuestion);
 
-  // Tab/Enter advance for info and reaction phases
+  // Tab/Enter: skip reveal if still in progress, otherwise advance
   useEffect(() => {
-    if (!dialog || !canAdvanceWithShortcut) return undefined;
+    if (!dialog) return undefined;
 
     function handleWindowKeyDown(event) {
       const tag = document.activeElement?.tagName;
@@ -75,17 +98,28 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
         (event.key === "Tab" && !event.shiftKey) ||
         (event.key === "Enter" && !event.shiftKey);
       if (!isPrimaryShortcut) return;
-      event.preventDefault();
-      onAdvance();
+
+      if (isSmallTalk && !allRevealed) {
+        event.preventDefault();
+        clearTimeout(revealTimerRef.current);
+        setRevealedCount(allSegments.length);
+        return;
+      }
+
+      // Only advance on Enter/Tab when there are no choices waiting
+      if (!hasChoices && (isInfo || isReaction || isQuestion)) {
+        event.preventDefault();
+        onAdvance();
+      }
     }
 
     window.addEventListener("keydown", handleWindowKeyDown);
     return () => window.removeEventListener("keydown", handleWindowKeyDown);
-  }, [canAdvanceWithShortcut, dialog, onAdvance]);
+  }, [dialog, isInfo, isReaction, isQuestion, hasChoices, isSmallTalk, allRevealed, allSegments.length, onAdvance]);
 
-  // 1-4 number keys to select choices
+  // 1-4 number keys to select choices (only after all segments revealed)
   useEffect(() => {
-    if (!dialog || !isQuestion) return;
+    if (!dialog || !isQuestion || !allRevealed) return;
     const regularChoices = (dialog.choices || []).filter((c) => !c.isOpenEnded);
     if (!regularChoices.length) return;
 
@@ -102,7 +136,7 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
 
     window.addEventListener("keydown", handleNumberKey);
     return () => window.removeEventListener("keydown", handleNumberKey);
-  }, [dialog, isQuestion, onChoice]);
+  }, [dialog, isQuestion, allRevealed, onChoice]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -212,7 +246,12 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
                     : styles.historyNpc
                 }
               >
-                <span style={styles.historyLabel}>
+                <span
+                  style={{
+                    ...styles.historyLabel,
+                    color: seg.variant === "player" ? "rgba(200,230,195,0.6)" : accent,
+                  }}
+                >
                   {seg.variant === "player" ? "You" : seg.speaker}:
                 </span>{" "}
                 {seg.text}
@@ -224,16 +263,32 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
         {/* Current message */}
         <div style={styles.messageArea}>
           {segments.length > 0
-            ? segments.map((seg, i) => (
-                <p key={i} style={styles.message}>
-                  {seg.text}
-                </p>
-              ))
+            ? segments.map((seg, i) => {
+                const isPlayer = seg.variant === "player";
+                const isNote   = seg.variant === "note";
+                const speakerColor = isPlayer
+                  ? "rgba(200,230,195,0.6)"
+                  : isNote
+                    ? "rgba(160,180,155,0.45)"
+                    : accent;
+                return (
+                  <div key={i} style={{ ...styles.segmentBlock, ...(isPlayer ? styles.segmentPlayer : {}) }}>
+                    {!isNote && (
+                      <span style={{ ...styles.segmentSpeaker, color: speakerColor, borderColor: `${speakerColor}55` }}>
+                        {seg.speaker}{seg.role ? <span style={styles.segmentRole}>&nbsp;·&nbsp;{seg.role}</span> : null}
+                      </span>
+                    )}
+                    <p style={{ ...styles.message, ...(isPlayer ? styles.messagePlayer : isNote ? styles.messageNote : {}) }}>
+                      {seg.text}
+                    </p>
+                  </div>
+                );
+              })
             : bodyText && <p style={styles.message}>{bodyText}</p>}
         </div>
 
-        {/* Choices */}
-        {isQuestion && dialog.choices && dialog.choices.length > 0 && (() => {
+        {/* Choices — only shown once all segments have been revealed */}
+        {isQuestion && allRevealed && dialog.choices && dialog.choices.length > 0 && (() => {
           const openChoice = dialog.choices.length === 1 && dialog.choices[0].isOpenEnded
             ? dialog.choices[0]
             : null;
@@ -302,8 +357,21 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
           );
         })()}
 
-        {/* Continue button (info / reaction / empty-choices intro step) */}
-        {(isInfo || isReaction || (isQuestion && (!dialog.choices || dialog.choices.length === 0))) && (
+        {/* Skip button while segments are still revealing */}
+        {isSmallTalk && !allRevealed && (
+          <div style={styles.continueRow}>
+            <button
+              type="button"
+              style={{ ...styles.continueBtn, borderColor: `${accent}55`, color: `${accent}77` }}
+              onClick={() => { clearTimeout(revealTimerRef.current); setRevealedCount(allSegments.length); }}
+            >
+              skip ▶
+            </button>
+          </div>
+        )}
+
+        {/* Continue button — only when all revealed and no choices pending */}
+        {allRevealed && (isInfo || isReaction || (isQuestion && (!dialog.choices || dialog.choices.length === 0))) && (
           <div style={styles.continueRow}>
             <button
               type="button"
@@ -469,7 +537,35 @@ const styles = {
   messageArea: {
     display: "flex",
     flexDirection: "column",
-    gap: 4,
+    gap: 8,
+  },
+  segmentBlock: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+  },
+  segmentPlayer: {
+    alignItems: "flex-end",
+  },
+  segmentSpeaker: {
+    fontSize: 9,
+    fontWeight: 900,
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+    border: "1px solid",
+    borderRadius: 3,
+    padding: "1px 6px",
+    alignSelf: "flex-start",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 0,
+  },
+  segmentRole: {
+    fontWeight: 400,
+    opacity: 0.75,
+    textTransform: "none",
+    letterSpacing: 0.3,
+    fontSize: 8,
   },
   message: {
     margin: 0,
@@ -477,6 +573,16 @@ const styles = {
     lineHeight: 1.65,
     color: "#ddeedd",
     whiteSpace: "pre-line",
+  },
+  messagePlayer: {
+    color: "rgba(210,235,205,0.9)",
+    fontSize: 14,
+    fontStyle: "italic",
+  },
+  messageNote: {
+    color: "rgba(160,190,155,0.7)",
+    fontSize: 13,
+    fontStyle: "italic",
   },
 
   // ── Choices ───────────────────────────────────────────────────────────────
