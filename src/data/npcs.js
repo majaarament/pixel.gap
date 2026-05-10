@@ -184,6 +184,33 @@ export const TOWN_NPCS_START = [
     patrol: { x1: 27, y1: 12, x2: 31, y2: 15 },
     councilPatrol: { x1: 41, y1: 8, x2: 46, y2: 13 },
   },
+  {
+    id: "pip",
+    name: "Pip",
+    x: 1, y: 13,
+    dir: "right",
+    stationary: false,
+    species: "fish",
+    patrol: { x1: 0, y1: 12, x2: 2, y2: 14 },
+  },
+  {
+    id: "merle",
+    name: "Merle",
+    x: 13, y: 22,
+    dir: "left",
+    stationary: false,
+    species: "otter",
+    patrol: { x1: 11, y1: 21, x2: 15, y2: 24 },
+  },
+  {
+    id: "quinn",
+    name: "Quinn",
+    x: 40, y: 30,
+    dir: "down",
+    stationary: false,
+    species: "deer",
+    patrol: { x1: 38, y1: 28, x2: 42, y2: 32 },
+  },
 ];
 
 export const OFFICE_NPCS_START = [
@@ -678,6 +705,28 @@ export function getNpcDialog(npcId, quest) {
       type: "info",
       message:
         "Daisy the Deer — People & Culture\n\n\"i've been in this office long enough to notice a pattern. when things are going well, people talk a lot about care and team spirit. when a deadline gets tight, those words get quieter — not because people stop believing them, just because pressure has a way of narrowing what feels possible.\"\n\n\"that gap between what we say we value and how we actually show up under pressure — that's what olive is trying to map. it's worth paying attention to.\"",
+    };
+  }
+
+  // ── AMBIENT WANDERERS ───────────────────────────────────────────────────────
+  if (npcId === "pip") {
+    return {
+      type: "info",
+      message: "Pip\n\n\"blub.\"\n\n\"...i've been standing at this lake since the last strategy refresh. the water hasn't changed. i have.\"\n\n\"blub.\"",
+    };
+  }
+
+  if (npcId === "merle") {
+    return {
+      type: "info",
+      message: "Merle\n\n\"i was heading somewhere specific and then i ended up here instead.\"\n\n\"it happens. walks don't really need to end anywhere.\"",
+    };
+  }
+
+  if (npcId === "quinn") {
+    return {
+      type: "info",
+      message: "Quinn\n\n\"the small pond over there has exactly seven visible rocks at the surface.\"\n\n\"i've counted three times. that number is not going to be useful to anyone.\"\n\n\"you're welcome.\"",
     };
   }
 
