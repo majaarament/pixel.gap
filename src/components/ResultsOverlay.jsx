@@ -15,6 +15,16 @@ export default function ResultsOverlay({ report, onClose }) {
   if (!report) return null;
 
   const scoreEntries = Object.entries(report.scores || {});
+  const gapCount = Object.values(report.pillars || {}).filter((pillar) => pillar.gap).length;
+  const strongestEntry = scoreEntries.reduce(
+    (best, entry) => (entry[1] > (best?.[1] ?? -1) ? entry : best),
+    null
+  );
+  const strongestLabel = strongestEntry ? PILLAR_LABELS[strongestEntry[0]] || strongestEntry[0] : "not enough data yet";
+  const confidenceAverage = average(Object.values(report.pillars || {}).map((pillar) => pillar.confidence));
+  const nextFocus = report.finalReflection?.focusNext
+    ? FOCUS_LABELS[report.finalReflection.focusNext] || report.finalReflection.focusNext
+    : "make one visible next action easier to take";
 
   return (
     <div style={styles.backdrop}>
@@ -31,6 +41,10 @@ export default function ResultsOverlay({ report, onClose }) {
         </div>
 
         <div style={styles.content}>
+          <p style={{ ...styles.reportNote, ...styles.wideSection }}>
+            this is a reflection report, not a diagnosis. each pillar is based on a small set of scenarios — the useful part is the pattern it helps you discuss, not the score itself.
+          </p>
+
           {report.openingPov && (
             <section style={styles.section}>
               <div style={styles.sectionTitle}>Your starting lens</div>
@@ -45,6 +59,38 @@ export default function ResultsOverlay({ report, onClose }) {
               </div>
             </section>
           )}
+
+          <section style={styles.section}>
+            <div style={styles.sectionTitle}>What this suggests</div>
+            <div style={styles.insightGrid}>
+              <div style={styles.insightCard}>
+                <div style={styles.insightValue}>{gapCount}/4</div>
+                <div style={styles.insightLabel}>pillar gaps between personal instinct and expected practice</div>
+              </div>
+              <div style={styles.insightCard}>
+                <div style={styles.insightValue}>{strongestLabel}</div>
+                <div style={styles.insightLabel}>most visible pillar in your answers</div>
+              </div>
+              <div style={styles.insightCard}>
+                <div style={styles.insightValue}>{nextFocus}</div>
+                <div style={styles.insightLabel}>next lever you selected</div>
+              </div>
+              <div style={styles.insightCard}>
+                <div style={styles.insightValue}>{confidenceAverage !== null ? `${confidenceAverage.toFixed(1)}/5` : "not captured"}</div>
+                <div style={styles.insightLabel}>average confidence in your pillar reads</div>
+              </div>
+            </div>
+            {report.recommendedActions?.length > 0 && (
+              <div style={styles.actionGrid}>
+                {report.recommendedActions.map((action) => (
+                  <div key={action.title} style={styles.actionCard}>
+                    <div style={styles.actionTitle}>{action.title}</div>
+                    <div style={styles.actionBody}>{action.body}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
 
           <section style={styles.section}>
             <div style={styles.sectionTitle}>Pillar visibility scores</div>
@@ -81,7 +127,7 @@ export default function ResultsOverlay({ report, onClose }) {
             </div>
           </section>
 
-          <section style={styles.section}>
+          <section style={{ ...styles.section, ...styles.wideSection }}>
             <div style={styles.sectionTitle}>Your answers</div>
             <div style={styles.answerStack}>
               {report.choiceAnswers.map((answer, index) => (
@@ -99,7 +145,7 @@ export default function ResultsOverlay({ report, onClose }) {
           </section>
 
           {report.benchmark && report.benchmark.length > 0 && (
-            <section style={styles.section}>
+            <section style={{ ...styles.section, ...styles.wideSection }}>
               <div style={styles.sectionTitle}>How others answered</div>
               <p style={styles.benchmarkDisclaimer}>illustrative — based on early participant data</p>
               <div style={styles.benchmarkStack}>
@@ -122,9 +168,7 @@ export default function ResultsOverlay({ report, onClose }) {
                             style={{
                               ...styles.benchmarkFill,
                               width: `${bar.percent}%`,
-                              background: bar.isPlayerChoice
-                                ? "linear-gradient(90deg, #6a9e78, #4e7a5d)"
-                                : "linear-gradient(90deg, #bcc8b8, #a3b09e)",
+                              background: bar.isPlayerChoice ? "#6a9e78" : "#bcc8b8",
                             }}
                           />
                         </div>
@@ -138,7 +182,7 @@ export default function ResultsOverlay({ report, onClose }) {
           )}
 
           {report.reflectionAnswers.length > 0 && (
-            <section style={styles.section}>
+            <section style={{ ...styles.section, ...styles.wideSection }}>
               <div style={styles.sectionTitle}>Written reflections</div>
               <div style={styles.answerStack}>
                 {report.reflectionAnswers.map((answer) => (
@@ -160,210 +204,296 @@ export default function ResultsOverlay({ report, onClose }) {
 }
 
 const PILLAR_FILL_COLORS = {
-  env: "linear-gradient(90deg, #7ab68b, #4e8f64)",
-  people: "linear-gradient(90deg, #d8b58c, #b48659)",
-  conduct: "linear-gradient(90deg, #8ca6a0, #617d77)",
-  chain: "linear-gradient(90deg, #a08cb4, #7a6391)",
+  env: "#6ca36d",
+  people: "#c58d55",
+  conduct: "#718f89",
+  chain: "#8d6aa3",
   // legacy
-  environment: "linear-gradient(90deg, #7ab68b, #4e8f64)",
-  social: "linear-gradient(90deg, #d8b58c, #b48659)",
-  governance: "linear-gradient(90deg, #8ca6a0, #617d77)",
+  environment: "#6ca36d",
+  social: "#c58d55",
+  governance: "#718f89",
 };
+
+const FOCUS_LABELS = {
+  visible_action: "visible action",
+  culture_safety: "speak-up culture",
+  leadership_model: "leadership modeling",
+  systems: "systems and measurement",
+};
+
+function average(values) {
+  const numeric = values.filter((value) => Number.isFinite(value));
+  if (!numeric.length) return null;
+  return numeric.reduce((sum, value) => sum + value, 0) / numeric.length;
+}
 
 const styles = {
   backdrop: {
     position: "absolute",
     inset: 0,
     zIndex: 40,
-    background: "rgba(34, 46, 38, 0.5)",
-    backdropFilter: "blur(6px)",
+    background: "rgba(14, 22, 16, 0.82)",
+    backdropFilter: "none",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: 16,
   },
   panel: {
-    width: "min(860px, calc(100% - 16px))",
+    width: "min(1100px, calc(100% - 12px))",
     maxHeight: "calc(100% - 16px)",
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
-    borderRadius: 18,
-    background: "#f7f3ea",
-    border: "1px solid rgba(93, 109, 91, 0.28)",
-    boxShadow: "0 22px 44px rgba(22, 30, 25, 0.28)",
+    borderRadius: 0,
+    background: "#eadfbc",
+    border: "4px solid #172012",
+    boxShadow: "0 12px 0 #11180e",
+    fontFamily: '"Courier New", "Lucida Console", monospace',
   },
   header: {
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    gap: 16,
-    padding: "22px 24px 18px",
-    borderBottom: "1px solid rgba(93, 109, 91, 0.18)",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0))",
+    gap: 10,
+    padding: "12px 16px 10px",
+    borderBottom: "4px solid #172012",
+    background: "#2e3e28",
   },
   kicker: {
-    fontSize: 11,
+    fontSize: 9,
     textTransform: "uppercase",
     letterSpacing: 1.8,
-    color: "#7b7a6b",
-    fontWeight: 700,
-    marginBottom: 8,
+    color: "#9ecf8a",
+    fontWeight: 900,
+    marginBottom: 4,
   },
   title: {
     margin: 0,
-    fontSize: 30,
+    fontSize: "clamp(18px, 3.2vh, 26px)",
     lineHeight: 1.05,
-    color: "#304239",
-    fontWeight: 800,
+    color: "#f0c94a",
+    fontWeight: 900,
   },
   summary: {
-    margin: "10px 0 0",
+    margin: "6px 0 0",
     maxWidth: 540,
-    fontSize: 15,
-    lineHeight: 1.55,
-    color: "#516257",
+    fontSize: "clamp(10px, 1.55vh, 13px)",
+    lineHeight: 1.3,
+    color: "#e8ecd7",
+    fontWeight: 700,
   },
   closeButton: {
-    border: "none",
-    borderRadius: 999,
-    padding: "11px 16px",
-    background: "#d7e0d3",
-    color: "#33473c",
-    fontSize: 13,
-    fontWeight: 700,
+    border: "3px solid #10180e",
+    borderRadius: 0,
+    padding: "7px 10px",
+    background: "#f0c94a",
+    color: "#11180e",
+    fontSize: 11,
+    fontWeight: 900,
     cursor: "pointer",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5)",
+    boxShadow: "0 3px 0 #7c6020",
     whiteSpace: "nowrap",
   },
   content: {
     overflowY: "auto",
-    padding: 24,
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
+    padding: 10,
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    alignContent: "start",
+    gap: 8,
+    scrollbarWidth: "thin",
+    scrollbarColor: "rgba(46,62,40,0.5) rgba(234,223,188,0.4)",
   },
   section: {
     display: "flex",
     flexDirection: "column",
-    gap: 12,
+    gap: 6,
+    minWidth: 0,
+  },
+  wideSection: {
+    gridColumn: "1 / -1",
   },
   openingCard: {
-    padding: 16,
-    borderRadius: 14,
-    background: "linear-gradient(180deg, rgba(255,255,255,0.9), rgba(242,237,226,0.95))",
-    border: "1px solid rgba(111, 127, 109, 0.16)",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5)",
+    padding: 8,
+    borderRadius: 0,
+    background: "#f7f1df",
+    border: "3px solid #26341f",
+    boxShadow: "none",
   },
   openingTitle: {
-    fontSize: 17,
-    fontWeight: 800,
+    fontSize: 12,
+    fontWeight: 900,
     color: "#304239",
   },
   openingSummary: {
-    marginTop: 8,
-    fontSize: 14,
-    lineHeight: 1.6,
+    marginTop: 4,
+    fontSize: 10,
+    lineHeight: 1.25,
     color: "#57675d",
   },
   openingCommitment: {
-    marginTop: 10,
-    paddingTop: 10,
+    marginTop: 5,
+    paddingTop: 5,
     borderTop: "1px solid rgba(111, 127, 109, 0.14)",
-    fontSize: 13,
-    lineHeight: 1.55,
+    fontSize: 10,
+    lineHeight: 1.25,
     color: "#425247",
     fontWeight: 600,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 10,
     textTransform: "uppercase",
     letterSpacing: 1.6,
-    color: "#758271",
-    fontWeight: 800,
+    color: "#536047",
+    fontWeight: 900,
   },
   scoreGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: 12,
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: 6,
   },
   scoreCard: {
-    padding: 14,
-    borderRadius: 14,
+    padding: 8,
+    borderRadius: 0,
     background: "#fffdf8",
-    border: "1px solid rgba(111, 127, 109, 0.14)",
+    border: "3px solid #c9b487",
   },
   scoreTopRow: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   scoreLabel: {
-    fontSize: 13,
+    fontSize: 10,
     color: "#4e5f55",
     fontWeight: 700,
   },
   scoreValue: {
-    fontSize: 18,
+    fontSize: 13,
     color: "#2f4338",
     fontWeight: 800,
   },
   scoreTrack: {
-    height: 10,
-    borderRadius: 999,
+    height: 8,
+    borderRadius: 0,
     background: "#e3e8e0",
     overflow: "hidden",
   },
   scoreFill: {
     height: "100%",
-    borderRadius: 999,
+    borderRadius: 0,
   },
   environmentFill: {
-    background: "linear-gradient(90deg, #7ab68b, #4e8f64)",
+    background: "#6ca36d",
   },
   socialFill: {
-    background: "linear-gradient(90deg, #d8b58c, #b48659)",
+    background: "#c58d55",
   },
   governanceFill: {
-    background: "linear-gradient(90deg, #8ca6a0, #617d77)",
+    background: "#718f89",
   },
   statsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: 12,
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: 6,
+  },
+  insightGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gap: 6,
+  },
+  insightCard: {
+    padding: "8px 9px",
+    background: "#f7f1df",
+    border: "3px solid #26341f",
+    display: "flex",
+    flexDirection: "column",
+    gap: 3,
+  },
+  insightValue: {
+    fontSize: 12,
+    lineHeight: 1.15,
+    fontWeight: 900,
+    color: "#172012",
+  },
+  insightLabel: {
+    fontSize: 9,
+    lineHeight: 1.2,
+    color: "#5f6b50",
+    fontWeight: 800,
+  },
+  reportNote: {
+    margin: 0,
+    padding: "9px 12px",
+    background: "#2e3e28",
+    border: "3px solid #172012",
+    color: "#e8ecd7",
+    fontSize: 12,
+    lineHeight: 1.4,
+    fontWeight: 700,
+  },
+  actionGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: 6,
+  },
+  actionCard: {
+    padding: 7,
+    background: "#fffdf8",
+    border: "3px solid #c9b487",
+    minWidth: 0,
+  },
+  actionTitle: {
+    fontSize: 10,
+    lineHeight: 1.15,
+    color: "#172012",
+    fontWeight: 900,
+    marginBottom: 3,
+  },
+  actionBody: {
+    fontSize: 9,
+    lineHeight: 1.18,
+    color: "#4f6157",
+    fontWeight: 700,
+    overflow: "hidden",
+    display: "-webkit-box",
+    WebkitLineClamp: 3,
+    WebkitBoxOrient: "vertical",
   },
   statCard: {
-    padding: "14px 16px",
-    borderRadius: 14,
+    padding: "7px 8px",
+    borderRadius: 0,
     background: "#eef2ea",
-    border: "1px solid rgba(111, 127, 109, 0.14)",
+    border: "3px solid #c9b487",
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 13,
     fontWeight: 800,
     color: "#2f4338",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 12,
-    lineHeight: 1.45,
+    fontSize: 9,
+    lineHeight: 1.2,
     color: "#607067",
   },
   answerStack: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 12,
+    display: "grid",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: 6,
   },
   answerCard: {
-    padding: 16,
-    borderRadius: 14,
+    padding: 7,
+    borderRadius: 0,
     background: "#fffdf8",
-    border: "1px solid rgba(111, 127, 109, 0.14)",
+    border: "3px solid #c9b487",
     display: "flex",
     flexDirection: "column",
-    gap: 8,
+    gap: 4,
+    minWidth: 0,
   },
   answerMeta: {
     display: "flex",
@@ -372,80 +502,80 @@ const styles = {
     gap: 8,
   },
   answerIndex: {
-    width: 24,
-    height: 24,
-    borderRadius: 999,
+    width: 18,
+    height: 18,
+    borderRadius: 0,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
     background: "#dce6d8",
     color: "#304239",
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 800,
   },
   answerSpeaker: {
-    fontSize: 13,
+    fontSize: 10,
     fontWeight: 800,
     color: "#364a3f",
   },
   answerRole: {
-    fontSize: 12,
+    fontSize: 9,
     color: "#7b7a6b",
     letterSpacing: 0.2,
   },
   answerPrompt: {
-    fontSize: 14,
-    lineHeight: 1.5,
+    fontSize: 9,
+    lineHeight: 1.3,
     color: "#4f6157",
     fontWeight: 600,
   },
   answerText: {
-    fontSize: 15,
-    lineHeight: 1.55,
+    fontSize: 10,
+    lineHeight: 1.3,
     color: "#2d3b34",
   },
   longAnswerText: {
-    fontSize: 15,
-    lineHeight: 1.7,
+    fontSize: 10,
+    lineHeight: 1.3,
     color: "#2d3b34",
     whiteSpace: "pre-wrap",
   },
   benchmarkDisclaimer: {
-    margin: "0 0 10px",
-    fontSize: 11,
+    margin: 0,
+    fontSize: 9,
     color: "#9aa394",
     letterSpacing: 0.3,
   },
   benchmarkStack: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 14,
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: 6,
   },
   benchmarkCard: {
-    padding: "14px 16px",
-    borderRadius: 14,
+    padding: "7px 8px",
+    borderRadius: 0,
     background: "#fffdf8",
-    border: "1px solid rgba(111, 127, 109, 0.14)",
+    border: "3px solid #c9b487",
     display: "flex",
     flexDirection: "column",
-    gap: 8,
+    gap: 4,
   },
   benchmarkNpc: {
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: 800,
     color: "#4e5f55",
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    marginBottom: 4,
+    marginBottom: 1,
   },
   benchmarkRow: {
     display: "grid",
-    gridTemplateColumns: "180px 1fr 36px",
+    gridTemplateColumns: "100px 1fr 28px",
     alignItems: "center",
-    gap: 10,
+    gap: 5,
   },
   benchmarkLabel: {
-    fontSize: 12,
+    fontSize: 9,
     color: "#607067",
     lineHeight: 1.35,
     display: "flex",
@@ -457,28 +587,28 @@ const styles = {
     fontWeight: 700,
   },
   benchmarkYou: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 800,
     color: "#fff",
     background: "#4e7a5d",
-    borderRadius: 4,
+    borderRadius: 0,
     padding: "2px 5px",
     letterSpacing: 0.3,
     flexShrink: 0,
   },
   benchmarkTrack: {
-    height: 10,
-    borderRadius: 999,
+    height: 8,
+    borderRadius: 0,
     background: "#e3e8e0",
     overflow: "hidden",
   },
   benchmarkFill: {
     height: "100%",
-    borderRadius: 999,
+    borderRadius: 0,
     transition: "width 0.4s ease",
   },
   benchmarkPct: {
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: 700,
     color: "#4e5f55",
     textAlign: "right",

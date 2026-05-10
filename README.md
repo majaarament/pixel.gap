@@ -30,8 +30,6 @@ hooks/useGameState.js	All useState/useRef/useEffect — the only place with game
 
 components/GameCanvas.jsx	Canvas element + RAF loop, passes state into drawScene
 
-components/HUD.jsx	Title, scene pill, status text
-
 components/InfoRow.jsx	Static info cards at the bottom
 
 App.jsx	Calls useGameState, renders the three components
@@ -62,7 +60,7 @@ The app now logs:
 - `question_answer` for every in-game question response
 - `council_message` for every player and council turn in the debate
 
-Each row includes a persistent `userId` plus a per-session `sessionId`. A starter Apps Script receiver is included at [docs/google-apps-script.gs](/Users/majaarament/Desktop/pixel.gaps/docs/google-apps-script.gs).
+Each row includes a per-session `sessionId`. The `userId` field is left blank so playthroughs are not tied to a persistent browser identifier. A starter Apps Script receiver is included at [docs/google-apps-script.gs](/Users/majaarament/Desktop/pixel.gaps/docs/google-apps-script.gs).
 
 Vercel + OpenAI setup
 

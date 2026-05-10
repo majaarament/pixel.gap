@@ -27,11 +27,46 @@ import {
 import { COUNCIL_SEAT } from "../data/townMap";
 import { keyFor } from "../engine/mapUtils";
 import { chooseNpcMove } from "../engine/npcLogic";
-import { logChoice, logProfile, logFinalReport } from "../engine/logger";
+import { logChoice, logProfile, logFinalReport, logEarlyExit } from "../engine/logger";
 import { buildResultsReport, extractQuestionPrompt } from "../engine/results";
 import { makePlayerChoiceSegment, parseSpeechSegments } from "../engine/dialogSegments";
 
 const EMPTY_NPCS = [];
+
+// ── localStorage progress persistence ─────────────────────────────────────────
+const PROGRESS_STORAGE_KEY = "pixel-gap-progress";
+
+function loadSavedProgress() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(PROGRESS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.playerProfile && parsed?.stage) return parsed;
+    return null;
+  } catch { return null; }
+}
+
+export function clearSavedProgress() {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.removeItem(PROGRESS_STORAGE_KEY); } catch {}
+}
+
+function getInitialQuestState() {
+  const saved = loadSavedProgress();
+  if (!saved) return INITIAL_QUEST;
+  return {
+    ...INITIAL_QUEST,
+    stage: saved.stage || INITIAL_QUEST.stage,
+    visited: saved.visited || [],
+    choices: saved.choices || [],
+    reflections: saved.reflections || {},
+    pillarBeats: saved.pillarBeats || {},
+    pillarOrder: saved.pillarOrder || null,
+    openingPov: saved.openingPov || null,
+    playerProfile: saved.playerProfile || null,
+  };
+}
 
 const INITIAL_QUEST = {
   stage: QUEST_STAGES.MEET_OLIVE,
@@ -44,17 +79,6 @@ const INITIAL_QUEST = {
   openingPov: null, // env | people | conduct | chain
   playerProfile: null, // { roleLevel, team, country }
 };
-
-const AUTO_TRIGGERABLE_STAGES = new Set([
-  QUEST_STAGES.MEET_OLIVE,
-  QUEST_STAGES.BASELINE_DILEMMA,
-  QUEST_STAGES.TOWN_PILLARS,
-  QUEST_STAGES.OFFICE_PILLARS,
-  QUEST_STAGES.RETURN_TO_OLIVE,
-  QUEST_STAGES.POST_GAME,
-]);
-
-const PILLAR_NPC_IDS = new Set(["frank", "otis", "suzy", "hazel"]);
 
 // Determine pillar order from the opening dilemma choice.
 function derivePillarOrder(choiceKey) {
@@ -71,27 +95,27 @@ export function useGameState() {
   const officeNpcsRef = useRef(null);
   const dialogRef = useRef(null);
   const bannerTimeoutRef = useRef(null);
-  const lastAutoTriggerRef = useRef("");
   const lastObjectiveKeyRef = useRef("");
   const resultsAutoOpenedRef = useRef(false);
+  const councilSeenRef = useRef(false);
 
   const [scene, setScene] = useState("town");
   const [player, setPlayer] = useState({ x: 24, y: 32, dir: "up", step: 0, species: "beaver" });
   const [townNpcs, setTownNpcs] = useState(() => TOWN_NPCS_START.map((n, i) => ({ ...n, step: i % 2 })));
   const [officeNpcs, setOfficeNpcs] = useState(() => OFFICE_NPCS_START.map((n, i) => ({ ...n, step: i % 2 })));
-  const [quest, setQuest] = useState(INITIAL_QUEST);
-  const [status, setStatus] = useState(getTaskLabel(INITIAL_QUEST));
+  const [quest, setQuest] = useState(getInitialQuestState);
+  const [status, setStatus] = useState(() => getTaskLabel(getInitialQuestState()));
   const [dialog, setDialog] = useState(null);
-  const [banner, setBanner] = useState({ title: "New objective", message: getTaskLabel(INITIAL_QUEST) });
+  const [banner, setBanner] = useState(() => ({ title: "New objective", message: getTaskLabel(getInitialQuestState()) }));
   const [reportOpen, setReportOpen] = useState(false);
   const [councilOpen, setCouncilOpen] = useState(false);
   const [learningHouseOpen, setLearningHouseOpen] = useState(false);
   const finalReportSentRef = useRef(false);
 
-  playerRef.current = player;
-  townNpcsRef.current = townNpcs;
-  officeNpcsRef.current = officeNpcs;
-  dialogRef.current = dialog;
+  useEffect(() => { playerRef.current = player; }, [player]);
+  useEffect(() => { townNpcsRef.current = townNpcs; }, [townNpcs]);
+  useEffect(() => { officeNpcsRef.current = officeNpcs; }, [officeNpcs]);
+  useEffect(() => { dialogRef.current = dialog; }, [dialog]);
 
   const currentNpcs = useMemo(
     () => {
@@ -121,7 +145,6 @@ export function useGameState() {
         return findTownNpc("olive");
 
       case QUEST_STAGES.TOWN_PILLARS: {
-        const remaining = townOrder.filter((id) => !quest.visited.includes(id));
         const next = townOrder.find((id) => !quest.visited.includes(id));
         if (next) return findTownNpc(next);
         return { x: TOWN_OFFICE_ENTRY.x, y: TOWN_OFFICE_ENTRY.y, label: "office doorway", scene: "town" };
@@ -131,7 +154,6 @@ export function useGameState() {
         return { x: TOWN_OFFICE_ENTRY.x, y: TOWN_OFFICE_ENTRY.y, label: "office doorway", scene: "town" };
 
       case QUEST_STAGES.OFFICE_PILLARS: {
-        const remaining = officeOrder.filter((id) => !quest.visited.includes(id));
         const next = officeOrder.find((id) => !quest.visited.includes(id));
         if (next) return findOfficeNpc(next);
         return { x: OFFICE_EXIT_TILE.x, y: OFFICE_EXIT_TILE.y, label: "terrace door", scene: "office" };
@@ -151,6 +173,26 @@ export function useGameState() {
   }, [officeNpcs, quest, scene, townNpcs]);
 
   const objectiveLabel = objectiveTarget?.label || objectiveTarget?.name || "the highlighted target";
+  const inCouncilArea =
+    scene === "town" &&
+    player.x >= 39 && player.x <= 47 &&
+    player.y >= 7 && player.y <= 13;
+
+  const interactionTarget = useMemo(() => {
+    if (quest.stage === QUEST_STAGES.RETURN_TO_OLIVE && inCouncilArea) {
+      return currentNpcs.find((n) => n.id === "olive") || null;
+    }
+    if (scene === "owlhouse") return { id: "learningHouse", name: "Olive's learning house" };
+    return nearbyNpc;
+  }, [currentNpcs, inCouncilArea, nearbyNpc, quest.stage, scene]);
+
+  const interactionLabel = interactionTarget
+    ? interactionTarget.id === "learningHouse"
+      ? "open learning house"
+      : quest.stage === QUEST_STAGES.RETURN_TO_OLIVE && inCouncilArea
+        ? "begin council reflection"
+        : `talk to ${interactionTarget.name?.split(" ")[0] || "guide"}`
+    : "";
 
   function flashBanner(title, message, ms = 2200) {
     window.clearTimeout(bannerTimeoutRef.current);
@@ -188,10 +230,7 @@ export function useGameState() {
 
   function closeCouncil() {
     setCouncilOpen(false);
-    setReportOpen(true);
-    resultsAutoOpenedRef.current = true;
-    flashBanner("Report ready", "your sustainability report is ready.", 2600);
-    setQuest((prev) => applyQuestAdvance(prev, QUEST_STAGES.COMPLETE));
+    flashBanner("One last reflection", "talk to Rowan to close the journey.", 2600);
   }
 
   function openLearningHouse() {
@@ -202,12 +241,77 @@ export function useGameState() {
     setLearningHouseOpen(false);
   }
 
+  function tryMove(dx, dy, dir) {
+    if (reportOpen) return;
+    if (councilOpen) return;
+    if (learningHouseOpen) return;
+    if (dialogRef.current?.phase === "question" || dialogRef.current?.phase === "reflection") return;
+
+    const sceneData = SCENES[scene];
+    setPlayer((prev) => {
+      const nx = prev.x + dx;
+      const ny = prev.y + dy;
+      const occupied = new Set(currentNpcs.map((n) => keyFor(n.x, n.y)));
+      if (!isWalkable(sceneData, nx, ny, occupied)) return { ...prev, dir };
+
+      const next = { ...prev, x: nx, y: ny, dir, step: prev.step ^ 1 };
+
+      if (scene === "town" && nx === TOWN_OFFICE_ENTRY.x && ny === TOWN_OFFICE_ENTRY.y) {
+        if (quest.stage === QUEST_STAGES.GO_TO_OFFICE || quest.stage === QUEST_STAGES.OFFICE_PILLARS) {
+          window.setTimeout(() => enterOffice(), 0);
+        }
+      }
+
+      if (scene === "town" && nx === TOWN_OWL_HOUSE_ENTRY.x && ny === TOWN_OWL_HOUSE_ENTRY.y) {
+        window.setTimeout(() => enterOwlHouse(), 0);
+      }
+
+      if (scene === "office" && nx === OFFICE_EXIT_TILE.x && ny === OFFICE_EXIT_TILE.y) {
+        if (
+          quest.stage === QUEST_STAGES.RETURN_TO_OLIVE ||
+          quest.stage === QUEST_STAGES.POST_GAME ||
+          quest.stage === QUEST_STAGES.COMPLETE
+        ) {
+          window.setTimeout(() => exitOffice(), 0);
+        }
+      }
+
+      if (scene === "owlhouse" && nx === OWL_HOUSE_EXIT_TILE.x && ny === OWL_HOUSE_EXIT_TILE.y) {
+        window.setTimeout(() => exitOwlHouse(), 0);
+      }
+
+      return next;
+    });
+  }
+
+  function nudgePlayer(dir) {
+    const moves = {
+      up: [0, -1, "up"],
+      down: [0, 1, "down"],
+      left: [-1, 0, "left"],
+      right: [1, 0, "right"],
+    };
+    const move = moves[dir];
+    if (move) tryMove(...move);
+  }
+
   function setPlayerProfile(profile) {
-    // Reset player to spawn and clear any accidental key state before entering the world.
+    clearSavedProgress(); // wipe any prior saved session when starting fresh
     setPlayer({ x: 24, y: 32, dir: "up", step: 0, species: "beaver" });
     keysRef.current = {};
     logProfile(profile);
-    setQuest((prev) => syncStatus({ ...prev, playerProfile: profile }));
+    setQuest((prev) => syncStatus({ ...INITIAL_QUEST, playerProfile: profile }));
+  }
+
+  function leaveGame() {
+    logEarlyExit({
+      report: resultsReport,
+      questStage: quest.stage,
+      playerProfile: quest.playerProfile,
+      choices: quest.choices,
+      reflections: quest.reflections,
+    });
+    clearSavedProgress();
   }
 
   function recordChoice(dialogState, choice) {
@@ -529,6 +633,23 @@ export function useGameState() {
     const shouldReleaseCurrentNpc =
       !!current.npcId && (current.phase === "reaction" || quest.visited.includes(current.npcId));
 
+    // When an info dialog advances the quest for a specific NPC, automatically
+    // open the next dialog for that NPC so the player doesn't need to press E again.
+    if (current.phase === "info" && current.advanceTo && current.npcId) {
+      const nextQuest = applyQuestAdvance(quest, current.advanceTo, current.npcId);
+      const nextDialogData = getNpcDialog(current.npcId, nextQuest);
+      const npc = currentNpcs.find((n) => n.id === current.npcId);
+      if (npc && nextDialogData) {
+        setQuest(nextQuest);
+        if (nextDialogData.type === "sequence") {
+          openSequenceDialog(npc, nextDialogData);
+        } else {
+          openInfoDialog(npc, nextDialogData.message, nextDialogData.advanceTo || null);
+        }
+        return;
+      }
+    }
+
     dismissDialog();
 
     if (current.phase === "info" && current.advanceTo) {
@@ -583,6 +704,55 @@ export function useGameState() {
     openQuestionDialog(npc, dialogData);
   }
 
+  function handleInteract() {
+    if (reportOpen || councilOpen || learningHouseOpen) return;
+    if (dialogRef.current) return;
+
+    if (interactionTarget?.id === "learningHouse") {
+      openLearningHouse();
+      return;
+    }
+
+    if (interactionTarget) {
+      handleNpcInteraction(interactionTarget);
+      return;
+    }
+
+    flashBanner("Current objective", getTaskLabel(quest), 1800);
+  }
+
+  function findLandingTile(sceneKey, target) {
+    if (!target) return null;
+    if (target.id === "councilSeat") return { x: 43, y: 12, dir: "up" };
+
+    const sceneData = SCENES[sceneKey];
+    const occupied = new Set(
+      (sceneKey === "town" ? townNpcs : sceneKey === "office" ? officeNpcs : [])
+        .filter((npc) => npc.id !== target.id)
+        .map((npc) => keyFor(npc.x, npc.y))
+    );
+    const candidates = [
+      { x: target.x, y: target.y + 1, dir: "up" },
+      { x: target.x - 1, y: target.y, dir: "right" },
+      { x: target.x + 1, y: target.y, dir: "left" },
+      { x: target.x, y: target.y - 1, dir: "down" },
+    ];
+    return candidates.find((tile) => isWalkable(sceneData, tile.x, tile.y, occupied)) || null;
+  }
+
+  function skipToObjective() {
+    if (!objectiveTarget || dialogRef.current || councilOpen || reportOpen || learningHouseOpen) return;
+    const targetScene = objectiveTarget.scene || scene;
+    const landing = findLandingTile(targetScene, objectiveTarget);
+    if (!landing) {
+      flashBanner("Path blocked", "move a little closer and try again.", 1800);
+      return;
+    }
+    if (targetScene !== scene) setScene(targetScene);
+    setPlayer((prev) => ({ ...prev, ...landing, step: prev.step ^ 1 }));
+    flashBanner("Moved to objective", "press E or Space to interact.", 1800);
+  }
+
   function enterOffice() {
     setScene("office");
     setPlayer((prev) => ({ ...prev, x: 2, y: 16, dir: "right" }));
@@ -622,9 +792,12 @@ export function useGameState() {
   useEffect(() => {
     if (quest.stage !== QUEST_STAGES.POST_GAME) return;
     if (councilOpen) return;
+    if (councilSeenRef.current) return;
+    councilSeenRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCouncilOpen(true);
     dismissDialog(); // clear any lingering scripted dialog
-  }, [quest.stage]);
+  }, [councilOpen, quest.stage]);
 
   // Auto-open report when game is complete
   useEffect(() => {
@@ -633,6 +806,7 @@ export function useGameState() {
     if (resultsAutoOpenedRef.current) return;
 
     resultsAutoOpenedRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReportOpen(true);
     flashBanner("Report ready", "your sustainability report is ready.", 2600);
   }, [quest.stage, dialog]);
@@ -650,6 +824,7 @@ export function useGameState() {
       const hazel = offNpcs.find((n) => n.id === "hazel") || OFFICE_NPCS_START[2];
       const rowanSrc = offNpcs.find((n) => n.id === "rowan") || OFFICE_NPCS_START[3];
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTownNpcs((prev) => {
         const olive = prev.find((npc) => npc.id === "olive") || TOWN_NPCS_START[0];
         const frank = prev.find((npc) => npc.id === "frank") || TOWN_NPCS_START[1];
@@ -667,38 +842,43 @@ export function useGameState() {
         ];
       });
     }
-  }, [quest.stage]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [quest.stage]);
 
   // Flash banner when the objective changes
   useEffect(() => {
     const key = `${quest.stage}:${objectiveLabel}`;
     if (lastObjectiveKeyRef.current === key) return;
     lastObjectiveKeyRef.current = key;
-    lastAutoTriggerRef.current = "";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     flashBanner("New objective", getTaskLabel(quest));
   }, [objectiveLabel, quest]);
 
-  // Persist progress to localStorage
+  // Persist progress to localStorage so it survives page reload.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!quest.playerProfile) return;
     const savedProgress = {
       updatedAt: new Date().toISOString(),
       stage: quest.stage,
+      visited: quest.visited,
       choices: quest.choices,
       reflections: quest.reflections,
+      pillarBeats: quest.pillarBeats,
+      pillarOrder: quest.pillarOrder,
+      openingPov: quest.openingPov,
       playerProfile: quest.playerProfile,
     };
     try {
-      window.localStorage.setItem("pixel-gap-answer-cache", JSON.stringify(savedProgress));
+      window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(savedProgress));
     } catch { /* ignore */ }
-  }, [quest.choices, quest.reflections, quest.stage, quest.playerProfile]);
+  }, [quest.choices, quest.reflections, quest.stage, quest.playerProfile, quest.visited, quest.pillarBeats, quest.pillarOrder, quest.openingPov]);
 
-  // Persist final report
+  // Keep the latest report in the current browser session only.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (quest.stage !== QUEST_STAGES.COMPLETE) return;
     try {
-      window.localStorage.setItem("pixel-gap-latest-report", JSON.stringify(resultsReport));
+      window.sessionStorage.setItem("pixel-gap-latest-report", JSON.stringify(resultsReport));
     } catch { /* ignore */ }
   }, [quest.stage, resultsReport]);
 
@@ -718,115 +898,14 @@ export function useGameState() {
     });
   }, [quest.stage, resultsReport, quest.choices, quest.reflections, quest.playerProfile]);
 
-  // Auto-trigger NPC interaction when player is adjacent to objective
-  useEffect(() => {
-    if (councilOpen) return;                          // council meeting handles POST_GAME interaction
-    if (dialogRef.current) return;
-
-    // Olive can always be re-engaged once past the opening — even between stages
-    // or after the game is complete. Check her first before the normal stage gate.
-    if (
-      nearbyNpc?.id === "olive" &&
-      quest.stage !== QUEST_STAGES.MEET_OLIVE &&
-      quest.stage !== QUEST_STAGES.BASELINE_DILEMMA &&
-      quest.stage !== QUEST_STAGES.RETURN_TO_OLIVE
-    ) {
-      const oliveKey = `${scene}:olive-revisit:${quest.stage}`;
-      if (lastAutoTriggerRef.current !== oliveKey) {
-        lastAutoTriggerRef.current = oliveKey;
-        handleNpcInteraction(nearbyNpc);
-        return;
-      }
-    }
-
-    if (!AUTO_TRIGGERABLE_STAGES.has(quest.stage)) return;
-
-    const triggerTarget =
-      (quest.stage === QUEST_STAGES.TOWN_PILLARS || quest.stage === QUEST_STAGES.OFFICE_PILLARS)
-        ? (nearbyNpc && PILLAR_NPC_IDS.has(nearbyNpc.id) ? nearbyNpc : null)
-        : objectiveTarget;
-
-    if (!triggerTarget || (triggerTarget.scene && triggerTarget.scene !== scene)) return;
-
-    const targetKey = `${scene}:${quest.stage}:${triggerTarget.id || triggerTarget.label || triggerTarget.name}`;
-
-    // Council seat: fire from anywhere in the area surrounding the table
-    // so the player can sit in any chair and still trigger the sequence.
-    if (triggerTarget.id === "councilSeat") {
-      const inCouncilArea =
-        player.x >= 39 && player.x <= 47 &&
-        player.y >= 7  && player.y <= 13;
-      if (!inCouncilArea) return;
-      if (lastAutoTriggerRef.current === targetKey) return;
-      lastAutoTriggerRef.current = targetKey;
-      const oliveNpc = currentNpcs.find((n) => n.id === "olive");
-      if (oliveNpc) handleNpcInteraction(oliveNpc);
-      return;
-    }
-
-    const distance = Math.abs(triggerTarget.x - player.x) + Math.abs(triggerTarget.y - player.y);
-    if (distance > 1) return;
-    if (lastAutoTriggerRef.current === targetKey) return;
-    lastAutoTriggerRef.current = targetKey;
-
-    const npcMatch = currentNpcs.find((npc) => npc.id === triggerTarget.id);
-    if (npcMatch) {
-      handleNpcInteraction(npcMatch);
-    }
-  }, [councilOpen, currentNpcs, nearbyNpc, objectiveTarget, player, quest.stage, scene]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Player movement loop
   useEffect(() => {
-    const sceneData = SCENES[scene];
-
-    function tryMove(dx, dy, dir) {
-      if (reportOpen) return;
-      if (councilOpen) return;
-      if (learningHouseOpen) return;
-      if (dialogRef.current?.phase === "question" || dialogRef.current?.phase === "reflection") return;
-
-      setPlayer((prev) => {
-        const nx = prev.x + dx;
-        const ny = prev.y + dy;
-        const occupied = new Set(currentNpcs.map((n) => keyFor(n.x, n.y)));
-        if (!isWalkable(sceneData, nx, ny, occupied)) return { ...prev, dir };
-
-        const next = { ...prev, x: nx, y: ny, dir, step: prev.step ^ 1 };
-
-        if (scene === "town" && nx === TOWN_OFFICE_ENTRY.x && ny === TOWN_OFFICE_ENTRY.y) {
-          if (quest.stage === QUEST_STAGES.GO_TO_OFFICE || quest.stage === QUEST_STAGES.OFFICE_PILLARS) {
-            window.setTimeout(() => enterOffice(), 0);
-          }
-        }
-
-        if (scene === "town" && nx === TOWN_OWL_HOUSE_ENTRY.x && ny === TOWN_OWL_HOUSE_ENTRY.y) {
-          window.setTimeout(() => enterOwlHouse(), 0);
-        }
-
-        if (scene === "office" && nx === OFFICE_EXIT_TILE.x && ny === OFFICE_EXIT_TILE.y) {
-          if (
-            quest.stage === QUEST_STAGES.RETURN_TO_OLIVE ||
-            quest.stage === QUEST_STAGES.POST_GAME ||
-            quest.stage === QUEST_STAGES.COMPLETE
-          ) {
-            window.setTimeout(() => exitOffice(), 0);
-          }
-        }
-
-        if (scene === "owlhouse" && nx === OWL_HOUSE_EXIT_TILE.x && ny === OWL_HOUSE_EXIT_TILE.y) {
-          window.setTimeout(() => exitOwlHouse(), 0);
-        }
-
-        return next;
-      });
-    }
-
     function onKeyDown(e) {
       // Don't intercept keys while the user is typing in a form field.
       const tag = document.activeElement?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
-      const valid = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "W", "A", "S", "D", " "];
+      const valid = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "W", "A", "S", "D", " ", "e", "E"];
       if (valid.includes(e.key)) e.preventDefault();
       keysRef.current[e.key] = true;
 
@@ -840,12 +919,14 @@ export function useGameState() {
         return;
       }
 
-      if (e.key === " ") {
+      if (e.key === " " || e.key === "e" || e.key === "E") {
         const phase = dialogRef.current?.phase;
         const choices = dialogRef.current?.choices;
         const isEmptyChoicesStep = phase === "question" && (!choices || choices.length === 0);
-        if (phase === "info" || phase === "reaction" || isEmptyChoicesStep) {
+        if (e.key === " " && (phase === "info" || phase === "reaction" || isEmptyChoicesStep)) {
           handleAdvanceDialog();
+        } else if (!phase) {
+          handleInteract();
         } else {
           flashBanner("Current objective", getTaskLabel(quest), 1800);
         }
@@ -952,10 +1033,14 @@ export function useGameState() {
     nearbyTarget,
     objectiveTarget,
     objectiveLabel,
+    interactionLabel,
     reportOpen,
     resultsReport,
     handleChoice,
     handleAdvanceDialog,
+    handleInteract,
+    nudgePlayer,
+    skipToObjective,
     handleReflectionSubmit,
     closeResultsReport,
     openResultsReport,
@@ -968,5 +1053,6 @@ export function useGameState() {
     openLearningHouse,
     closeLearningHouse,
     exitOwlHouse,
+    leaveGame,
   };
 }

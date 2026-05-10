@@ -25,76 +25,102 @@ const ROLE_OPTIONS = [
   },
 ];
 
-const TEAM_OPTIONS = [
-  "Business Transformation",
-  "Data & Analytics",
-  "Digital Commerce",
-  "ERP & Cloud",
-  "Finance & Performance",
-  "Human Capital",
-  "Marketing & Sales",
-  "Operations & Supply Chain",
-  "Strategy & Innovation",
-  "Technology & Integration",
-  "Other",
+const DEPARTMENT_OPTIONS = [
+  { name: "Application Managed Services (Microsoft)", primary: "Netherlands, Belgium", supporting: "India" },
+  { name: "Application Managed Services (SAP)", primary: "Belgium, Netherlands, France", supporting: "India, Hungary" },
+  { name: "Azure & Cloud Architecture", primary: "Netherlands, Belgium, USA", supporting: "India" },
+  { name: "Customer Experience & Digital", primary: "Belgium, Netherlands, France", supporting: "Malaysia, Philippines" },
+  { name: "Data & AI", primary: "Netherlands, Belgium, USA", supporting: "India, Hungary" },
+  { name: "DM4Mill (Mill Products MES)", primary: "Belgium (Product Owner)", supporting: "Germany, Netherlands, Global" },
+  { name: "Marketing", primary: "all entities", supporting: "-" },
+  { name: "Microsoft Dynamics 365", primary: "Netherlands, Belgium, UK", supporting: "India" },
+  { name: "Modern Workplace", primary: "Netherlands, Belgium", supporting: "Philippines" },
+  { name: "OpenText Information Management", primary: "Belgium, Netherlands, Germany", supporting: "Hungary" },
+  { name: "Sales", primary: "all entities", supporting: "-" },
+  { name: "Salesforce CRM", primary: "Belgium, Netherlands, France", supporting: "India" },
+  { name: "SAP Analytics & BI", primary: "Belgium, Netherlands", supporting: "India" },
+  { name: "SAP Finance", primary: "Belgium, Netherlands, France", supporting: "Hungary, India" },
+  { name: "SAP S/4HANA", primary: "Belgium, Netherlands, France, Germany, UK, USA, Canada", supporting: "India, Hungary, Malaysia" },
+  { name: "SAP SuccessFactors (HR)", primary: "Belgium, Netherlands, France", supporting: "India, Philippines" },
+  { name: "SAP Supply Chain & Manufacturing", primary: "Belgium, Germany, Netherlands", supporting: "Hungary, China" },
+  { name: "Strategy & Business Consulting", primary: "Belgium (DI), Netherlands, France, Germany, UK", supporting: "Hungary, India" },
+  { name: "Support Finance", primary: "all entities", supporting: "-" },
+  { name: "Support HR", primary: "all entities", supporting: "-" },
+  { name: "Support IT", primary: "all entities", supporting: "-" },
+  { name: "Support Office/Facility", primary: "all entities", supporting: "-" },
 ];
 
 const ENTITY_GROUPS = [
   {
     region: "Europe",
-    offices: [
-      "Belgium — Antwerp",
-      "Belgium — Ghent",
-      "Belgium — Kortrijk",
-      "Belgium — Liège",
-      "Belgium — Lummen",
-      "Belgium — Wavre",
-      "Netherlands — Den Bosch (HQ)",
-      "Netherlands — Naarden",
-      "France — Lille",
-      "France — Lyon (HQ)",
-      "France — Nantes",
-      "France — Paris",
-      "Luxembourg — Belvaux",
-      "Germany — Hamburg",
-      "Germany — Zweibrücken",
-      "United Kingdom — Bristol",
-      "Ireland",
-      "Hungary — Budapest (GDC)",
+    entities: [
+      { entity: "delaware International", city: "Antwerp", office: "DI HQ", country: "Belgium" },
+      { entity: "delaware Belgium", city: "Ghent", office: "Office", country: "Belgium" },
+      { entity: "delaware Belgium", city: "Kortrijk", office: "DBE HQ", country: "Belgium" },
+      { entity: "delaware Belgium", city: "Liège", office: "Office", country: "Belgium" },
+      { entity: "delaware Belgium", city: "Lummen", office: "Office", country: "Belgium" },
+      { entity: "delaware Belgium", city: "Wavre", office: "Office", country: "Belgium" },
+      { entity: "delaware Netherlands bv", city: "Den Bosch", office: "DNL HQ", country: "Netherlands" },
+      { entity: "delaware Netherlands bv", city: "Naarden", office: "Office", country: "Netherlands" },
+      { entity: "delaware France sas", city: "Lille (La Madeleine)", office: "Office", country: "France" },
+      { entity: "delaware France sas", city: "Lyon", office: "DFR HQ", country: "France" },
+      { entity: "delaware France sas", city: "Nantes", office: "Office", country: "France" },
+      { entity: "delaware France sas", city: "Paris", office: "Office", country: "France" },
+      { entity: "delaware Luxembourg sa", city: "Belvaux", office: "Office", country: "Luxembourg" },
+      { entity: "delaware Germany gmbh", city: "Hamburg", office: "Office", country: "Germany" },
+      { entity: "delaware Germany gmbh", city: "Zweibrücken", office: "Office", country: "Germany" },
+      { entity: "delaware Hungary kft", city: "Budapest", office: "Office", country: "Hungary" },
+      { entity: "delaware UK ltd", city: "Bristol", office: "Office", country: "United Kingdom" },
+      { entity: "delaware Ireland ltd", city: "Dublin", office: "Office", country: "Ireland" },
     ],
   },
   {
     region: "Asia & Pacific",
-    offices: [
-      "China — Shanghai (GDC)",
-      "China — Suzhou (GDC)",
-      "China — Chengdu (GDC)",
-      "China — Harbin (GDC)",
-      "India — Noida (GDC)",
-      "Malaysia — Kuala Lumpur (GDC)",
-      "Philippines — Taguig (GDC)",
-      "Singapore",
+    entities: [
+      { entity: "delaware China", city: "Shanghai", office: "Office", country: "China" },
+      { entity: "delaware China", city: "Suzhou", office: "Office", country: "China" },
+      { entity: "delaware China", city: "Chengdu", office: "Office", country: "China" },
+      { entity: "delaware China", city: "Harbin", office: "Office", country: "China" },
+      { entity: "delaware India pvt ltd", city: "Noida", office: "GDC", country: "India" },
+      { entity: "delaware Malaysia sdn bhd", city: "Kuala Lumpur", office: "GDC", country: "Malaysia" },
+      { entity: "delaware Philippines inc", city: "Taguig", office: "GDC", country: "Philippines" },
+      { entity: "delaware Singapore pte ltd", city: "Singapore", office: "Office", country: "Singapore" },
     ],
   },
   {
     region: "Americas",
-    offices: [
-      "United States",
-      "Brazil — Alphaville (GDC)",
-      "Canada",
+    entities: [
+      { entity: "delaware USA inc", city: "Multiple locations", office: "Office", country: "United States" },
+      { entity: "delaware Brazil ltda", city: "Alphaville", office: "GDC", country: "Brazil" },
+      { entity: "delaware Canada inc", city: "Toronto", office: "Office", country: "Canada" },
     ],
   },
   {
     region: "Africa",
-    offices: [
-      "Morocco — Casablanca (GDC)",
+    entities: [
+      { entity: "delaware Morocco sarl", city: "Casablanca", office: "GDC", country: "Morocco" },
     ],
   },
-  {
-    region: "Other",
-    offices: ["Other"],
-  },
 ];
+
+function makeEntityValue(entity) {
+  return `${entity.entity}|${entity.city}|${entity.office}|${entity.country}`;
+}
+
+function makeEntityLabel(entity) {
+  const officeTag = entity.office && entity.office !== "Office" ? ` (${entity.office})` : "";
+  return `${entity.country} — ${entity.city}${officeTag}`;
+}
+
+function findDepartment(name) {
+  return DEPARTMENT_OPTIONS.find((department) => department.name === name) || null;
+}
+
+function findEntity(value) {
+  return ENTITY_GROUPS
+    .flatMap((group) => group.entities)
+    .find((entity) => makeEntityValue(entity) === value) || null;
+}
 
 export default function ProfileScreen({ onSubmit }) {
   const [roleLevel, setRoleLevel] = useState("");
@@ -102,6 +128,8 @@ export default function ProfileScreen({ onSubmit }) {
   const [entity, setEntity] = useState("");
   const [error, setError] = useState("");
   const canSubmit = Boolean(roleLevel && team && entity);
+  const selectedDepartment = findDepartment(team);
+  const selectedEntity = findEntity(entity);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -110,7 +138,18 @@ export default function ProfileScreen({ onSubmit }) {
       return;
     }
     setError("");
-    onSubmit({ roleLevel, team, country: entity });
+    onSubmit({
+      roleLevel,
+      team,
+      department: team,
+      departmentPrimaryEntities: selectedDepartment?.primary || "",
+      departmentSupportingEntities: selectedDepartment?.supporting || "",
+      entity: selectedEntity?.entity || entity,
+      entityCity: selectedEntity?.city || "",
+      entityOfficeType: selectedEntity?.office || "",
+      country: selectedEntity?.country || "",
+      entityLabel: selectedEntity ? makeEntityLabel(selectedEntity) : entity,
+    });
   }
 
   return (
@@ -164,8 +203,8 @@ export default function ProfileScreen({ onSubmit }) {
                 <div style={styles.questionHeader}>
                   <div style={styles.questionNumber}>2</div>
                   <div>
-                    <label style={styles.label} htmlFor="team">team</label>
-                    <p style={styles.helper}>select the practice area you work in most closely.</p>
+                    <label style={styles.label} htmlFor="team">department / solution</label>
+                    <p style={styles.helper}>select the solution or support function you work in most closely.</p>
                   </div>
                 </div>
                 <select
@@ -175,10 +214,15 @@ export default function ProfileScreen({ onSubmit }) {
                   style={styles.select}
                 >
                   <option value="">select a team...</option>
-                  {TEAM_OPTIONS.map((t) => (
-                    <option key={t} value={t}>{t}</option>
+                  {DEPARTMENT_OPTIONS.map((department) => (
+                    <option key={department.name} value={department.name}>{department.name}</option>
                   ))}
                 </select>
+                {selectedDepartment && (
+                  <p style={styles.selectionMeta}>
+                    primary: {selectedDepartment.primary} · support: {selectedDepartment.supporting}
+                  </p>
+                )}
               </div>
 
               <div style={styles.questionCard}>
@@ -198,12 +242,19 @@ export default function ProfileScreen({ onSubmit }) {
                   <option value="">select an office...</option>
                   {ENTITY_GROUPS.map((group) => (
                     <optgroup key={group.region} label={group.region}>
-                      {group.offices.map((office) => (
-                        <option key={office} value={office}>{office}</option>
+                      {group.entities.map((office) => (
+                        <option key={makeEntityValue(office)} value={makeEntityValue(office)}>
+                          {makeEntityLabel(office)}
+                        </option>
                       ))}
                     </optgroup>
                   ))}
                 </select>
+                {selectedEntity && (
+                  <p style={styles.selectionMeta}>
+                    {selectedEntity.entity} · {selectedEntity.office}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -227,39 +278,24 @@ export default function ProfileScreen({ onSubmit }) {
 const styles = {
   screen: {
     height: "100vh",
-    background: "linear-gradient(180deg, #2b4635 0%, #436246 42%, #8ea164 42%, #728553 100%)",
+    background: "#7f9362",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: 16,
     position: "relative",
     overflow: "hidden",
+    boxSizing: "border-box",
   },
   screenGlow: {
-    position: "absolute",
-    width: 340,
-    height: 340,
-    left: "10%",
-    top: "8%",
-    background: "rgba(250, 222, 150, 0.14)",
-    borderRadius: 0,
-    transform: "rotate(12deg)",
-    filter: "blur(10px)",
+    display: "none",
   },
   screenGlowSecondary: {
-    position: "absolute",
-    width: 420,
-    height: 220,
-    right: "6%",
-    bottom: "12%",
-    background: "rgba(35, 61, 46, 0.22)",
-    borderRadius: 0,
-    transform: "rotate(-8deg)",
-    filter: "blur(8px)",
+    display: "none",
   },
   panel: {
     width: "min(780px, calc(100vw - 32px))",
-    maxHeight: "calc(100vh - 24px)",
+    height: "min(680px, calc(100vh - 24px))",
     background: "#eadfbc",
     borderRadius: 0,
     overflow: "hidden",
@@ -269,24 +305,23 @@ const styles = {
     zIndex: 1,
   },
   panelTopBar: {
-    height: 16,
-    background: "repeating-linear-gradient(90deg, #5c7d53 0 22px, #6e8d60 22px 44px)",
+    height: 12,
+    background: "#5c7d53",
     borderBottom: "4px solid #33442f",
   },
   inner: {
-    padding: "clamp(18px, 2.8vw, 26px)",
+    padding: "clamp(12px, 2.2vh, 22px)",
     display: "flex",
     flexDirection: "column",
     gap: 0,
-    background:
-      "linear-gradient(180deg, rgba(255,251,238,0.45) 0, rgba(255,251,238,0.45) 2px, transparent 2px, transparent 100%)",
+    background: "#eadfbc",
   },
   kickerRow: {
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
     gap: 12,
-    marginBottom: 12,
+    marginBottom: 8,
     flexWrap: "wrap",
   },
   stepChip: {
@@ -301,13 +336,13 @@ const styles = {
     border: "2px solid #24331f",
   },
   heroBlock: {
-    marginBottom: 18,
+    marginBottom: 10,
   },
   heading: {
     fontFamily: '"Courier New", "Lucida Console", monospace',
-    fontSize: "clamp(28px, 3.8vw, 48px)",
+    fontSize: "clamp(22px, 3.4vw, 40px)",
     fontWeight: 900,
-    letterSpacing: "-0.05em",
+    letterSpacing: 0,
     color: "#1f2d1c",
     margin: "0 0 8px",
     lineHeight: 1.05,
@@ -315,7 +350,7 @@ const styles = {
   body: {
     fontFamily: '"Courier New", "Lucida Console", monospace',
     fontSize: "clamp(12px, 1.15vw, 15px)",
-    lineHeight: 1.45,
+    lineHeight: 1.3,
     color: "#42523d",
     margin: 0,
     maxWidth: 540,
@@ -323,21 +358,21 @@ const styles = {
   form: {
     display: "flex",
     flexDirection: "column",
-    gap: 12,
+    gap: 8,
   },
   detailsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 12,
+    gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+    gap: 8,
   },
   questionCard: {
     display: "flex",
     flexDirection: "column",
-    gap: 10,
+    gap: 7,
     background: "#f5ecd1",
     border: "3px solid #c9b487",
     boxShadow: "inset 0 2px 0 #fff8e6",
-    padding: "14px 14px 16px",
+    padding: "10px 10px 12px",
   },
   questionHeader: {
     display: "flex",
@@ -378,23 +413,23 @@ const styles = {
   },
   roleRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-    gap: 10,
+    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+    gap: 7,
   },
   roleButton: {
-    padding: "12px 14px",
+    padding: "9px 10px",
     background: "#dde5cf",
     border: "3px solid #b4c0a3",
     fontFamily: '"Courier New", "Lucida Console", monospace',
     color: "#2f412b",
     cursor: "pointer",
-    letterSpacing: "-0.01em",
+    letterSpacing: 0,
     boxShadow: "0 3px 0 #b8c3a7",
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-start",
     gap: 4,
-    minHeight: 74,
+    minHeight: 58,
     textAlign: "left",
   },
   roleButtonActive: {
@@ -403,16 +438,16 @@ const styles = {
     boxShadow: "0 3px 0 #8b935e",
   },
   roleButtonTitle: {
-    fontSize: "clamp(13px, 1.25vw, 17px)",
+    fontSize: "clamp(12px, 1.15vw, 15px)",
     fontWeight: 800,
   },
   roleButtonDetail: {
-    fontSize: 11,
-    lineHeight: 1.35,
+    fontSize: 10,
+    lineHeight: 1.25,
     color: "#5a6c54",
   },
   select: {
-    padding: "12px 12px",
+    padding: "9px 10px",
     background: "#fff9ea",
     border: "3px solid #ccb993",
     fontFamily: '"Courier New", "Lucida Console", monospace',
@@ -424,6 +459,14 @@ const styles = {
     boxShadow: "inset 0 2px 0 #fffef8",
     cursor: "pointer",
     appearance: "auto",
+  },
+  selectionMeta: {
+    margin: "4px 0 0",
+    fontFamily: '"Courier New", "Lucida Console", monospace',
+    fontSize: 10,
+    lineHeight: 1.25,
+    color: "#667057",
+    fontWeight: 800,
   },
   error: {
     fontFamily: '"Courier New", "Lucida Console", monospace',
@@ -440,17 +483,17 @@ const styles = {
     alignItems: "center",
     gap: 12,
     flexWrap: "wrap",
-    marginTop: 8,
+    marginTop: 4,
   },
   submitButton: {
-    padding: "14px 24px",
+    padding: "10px 18px",
     background: "#f4d17c",
     color: "#24321f",
     border: "4px solid #6f5524",
     fontFamily: '"Courier New", "Lucida Console", monospace',
     fontSize: "clamp(15px, 1.8vw, 21px)",
     fontWeight: 900,
-    letterSpacing: "-0.04em",
+    letterSpacing: 0,
     cursor: "pointer",
     alignSelf: "flex-start",
     boxShadow: "0 5px 0 #a27b32",

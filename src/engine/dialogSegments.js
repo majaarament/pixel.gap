@@ -21,12 +21,24 @@ export function parseSpeechSegments(dialog, bodyText) {
 
     let contentLines = [...lines];
     const firstLine = lines[0];
+    const firstLineIsCurrentNpcHeader =
+      firstLine === dialog.npcName ||
+      firstLine === npcFirstName ||
+      (dialog.npcName && firstLine === `${dialog.npcName} — ${dialog.npcRole}`);
+    const firstLineIsSpeakerRoleHeader =
+      !firstLine.includes('"') &&
+      !firstLine.includes("“") &&
+      /^[A-Za-z][A-Za-z\s'-]{0,40}\s+—\s+[A-Za-z][A-Za-z\s&/-]{0,50}$/.test(firstLine);
 
     if (firstLine === "Player") {
       currentSpeaker = "You";
       currentRole = null;
       contentLines = lines.slice(1);
-    } else if (firstLine.includes(" — ")) {
+    } else if (firstLineIsCurrentNpcHeader) {
+      currentSpeaker = npcFirstName || dialog.npcName;
+      currentRole = dialog.npcRole || null;
+      contentLines = lines.slice(1);
+    } else if (firstLineIsSpeakerRoleHeader) {
       const [speaker, role] = firstLine.split(/\s+—\s+/);
       currentSpeaker = speaker.trim();
       currentRole = role?.trim() || null;
@@ -57,7 +69,7 @@ export function parseSpeechSegments(dialog, bodyText) {
 
     if (contentLines.length === 0) return;
 
-    const text = contentLines.join(" ").replace(/^["“]/, "").replace(/["”]$/, "").trim();
+    const text = cleanSpeechText(contentLines.join(" "));
     if (!text) return;
 
     if (!currentSpeaker) {
@@ -79,6 +91,14 @@ export function parseSpeechSegments(dialog, bodyText) {
   });
 
   return segments;
+}
+
+function cleanSpeechText(text) {
+  return text
+    .trim()
+    .replace(/^["“]+/, "")
+    .replace(/["”]+(?=[\s.,!?;:]*$)/, "")
+    .trim();
 }
 
 export function makePlayerChoiceSegment(text) {

@@ -522,25 +522,47 @@ const ADAPTIVE_GAP_STEPS = {
   },
 };
 
-// ─── NPC REACTIONS ───────────────────────────────────────────────────────────
+// ─── REVISIT REACTIONS ───────────────────────────────────────────────────────
 
-const PILLAR_REACTIONS = {
-  frank: "\"good. the gap between environmental ambition and operational reality is exactly what we're here to understand.\"",
-  otis: "\"that's the kind of reflection that matters. people and culture gaps don't fix themselves.\"",
-  suzy: "\"appreciated. knowing where the line sits between policy and practice is exactly what this is about.\"",
-  hazel: "\"useful. the value chain is one of the hardest places to make sustainability concrete. your view helps.\"",
+const PILLAR_VISITED_BUILDERS = {
+  frank: ({ personal, delaware, gap }) =>
+    `Frank the Fish — Environmental Stewardship\n\nFrank taps the edge of the model comparison screen. "i keep coming back to your recommendation: ${summarizeChoice(personal, "you did not treat the environmental cost as invisible")}."\n\n"${gap ? `and you expected delaware might read the moment differently: ${summarizeChoice(delaware, "that difference matters")}.` : "you saw your own instinct and delaware's expected response pointing in roughly the same direction."} either way, the compute cost only becomes real when somebody puts it in the room."`,
+
+  otis: ({ personal, delaware, gap }) =>
+    `Otis the Otter — People & Culture\n\nOtis looks toward the path back to the team area. "what stayed with me was your instinct: ${summarizeChoice(personal, "you noticed the person carrying the pressure")}."\n\n"${gap ? `you also sensed a gap in what usually happens: ${summarizeChoice(delaware, "that says something about psychological safety")}.` : "your personal response and expected organisational response were close, which is encouraging — if people actually feel able to act that way."} culture is built in exactly those small moments before someone burns out."`,
+
+  suzy: ({ personal, delaware, gap }) =>
+    `Suzy the Sheep — Business Conduct\n\nSuzy squares the folder on the desk. "your answer still feels like the important part: ${summarizeChoice(personal, "you had to decide where the shortcut stops being harmless")}."\n\n"${gap ? `and your read of delaware's likely expectation was not identical: ${summarizeChoice(delaware, "that is where process drift begins")}.` : "you read the personal and organisational line as fairly aligned, which is good — as long as speed does not quietly redraw it later."} conduct is rarely tested by dramatic scandals first. it is tested by the workaround everyone starts calling normal."`,
+
+  hazel: ({ personal, delaware, gap }) =>
+    `Hazel the Hedgehog — Responsible Value Chain\n\nHazel keeps one page of the supplier file open. "your choice made the trade-off visible: ${summarizeChoice(personal, "you weighed cost against responsibility")}."\n\n"${gap ? `you expected delaware might prioritise it differently: ${summarizeChoice(delaware, "that is the part worth discussing")}.` : "you expected delaware to respond in a similar way, which is a useful signal — but supplier decisions still need proof in the actual contract."} value-chain responsibility only counts when it survives procurement pressure."`,
 };
 
-const PILLAR_VISITED_MESSAGES = {
-  frank:
-    "Frank the Fish — Environmental Stewardship\n\nFrank glances at the screen. \"the model's deployed. i still think about that choice. digital decisions leave no visible trace — no runoff, no smoke — but they accumulate quietly. that's the part that keeps me honest.\"",
-  otis:
-    "Otis the Otter — People & Culture\n\nOtis glances back at the building. \"people situations don't resolve neatly. thanks for engaging with it honestly.\"",
-  suzy:
-    "Suzy the Sheep — Business Conduct\n\nSuzy straightens a stack of folders. \"the conversation about process and shortcuts is never really finished. but we've made a start.\"",
-  hazel:
-    "Hazel the Hedgehog — Responsible Value Chain\n\nHazel tucks the supplier file away. \"the right supplier decision is rarely obvious. thanks for thinking it through.\"",
-};
+function summarizeChoice(choice, fallback) {
+  if (!choice?.choiceLabel) return fallback;
+  return choice.choiceLabel.replace(/\.$/, "").toLowerCase();
+}
+
+function buildPillarVisitedMessage(npcId, quest) {
+  const prefix = PILLAR_STEP_PREFIXES[npcId];
+  const choices = quest.choices || [];
+  const personal = choices.find((choice) => choice.stepId === `${prefix}_scenario_personal`);
+  const delaware = choices.find((choice) => choice.stepId === `${prefix}_scenario_delaware`);
+  const gap = personal && delaware && personal.choiceKey !== delaware.choiceKey;
+  const build = PILLAR_VISITED_BUILDERS[npcId];
+  return build ? build({ personal, delaware, gap }) : null;
+}
+
+function getNextGuideName(quest) {
+  const labels = { frank: "Frank", otis: "Otis", suzy: "Suzy", hazel: "Hazel" };
+  const townOrder = quest.pillarOrder?.town || TOWN_STATION_IDS;
+  const officeOrder = quest.pillarOrder?.office || OFFICE_STATION_IDS;
+  const nextTown = townOrder.find((id) => !quest.visited?.includes(id));
+  if (nextTown) return labels[nextTown];
+  const nextOffice = officeOrder.find((id) => !quest.visited?.includes(id));
+  if (nextOffice) return labels[nextOffice];
+  return null;
+}
 
 // ─── PILLAR STEP ID PREFIXES ─────────────────────────────────────────────────
 // Used in useGameState to detect personal vs Delaware choices for gap analysis.
@@ -587,12 +609,18 @@ export function getNpcDialog(npcId, quest) {
     }
 
     // Any other stage: brief ambient acknowledgment — don't re-ask the opening questions
-    return {
-      type: "info",
-      message:
-        "Olive the Owl — Sustainability Guide\n\n\"the zones are still open. take your time with each guide — come back when you're ready.\"",
-      advanceTo: null,
-    };
+    {
+      const nextGuide = getNextGuideName(quest);
+      const route = getOpeningPov(quest.openingPov)?.routeLabel || "route";
+      const message = nextGuide
+        ? `Olive the Owl — Sustainability Guide\n\nOlive tilts her head toward the path. "your ${route} is still unfolding. ${nextGuide} has the next piece of the picture, and the useful answer is still the honest one."\n\n"come back when the guides have all had their say."`
+        : "Olive the Owl — Sustainability Guide\n\nOlive looks over the terrace. \"you've gathered the pieces now. take your seat at the council table when you're ready — that's where the patterns start to speak to each other.\"";
+      return {
+        type: "info",
+        message,
+        advanceTo: null,
+      };
+    }
   }
 
   // ── ROWAN ──────────────────────────────────────────────────────────────────
@@ -626,10 +654,14 @@ export function getNpcDialog(npcId, quest) {
     }
 
     if (quest.stage === QUEST_STAGES.COMPLETE) {
+      const finalGapChoice = quest.choices.find((c) => c.stepId === "final_gap");
+      const finalFocusChoice = quest.choices.find((c) => c.stepId === "final_focus");
+      const gapLabel = finalGapChoice?.choiceLabel?.replace(/\.$/, "").toLowerCase() || "the gap you named";
+      const focusLabel = finalFocusChoice?.choiceLabel?.replace(/\.$/, "").toLowerCase() || "the next action you chose";
       return {
         type: "info",
         message:
-          "Rowan the Hare — Post-Reflection\n\n\"journey complete. the work of closing the gap between ambition and practice is ongoing. your view is part of that.\"",
+          `Rowan the Hare — Post-Reflection\n\nRowan closes the report with one paw still on the page. "journey complete — but not neatly wrapped. you named ${gapLabel}, and you pointed toward ${focusLabel}."\n\n"that's a more useful ending than a slogan. it gives delaware something concrete to test: whether the next decision makes the gap smaller, or just easier to ignore."`,
       };
     }
 
@@ -657,7 +689,7 @@ export function getNpcDialog(npcId, quest) {
     if (beat === 1) {
       return {
         type: "info",
-        message: PILLAR_VISITED_MESSAGES[npcId],
+        message: buildPillarVisitedMessage(npcId, quest),
         advanceTo: null,
       };
     }
@@ -720,7 +752,7 @@ export function getTaskLabel(quest) {
     }
 
     case QUEST_STAGES.RETURN_TO_OLIVE:
-      return "5. Walk to your seat at the council table.";
+      return "5. Talk to Olive — she will guide you to your council table.";
 
     case QUEST_STAGES.POST_GAME:
       return "6. Speak with Rowan for the final reflection.";

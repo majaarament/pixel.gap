@@ -126,18 +126,18 @@ function drawCursor(ctx) {
   fill(ctx, 6, 10, 1, 2, w);
 }
 
-export default function PrivacyScreen({ onConsent }) {
+export default function PrivacyScreen({ canStart = false, onConsent }) {
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.key === "2" || e.key === "Enter" || e.key === " " || e.key === "Tab") {
         e.preventDefault();
-        onConsent();
+        if (canStart) onConsent();
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onConsent]);
+  }, [canStart, onConsent]);
 
   return (
     <div style={styles.screen}>
@@ -178,7 +178,7 @@ export default function PrivacyScreen({ onConsent }) {
               draw={drawCursor}
               style={styles.cursor}
             />
-            <div style={styles.startText}>Press 2 start</div>
+            <div style={styles.startText}>{canStart ? "Press 2 start" : "Read notice first"}</div>
           </div>
         </div>
       </div>
@@ -208,16 +208,17 @@ const styles = {
   panel: {
     position: "relative",
     width: "min(1000px, calc(100vw - 56px))",
-    height: "min(560px, calc(100vh - 44px))",
+    height: "min(520px, calc(100vh - 40px))",
     background: "#e8ecd7",
-    overflow: "visible",
+    overflow: "hidden",
+    boxSizing: "border-box",
   },
   titleCanvas: {
     position: "absolute",
-    top: "clamp(48px, 8vh, 72px)",
+    top: "clamp(28px, 7vh, 58px)",
     left: "50%",
     transform: "translateX(-50%)",
-    width: "min(610px, 58vw)",
+    width: "min(520px, 68vw)",
     height: "auto",
   },
   cloud: {
@@ -259,9 +260,9 @@ const styles = {
   },
   startText: {
     fontFamily: '"Courier New", "Lucida Console", monospace',
-    fontSize: "clamp(18px, 2.2vw, 28px)",
+    fontSize: "clamp(14px, 2vw, 24px)",
     fontWeight: 900,
-    letterSpacing: "-0.03em",
+    letterSpacing: 0,
     color: "#000000",
     whiteSpace: "nowrap",
   },

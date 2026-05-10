@@ -28,6 +28,14 @@ const SAFETY_SCALE_CHOICES = [
   { key: "5", label: "5 — very safe" },
 ];
 
+const CONFIDENCE_CHOICES = [
+  { key: "1", label: "1 — mostly guessing" },
+  { key: "2", label: "2 — not very sure" },
+  { key: "3", label: "3 — somewhat sure" },
+  { key: "4", label: "4 — fairly sure" },
+  { key: "5", label: "5 — very sure" },
+];
+
 // ============================================================================
 // PILLAR 1: ENVIRONMENTAL STEWARDSHIP — Frank the Fish
 // ============================================================================
@@ -53,22 +61,22 @@ export const FRANK_SURVEY = {
       choices: [
         {
           key: "flag_energy",
-          label: "Flag the energy cost to the client and factor it into the recommendation.",
+          label: "Raise energy cost as one criterion alongside performance and budget.",
           reaction: "\"That's the harder conversation to have. Most clients haven't asked for it. But once you name it, they usually want to know.\"",
         },
         {
           key: "lighter_model",
-          label: "Recommend the lighter model as default — performance is sufficient and the footprint is lower.",
+          label: "Start from the lighter model if it meets the agreed use cases.",
           reaction: "\"Pragmatic. You're still making a sustainability call — just making it quietly.\"",
         },
         {
           key: "note_internally",
-          label: "Note it internally as a sustainability consideration but lead with performance in the client conversation.",
+          label: "Keep the client conversation focused on performance, while noting the sustainability trade-off internally.",
           reaction: "\"It's in the record, at least. Though if no one reads the footnote, the same model gets chosen again next time.\"",
         },
         {
           key: "full_info",
-          label: "Give the client full cost information — performance and carbon — and let them decide.",
+          label: "Present performance, cost, and carbon implications and ask the client to choose the trade-off.",
           reaction: "\"That's putting it back where it belongs. They commissioned the work — they should own the full picture.\"",
         },
       ],
@@ -89,6 +97,12 @@ export const FRANK_SURVEY = {
       speaker: "Frank",
       message: "\"Last question from me. How often do you see environmental considerations genuinely shaping real decisions where you work?\"",
       choices: SCALE_CHOICES,
+    },
+    {
+      id: "env_confidence",
+      speaker: "Frank",
+      message: "\"And how confident are you in that read?\"",
+      choices: CONFIDENCE_CHOICES,
     },
     {
       id: "env_outro",
@@ -125,22 +139,22 @@ export const OTIS_SURVEY = {
       choices: [
         {
           key: "raise_now",
-          label: "Raise it now — waiting makes the pattern harder to break.",
+          label: "Raise the workload pattern now, even if it disrupts the sprint conversation.",
           reaction: "\"That takes real willingness to make things uncomfortable before they get worse. Not everyone does.\"",
         },
         {
           key: "check_in",
-          label: "Check in with them privately first, then decide how to escalate.",
+          label: "Check in privately first, then decide together whether to escalate.",
           reaction: "\"A quiet check-in first — that at least gives the person some agency in how the situation gets raised.\"",
         },
         {
           key: "let_lead",
-          label: "Leave it for the team lead or manager — that's their role.",
+          label: "Leave it with the team lead or manager unless the issue becomes more visible.",
           reaction: "\"Relying on the chain of command. Fair, if the chain is actually paying attention.\"",
         },
         {
           key: "document",
-          label: "Note what you're seeing and flag it after the immediate pressure passes.",
+          label: "Track what you're seeing and raise it after the immediate pressure passes.",
           reaction: "\"Watching and waiting. Sometimes the right call — sometimes it's already too late by the time the deadline lifts.\"",
         },
       ],
@@ -161,6 +175,12 @@ export const OTIS_SURVEY = {
       speaker: "Otis",
       message: "\"One more. How safe does it feel to express a different view or raise a concern in your team?\"",
       choices: SAFETY_SCALE_CHOICES,
+    },
+    {
+      id: "people_confidence",
+      speaker: "Otis",
+      message: "\"How confident are you that this reflects the wider pattern, not just one moment?\"",
+      choices: CONFIDENCE_CHOICES,
     },
     {
       id: "people_outro",
@@ -197,22 +217,22 @@ export const SUZY_SURVEY = {
       choices: [
         {
           key: "follow_proper",
-          label: "Follow the full process — the shortcut isn't worth the downstream risk.",
+          label: "Follow the full process, accepting the delay.",
           reaction: "\"That's the textbook answer. It's also the slower one. Takes real conviction to hold that line when everyone else is moving fast.\"",
         },
         {
           key: "flag_up",
-          label: "Flag the workaround to a manager before deciding — get clarity on whether it's acceptable.",
+          label: "Ask a manager whether the workaround is acceptable before using it.",
           reaction: "\"Checking before acting. Harder than it sounds when the deadline is tomorrow and no one else seems bothered.\"",
         },
         {
           key: "use_workaround",
-          label: "Use the workaround this time — it's common practice and the deadline matters.",
+          label: "Use the workaround this time because it appears common and the deadline is real.",
           reaction: "\"'Common practice' is doing a lot of work there. But I understand how it happens. It usually starts exactly like this.\"",
         },
         {
           key: "suggest_review",
-          label: "Use it now but push for a formal review so it's either approved or fixed properly.",
+          label: "Use it now, then push for a formal review so the process is clarified.",
           reaction: "\"Pragmatic and constructive — if the review actually happens. That second half is where it usually falls apart.\"",
         },
       ],
@@ -233,6 +253,12 @@ export const SUZY_SURVEY = {
       speaker: "Suzy",
       message: "\"And how safe would it feel to raise a concern about a process or compliance issue in your context?\"",
       choices: SAFETY_SCALE_CHOICES,
+    },
+    {
+      id: "conduct_confidence",
+      speaker: "Suzy",
+      message: "\"How confident are you in that safety read?\"",
+      choices: CONFIDENCE_CHOICES,
     },
     {
       id: "conduct_outro",
@@ -269,22 +295,22 @@ export const HAZEL_SURVEY = {
       choices: [
         {
           key: "responsible",
-          label: "Go with the responsible supplier — the cost difference is worth the alignment.",
+          label: "Choose the responsible supplier despite the cost and onboarding effort.",
           reaction: "\"That's a harder argument to make when procurement is watching the numbers. Takes real conviction to hold the line there.\"",
         },
         {
           key: "negotiate",
-          label: "Try to negotiate the lower-cost supplier to improve their standards as a condition.",
+          label: "Negotiate stronger standards with the lower-cost supplier as a condition.",
           reaction: "\"Using procurement leverage. It works when you actually have it — and when you're willing to walk away if they don't move.\"",
         },
         {
           key: "cost",
-          label: "Go with the lower-cost option — the business case has to hold up.",
+          label: "Choose the lower-cost option because the business case is the current constraint.",
           reaction: "\"The business case wins. That's honest. It's how most of these decisions actually land, whatever the sustainability statement says.\"",
         },
         {
           key: "escalate",
-          label: "Escalate the trade-off to leadership — this decision is too significant for this level.",
+          label: "Escalate the trade-off because the long-term commitment is significant.",
           reaction: "\"Pushing it upward. That at least makes the trade-off visible rather than invisible — which is already something.\"",
         },
       ],
@@ -305,6 +331,12 @@ export const HAZEL_SURVEY = {
       speaker: "Hazel",
       message: "\"Last one. How visible is responsible external decision-making — around suppliers, partners, and longer-term impact — in your everyday work?\"",
       choices: SCALE_CHOICES,
+    },
+    {
+      id: "chain_confidence",
+      speaker: "Hazel",
+      message: "\"How confident are you in that view of the wider organisation?\"",
+      choices: CONFIDENCE_CHOICES,
     },
     {
       id: "chain_outro",

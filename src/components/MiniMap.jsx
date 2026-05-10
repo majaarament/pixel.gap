@@ -136,7 +136,7 @@ const styles = {
     right: 12,
     bottom: 12,
     padding: 6,
-    borderRadius: 8,
+    borderRadius: 0,
     background: "rgba(245, 241, 232, 0.92)",
     border: "1px solid rgba(88, 104, 81, 0.35)",
     boxShadow: "0 8px 18px rgba(34, 46, 37, 0.18)",

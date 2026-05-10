@@ -346,12 +346,14 @@ export default function CouncilMeeting({ quest, onClose }) {
 
   // ── Render ─────────────────────────────────────────────────────────────────────
   const isGathering      = phase === "gathering";
-  const canConclude      = userTurns > 0 && !isLoading;
+  const canConclude      = !isLoading;
   const inputValue       = isListening ? (textInput + interimText) : textInput;
   const latestNpcMessage = [...displayMsgs].reverse().find((msg) => msg.type === "npc") || null;
   const activeNpcId      = latestNpcMessage?.npcId || "olive";
   const activeNpc        = COUNCIL_NPCS.find((npc) => npc.id === activeNpcId) || COUNCIL_NPCS[0];
   const pov              = getOpeningPov(quest?.openingPov);
+  const npcTurns         = displayMsgs.filter((m) => m.type === "npc").length;
+  const showEndPrompt    = npcTurns >= 3 && !isLoading;
 
   return (
     <div style={styles.overlay}>
@@ -387,7 +389,7 @@ export default function CouncilMeeting({ quest, onClose }) {
               }}
               onClick={handleConclude}
               disabled={!canConclude}
-              title={canConclude ? "leave the council" : "share at least one reply first"}
+              title="leave the council and continue to Rowan"
             >
               Leave ▶
             </button>
@@ -414,9 +416,28 @@ export default function CouncilMeeting({ quest, onClose }) {
               ? pov.profileSummary
               : "You've walked through all four zones and spoken with each guide."}
           </p>
-          <p style={styles.gatheringBody} >
-            The council has followed your journey. They're ready to reflect on what you found.
+          <p style={styles.gatheringBody}>
+            The council has followed your journey and wants to reflect on what you found. They'll ask you a few questions — answer honestly, there are no wrong answers.
           </p>
+
+          <div style={styles.howItWorks}>
+            <div style={styles.howItWorksTitle}>how to respond</div>
+            <div style={styles.howItWorksList}>
+              <div style={styles.howItWorksRow}>
+                <span style={styles.howItWorksKey}>speak aloud</span>
+                <span style={styles.howItWorksDesc}>
+                  {canHandsFree
+                    ? "voice mode activates automatically after each council message — just talk"
+                    : "voice not available in this browser — use the text field below"}
+                </span>
+              </div>
+              <div style={styles.howItWorksRow}>
+                <span style={styles.howItWorksKey}>type</span>
+                <span style={styles.howItWorksDesc}>use the text box at the bottom and press Enter or Send to reply</span>
+              </div>
+            </div>
+          </div>
+
           <div style={styles.gatheringFooter}>
             <button
               type="button"
@@ -473,6 +494,19 @@ export default function CouncilMeeting({ quest, onClose }) {
             {error && <ErrorLine text={error} />}
             <div ref={listEndRef} />
           </div>
+
+          {showEndPrompt && (
+            <div style={styles.endPrompt}>
+              <span style={styles.endPromptText}>You've heard from the council. Ready to wrap up?</span>
+              <button
+                type="button"
+                style={styles.endPromptBtn}
+                onClick={handleConclude}
+              >
+                End Discussion &amp; See Your Results ▶
+              </button>
+            </div>
+          )}
 
           <div style={styles.inputDock}>
             {hasVoice && (
@@ -703,7 +737,7 @@ const styles = {
     zIndex: 110,
     display: "flex",
     flexDirection: "column",
-    background: "linear-gradient(180deg, #14221a 0%, #223528 34%, #1a251d 100%)",
+    background: "#1a251d",
     fontFamily: '"Courier New", "Lucida Console", monospace',
     pointerEvents: "auto",
     overflow: "hidden",
@@ -717,7 +751,7 @@ const styles = {
     padding: "10px 14px 8px",
     borderBottom: "3px solid #3a2618",
     boxShadow: "0 3px 0 #140d08",
-    background: "linear-gradient(180deg, #6f4a2b 0%, #52341f 100%)",
+    background: "#5f3e26",
     flexShrink: 0,
     gap: 10,
   },
@@ -792,7 +826,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "linear-gradient(180deg, #29402f 0%, #30442c 46%, #3f2d1d 46%, #2e2116 100%)",
+    background: "#2e2116",
   },
   stageArea: {
     position: "relative",
@@ -815,7 +849,7 @@ const styles = {
   stageBackWall: {
     position: "absolute",
     inset: "0 0 44% 0",
-    background: "linear-gradient(180deg, #3f5a42 0%, #304734 100%)",
+    background: "#304734",
     zIndex: 0,
   },
   stageCornice: {
@@ -834,7 +868,7 @@ const styles = {
     top: 0,
     bottom: "40%",
     width: 20,
-    background: "linear-gradient(180deg, #6f4f31 0%, #573a22 100%)",
+    background: "#573a22",
     boxShadow: "inset 4px 0 0 #8f6a46, inset -4px 0 0 #422915",
     zIndex: 2,
   },
@@ -844,7 +878,7 @@ const styles = {
     top: 0,
     bottom: "40%",
     width: 20,
-    background: "linear-gradient(180deg, #6f4f31 0%, #573a22 100%)",
+    background: "#573a22",
     boxShadow: "inset 4px 0 0 #8f6a46, inset -4px 0 0 #422915",
     zIndex: 2,
   },
@@ -854,8 +888,7 @@ const styles = {
     right: "9%",
     top: "11%",
     height: "25%",
-    background:
-      "repeating-linear-gradient(90deg, #5f452d 0 10px, #715338 10px 54px, #5f452d 54px 64px)",
+    background: "#715338",
     boxShadow: "0 0 0 4px #4a331f, inset 0 4px 0 #836142, inset 0 -4px 0 #3b2717",
     opacity: 0.48,
     zIndex: 1,
@@ -928,7 +961,7 @@ const styles = {
     right: 0,
     top: "56%",
     height: "10%",
-    background: "linear-gradient(180deg, #7b5430 0%, #644425 100%)",
+    background: "#644425",
     boxShadow: "inset 0 4px 0 #9b7148, inset 0 -4px 0 #402714",
     zIndex: 1,
   },
@@ -948,7 +981,7 @@ const styles = {
     right: 0,
     bottom: 0,
     height: "44%",
-    background: "linear-gradient(180deg, #765433 0%, #553920 100%)",
+    background: "#553920",
     zIndex: 0,
   },
   stageFloorGlow: {
@@ -1007,7 +1040,7 @@ const styles = {
     width: 670,
     height: 138,
     transform: "translate(-50%, -50%)",
-    background: "linear-gradient(180deg, #7c3932 0%, #60302c 100%)",
+    background: "#6f342f",
     clipPath: PIXEL_OVAL_CLIP,
     boxShadow: "0 0 0 4px #3b201b, inset 0 0 0 4px #bc8f58, inset 0 0 0 10px #6a2f2b",
     zIndex: 2,
@@ -1245,7 +1278,7 @@ const styles = {
   // Speaker nameplate 
   nameplate: {
     padding: "6px 16px",
-    background: "linear-gradient(180deg, #4a3220 0%, #362417 100%)",
+    background: "#3f2b1c",
     borderTop: "3px solid #6a4a2e",
     borderBottom: "3px solid #160f0a",
     flexShrink: 0,
@@ -1295,7 +1328,7 @@ const styles = {
   // ── Meeting record panel ──────────────────────────────────────────────────
   recordPanel: {
     flexShrink: 0,
-    height: 210,
+    height: "clamp(160px, 28vh, 220px)",
     display: "flex",
     flexDirection: "column",
     background: "#efe0bb",
@@ -1332,12 +1365,12 @@ const styles = {
   transcriptBody: {
     flex: 1,
     overflowY: "auto",
-    padding: "8px 16px 6px",
+    padding: "6px 12px 5px",
     display: "flex",
     flexDirection: "column",
-    gap: 6,
+    gap: 4,
     scrollbarWidth: "thin",
-    scrollbarColor: "#b7925e transparent",
+    scrollbarColor: "rgba(141,100,61,0.5) rgba(239,224,187,0.3)",
   },
   emptyState: {
     fontSize: 13,
@@ -1346,8 +1379,8 @@ const styles = {
     lineHeight: 1.5,
   },
   transcriptLine: {
-    fontSize: 14,
-    lineHeight: 1.5,
+    fontSize: "clamp(10px, 1.7vh, 13px)",
+    lineHeight: 1.25,
     color: "#3e2c16",
   },
   transcriptLineNpc: {},
@@ -1386,13 +1419,13 @@ const styles = {
   // ── Gathering panel (shown before meeting begins) ─────────────────────────
   gatheringPanel: {
     flexShrink: 0,
-    padding: "18px 24px 20px",
+    padding: "12px 16px 14px",
     background: "#efe0bb",
     borderTop: "4px solid #8d643d",
     boxShadow: "inset 0 3px 0 #fff3cf",
     display: "flex",
     flexDirection: "column",
-    gap: 10,
+    gap: 7,
     fontFamily: '"Courier New", "Lucida Console", monospace',
   },
   gatheringRoute: {
@@ -1416,9 +1449,50 @@ const styles = {
   },
   gatheringBody: {
     margin: 0,
-    fontSize: 13,
-    lineHeight: 1.6,
+    fontSize: 11,
+    lineHeight: 1.35,
     color: "#4a3318",
+  },
+  howItWorks: {
+    background: "#dcc79d",
+    border: "2px solid #b18f5d",
+    padding: "8px 12px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  },
+  howItWorksTitle: {
+    fontSize: 9,
+    fontWeight: 900,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    color: "#7a5528",
+  },
+  howItWorksList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+  },
+  howItWorksRow: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: 10,
+  },
+  howItWorksKey: {
+    fontSize: 10,
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    color: "#4a2e10",
+    background: "#f0d48a",
+    border: "2px solid #8d643d",
+    padding: "2px 6px",
+    flexShrink: 0,
+  },
+  howItWorksDesc: {
+    fontSize: 10,
+    color: "#5c3d1a",
+    lineHeight: 1.35,
   },
   gatheringFooter: {
     display: "flex",
@@ -1436,8 +1510,43 @@ const styles = {
     textTransform: "uppercase",
     fontFamily: "inherit",
     cursor: "pointer",
-    padding: "10px 22px",
+    padding: "7px 16px",
     boxShadow: "3px 3px 0 #182116",
+  },
+
+  // ── End session prompt ────────────────────────────────────────────────────
+  endPrompt: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    padding: "8px 14px",
+    background: "#2d3f2c",
+    borderTop: "2px solid #4a6440",
+    borderBottom: "2px solid #182116",
+    flexShrink: 0,
+  },
+  endPromptText: {
+    fontSize: 11,
+    color: "#cde2a6",
+    letterSpacing: 0.3,
+    lineHeight: 1.3,
+  },
+  endPromptBtn: {
+    border: "3px solid #88a562",
+    borderRadius: 0,
+    background: "#3e5938",
+    color: "#e3f2b8",
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    fontFamily: "inherit",
+    cursor: "pointer",
+    padding: "7px 14px",
+    boxShadow: "3px 3px 0 #152014",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
   },
 
   // ── Input dock ────────────────────────────────────────────────────────────
@@ -1471,15 +1580,15 @@ const styles = {
   },
   input: {
     width: "100%",
-    minHeight: 52,
+    minHeight: 42,
     boxSizing: "border-box",
     resize: "none",
-    border: "none",
+    border: "3px solid #4a2b16",
     background: "#f7eed8",
     color: "#3e2c16",
-    fontSize: 14,
-    lineHeight: 1.5,
-    padding: "10px 14px",
+    fontSize: 12,
+    lineHeight: 1.3,
+    padding: "7px 10px",
     fontFamily: "inherit",
     outline: "none",
   },
@@ -1490,10 +1599,10 @@ const styles = {
   interimOverlay: {
     position: "absolute",
     inset: 0,
-    padding: "10px 14px",
+    padding: "7px 10px",
     color: "rgba(90,70,40,0.4)",
-    fontSize: 14,
-    lineHeight: 1.5,
+    fontSize: 12,
+    lineHeight: 1.3,
     fontFamily: "inherit",
     pointerEvents: "none",
     whiteSpace: "pre-wrap",
@@ -1508,7 +1617,7 @@ const styles = {
     background: "#dcc79d",
     color: "#47643a",
     boxShadow: "none",
-    padding: "0 18px",
+    padding: "0 12px",
     fontSize: 11,
   },
 };

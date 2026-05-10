@@ -99,7 +99,8 @@ The player has just completed a journey through delaware's four sustainability p
 
 PLAYER PROFILE
 - Role: ${profile.roleLevel || "employee"}
-- Team: ${profile.team || profile.branch || "unknown"}
+- Department: ${profile.department || profile.team || profile.branch || "unknown"}
+- Entity: ${profile.entityLabel || profile.entity || "unknown"}
 - Country: ${profile.country || "unknown"}
 
 PLAYER'S ACTUAL GAME CHOICES

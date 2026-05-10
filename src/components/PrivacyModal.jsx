@@ -27,17 +27,17 @@ export default function PrivacyModal({ onAccept, onExit }) {
         <div style={styles.body}>
           <p style={styles.lead}>
             This experience is designed to give delaware a picture of ESG maturity at an
-            organisational level. Here is exactly how your data is handled.
+            organisational level. Here is the practical version of how your data is handled.
           </p>
 
           <div style={styles.items}>
             <div style={styles.item}>
               <div style={styles.itemIcon}>✕</div>
               <div>
-                <div style={styles.itemTitle}>No personal data collected</div>
+                <div style={styles.itemTitle}>No name or email requested</div>
                 <div style={styles.itemDetail}>
-                  We do not store your name, email address, or any other identifier that
-                  could be used to trace a response back to you.
+                  The game asks for role level, team, and entity so results can be grouped.
+                  It does not ask for your name or email address.
                 </div>
               </div>
             </div>
@@ -45,10 +45,10 @@ export default function PrivacyModal({ onAccept, onExit }) {
             <div style={styles.item}>
               <div style={styles.itemIcon}>◎</div>
               <div>
-                <div style={styles.itemTitle}>All answers are anonymised</div>
+                <div style={styles.itemTitle}>Answers are reported in aggregate</div>
                 <div style={styles.itemDetail}>
-                  Results are aggregated at the organisational level. No individual
-                  response is visible to management or any other party.
+                  Individual answers are meant for pattern analysis, not for identifying
+                  a person. Results should be reviewed at group level only.
                 </div>
               </div>
             </div>
@@ -56,18 +56,18 @@ export default function PrivacyModal({ onAccept, onExit }) {
             <div style={styles.item}>
               <div style={styles.itemIcon}>⬡</div>
               <div>
-                <div style={styles.itemTitle}>Session ID for security only</div>
+                <div style={styles.itemTitle}>Session ID, not a personal profile</div>
                 <div style={styles.itemDetail}>
-                  A temporary session ID is stored to keep the experience stable. It is
-                  not linked to you as an individual and is discarded after your session ends.
+                  A random session ID is stored in this browser tab so one playthrough
+                  stays together. Draft progress is cached on this device during the session.
                 </div>
               </div>
             </div>
           </div>
 
           <p style={styles.note}>
-            If at any point you are not comfortable continuing, you can close this window.
-            No partial responses are retained.
+            If you are not comfortable continuing, exit now. During play, answers may be
+            saved locally and submitted when the journey is completed.
           </p>
         </div>
 
@@ -90,14 +90,16 @@ const styles = {
     inset: 0,
     zIndex: 9000,
     background: "rgba(14, 22, 16, 0.82)",
-    backdropFilter: "blur(6px)",
+    backdropFilter: "none",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    padding: 12,
+    boxSizing: "border-box",
   },
   modal: {
     width: "min(560px, calc(100vw - 40px))",
+    maxHeight: "calc(100vh - 24px)",
     background: "#f7f3e8",
     border: "4px solid #2e3e28",
     boxShadow: "0 20px 0 #1a2616, 0 32px 64px rgba(10,20,12,0.5)",
@@ -108,7 +110,7 @@ const styles = {
   },
   header: {
     background: "#2e3e28",
-    padding: "18px 24px 16px",
+    padding: "12px 18px 10px",
     display: "flex",
     flexDirection: "column",
     gap: 6,
@@ -127,36 +129,36 @@ const styles = {
   },
   title: {
     margin: 0,
-    fontSize: 26,
+    fontSize: "clamp(18px, 3.2vh, 24px)",
     fontWeight: 900,
-    letterSpacing: "-0.04em",
+    letterSpacing: 0,
     color: "#e8f0e2",
     lineHeight: 1.1,
   },
   body: {
-    padding: "20px 24px",
+    padding: "12px 18px",
     display: "flex",
     flexDirection: "column",
-    gap: 16,
+    gap: 10,
   },
   lead: {
     margin: 0,
-    fontSize: 14,
-    lineHeight: 1.65,
+    fontSize: 12,
+    lineHeight: 1.45,
     color: "#3a4a34",
   },
   items: {
     display: "flex",
     flexDirection: "column",
-    gap: 14,
+    gap: 8,
   },
   item: {
     display: "flex",
-    gap: 14,
+    gap: 10,
     alignItems: "flex-start",
     background: "#ede9d6",
     border: "2px solid #c9b98a",
-    padding: "12px 14px",
+    padding: "8px 10px",
   },
   itemIcon: {
     width: 28,
@@ -176,23 +178,23 @@ const styles = {
     fontWeight: 800,
     color: "#1f2d1c",
     marginBottom: 4,
-    letterSpacing: "-0.01em",
+    letterSpacing: 0,
   },
   itemDetail: {
-    fontSize: 12,
-    lineHeight: 1.6,
+    fontSize: 11,
+    lineHeight: 1.35,
     color: "#4a5c44",
   },
   note: {
     margin: 0,
     fontSize: 12,
-    lineHeight: 1.55,
+    lineHeight: 1.35,
     color: "#6a7a60",
     borderTop: "1px solid #d4c99a",
-    paddingTop: 14,
+    paddingTop: 8,
   },
   footer: {
-    padding: "14px 24px 20px",
+    padding: "10px 18px 12px",
     display: "flex",
     alignItems: "center",
     gap: 16,
@@ -201,28 +203,27 @@ const styles = {
     background: "#ede9d6",
   },
   acceptBtn: {
-    padding: "12px 22px",
+    padding: "9px 16px",
     background: "#f0c94a",
     border: "3px solid #6a4e1a",
     color: "#1f2d1c",
     fontFamily: '"Courier New", "Lucida Console", monospace',
     fontSize: 14,
     fontWeight: 900,
-    letterSpacing: "-0.03em",
+    letterSpacing: 0,
     cursor: "pointer",
     boxShadow: "0 4px 0 #a07828",
   },
   exitBtn: {
-    padding: "10px 0",
-    background: "transparent",
-    border: "none",
-    color: "#7a6a50",
+    padding: "9px 14px",
+    background: "#ede9d6",
+    border: "3px solid #7a6a50",
+    color: "#5a4a38",
     fontFamily: '"Courier New", "Lucida Console", monospace',
-    fontSize: 12,
-    fontWeight: 700,
+    fontSize: 13,
+    fontWeight: 800,
     letterSpacing: "0.02em",
     cursor: "pointer",
-    textDecoration: "underline",
-    textUnderlineOffset: 3,
+    boxShadow: "0 3px 0 #b09870",
   },
 };

@@ -1,16 +1,10 @@
-// Structured gameplay logging with a persistent user id and a per-tab session id.
+// Structured gameplay logging with a per-tab session id.
 // Events are posted to our own backend, which can forward them to Google Sheets.
 
 const LOG_ENDPOINT = "/api/log-event";
-const USER_ID_KEY = "pixel-gap-user-id";
 const SESSION_ID_KEY = "pixel-gap-session-id";
 
-let cachedUserId = null;
 let cachedSessionId = null;
-
-function canUseBrowserStorage() {
-  return typeof window !== "undefined" && !!window.localStorage;
-}
 
 function createId(prefix) {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -39,28 +33,16 @@ function writeStoredValue(storage, key, value) {
 function profileFields(playerProfile = {}) {
   return {
     roleLevel: playerProfile?.roleLevel || "",
-    team: playerProfile?.team || playerProfile?.branch || "",
+    team: playerProfile?.team || playerProfile?.department || playerProfile?.branch || "",
+    department: playerProfile?.department || playerProfile?.team || "",
+    departmentPrimaryEntities: playerProfile?.departmentPrimaryEntities || "",
+    departmentSupportingEntities: playerProfile?.departmentSupportingEntities || "",
+    entity: playerProfile?.entity || "",
+    entityCity: playerProfile?.entityCity || "",
+    entityOfficeType: playerProfile?.entityOfficeType || "",
+    entityLabel: playerProfile?.entityLabel || "",
     country: playerProfile?.country || "",
   };
-}
-
-export function getUserId() {
-  if (cachedUserId) return cachedUserId;
-
-  if (!canUseBrowserStorage()) {
-    cachedUserId = createId("user");
-    return cachedUserId;
-  }
-
-  const stored = readStoredValue(window.localStorage, USER_ID_KEY);
-  if (stored) {
-    cachedUserId = stored;
-    return cachedUserId;
-  }
-
-  cachedUserId = createId("user");
-  writeStoredValue(window.localStorage, USER_ID_KEY, cachedUserId);
-  return cachedUserId;
 }
 
 export function getSessionId() {
@@ -93,7 +75,7 @@ export function logEvent(eventType, payload = {}) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       eventType,
-      userId: getUserId(),
+      userId: "",
       sessionId: getSessionId(),
       timestamp: new Date().toISOString(),
       ...payload,
@@ -131,6 +113,14 @@ export function logChoice({
 
 export function logFinalReport({ report, questStage, playerProfile, choices, reflections }) {
   logEvent("final_report", {
+    questStage: questStage || "",
+    text: JSON.stringify({ report, choices, reflections }),
+    ...profileFields(playerProfile),
+  });
+}
+
+export function logEarlyExit({ report, questStage, playerProfile, choices, reflections }) {
+  logEvent("early_exit", {
     questStage: questStage || "",
     text: JSON.stringify({ report, choices, reflections }),
     ...profileFields(playerProfile),
