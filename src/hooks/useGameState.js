@@ -49,7 +49,7 @@ function loadSavedProgress() {
 
 export function clearSavedProgress() {
   if (typeof window === "undefined") return;
-  try { window.localStorage.removeItem(PROGRESS_STORAGE_KEY); } catch {}
+  try { window.localStorage.removeItem(PROGRESS_STORAGE_KEY); } catch { /* ignore unavailable storage */ }
 }
 
 function getInitialQuestState() {
@@ -98,6 +98,7 @@ export function useGameState() {
   const lastObjectiveKeyRef = useRef("");
   const resultsAutoOpenedRef = useRef(false);
   const councilSeenRef = useRef(false);
+  const choiceLockRef = useRef(false);
 
   const [scene, setScene] = useState("town");
   const [player, setPlayer] = useState({ x: 24, y: 32, dir: "up", step: 0, species: "beaver" });
@@ -116,6 +117,7 @@ export function useGameState() {
   useEffect(() => { townNpcsRef.current = townNpcs; }, [townNpcs]);
   useEffect(() => { officeNpcsRef.current = officeNpcs; }, [officeNpcs]);
   useEffect(() => { dialogRef.current = dialog; }, [dialog]);
+  useEffect(() => { choiceLockRef.current = false; }, [dialog]);
 
   const currentNpcs = useMemo(
     () => {
@@ -300,7 +302,7 @@ export function useGameState() {
     setPlayer({ x: 24, y: 32, dir: "up", step: 0, species: "beaver" });
     keysRef.current = {};
     logProfile(profile);
-    setQuest((prev) => syncStatus({ ...INITIAL_QUEST, playerProfile: profile }));
+    setQuest(syncStatus({ ...INITIAL_QUEST, playerProfile: profile }));
   }
 
   function leaveGame() {
@@ -415,6 +417,8 @@ export function useGameState() {
   function handleChoice(choice) {
     const current = dialogRef.current;
     if (!current || current.phase !== "question") return;
+    if (choiceLockRef.current) return;
+    choiceLockRef.current = true;
 
     recordChoice(current, choice);
 

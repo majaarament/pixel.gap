@@ -1,12 +1,16 @@
 /**
  * ESG Pillar Survey Dialogue — streamlined edition.
  *
- * Each NPC has exactly 5 steps:
+ * Each NPC has a compact sequence:
  *   1. intro   — NPC presents a concrete scenario (no choices, player presses continue)
  *   2. personal — "what would you do?" (4 choices, each with an NPC reaction)
  *   3. delaware — "what do you think would actually happen here?" (4 choices, no reactions)
  *   4. scale   — "how often do you see this in practice?" (1-5 scale)
- *   5. outro   — brief NPC sign-off (no choices, player presses continue)
+ *   5. confidence — how sure the player is about that read
+ *
+ * The closing line is handled by finalReaction. Older *_outro steps are kept in
+ * the data for reference, but skipped in conversion so NPCs do not deliver two
+ * consecutive conclusions.
  *
  * Step IDs use the prefix_scenario_personal / prefix_scenario_delaware pattern
  * so the gap-detection logic in useGameState can compare the two answers automatically.
@@ -395,14 +399,16 @@ export const SURVEY_SCORING = {
  * With the streamlined surveys, there are no conditional follow-up branches.
  */
 export function convertSurveyToDialogSequence(surveyData) {
-  const steps = surveyData.steps.map((step) => ({
-    ...step,
-    choices: step.choices.map((choice) => ({
-      ...choice,
-      choiceValue: null,
-      reaction: choice.reaction || null,
-    })),
-  }));
+  const steps = surveyData.steps
+    .filter((step) => !step.id.endsWith("_outro"))
+    .map((step) => ({
+      ...step,
+      choices: step.choices.map((choice) => ({
+        ...choice,
+        choiceValue: null,
+        reaction: choice.reaction || null,
+      })),
+    }));
 
   return {
     type: "sequence",

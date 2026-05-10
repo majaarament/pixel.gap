@@ -39,7 +39,7 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
   ));
   const [openText, setOpenText]     = useState("");
   const [revealState, setRevealState] = useState({ key: "closed", count: 1 });
-  const [charCount, setCharCount]   = useState(0);
+  const [charState, setCharState]   = useState({ key: "closed", count: 0 });
   const dialogScrollRef             = useRef(null);
   const shouldAutoScrollRef         = useRef(true);
   const revealTimerRef              = useRef(null);
@@ -74,6 +74,8 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
   const latestSegText = segments.length > 0
     ? stripVisibleQuotes(segments[segments.length - 1].text)
     : (bodyText ? stripVisibleQuotes(bodyText) : "");
+  const charKey = `${dialogKey}:${revealedCount}:${latestSegText}`;
+  const charCount = charState.key === charKey ? charState.count : 0;
   const isTypingActive = latestSegText.length > 0 && charCount < latestSegText.length;
   const allRevealed    = allSegRevealed && !isTypingActive;
 
@@ -92,20 +94,17 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
     return () => cancelAnimationFrame(frame);
   }, [dialogKey, revealedCount, history.length, segments.length, allRevealed, hasChoices]);
 
-  // Reset charCount whenever a new segment becomes visible.
-  useEffect(() => {
-    clearTimeout(charTimerRef.current);
-    setCharCount(0);
-  }, [revealedCount]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Typewriter: advance charCount one tick at a time.
   useEffect(() => {
     if (!isTypingActive) return undefined;
     charTimerRef.current = setTimeout(() => {
-      setCharCount((prev) => Math.min(prev + CHARS_PER_TICK, latestSegText.length));
+      setCharState((prev) => {
+        const count = prev.key === charKey ? prev.count : 0;
+        return { key: charKey, count: Math.min(count + CHARS_PER_TICK, latestSegText.length) };
+      });
     }, CHAR_TICK_MS);
     return () => clearTimeout(charTimerRef.current);
-  }, [isTypingActive, charCount, latestSegText.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isTypingActive, charCount, charKey, latestSegText.length]);
 
   // Reveal the next segment only after the current one finishes typing.
   useEffect(() => {
@@ -151,7 +150,7 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
         event.preventDefault();
         clearTimeout(revealTimerRef.current);
         clearTimeout(charTimerRef.current);
-        setCharCount(latestSegText.length);
+        setCharState({ key: charKey, count: latestSegText.length });
         setRevealState({ key: dialogKey, count: allSegments.length });
         return;
       }
@@ -165,7 +164,7 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
 
     window.addEventListener("keydown", handleWindowKeyDown);
     return () => window.removeEventListener("keydown", handleWindowKeyDown);
-  }, [dialog, dialogKey, isInfo, isReaction, isQuestion, hasChoices, isSmallTalk, allRevealed, allSegments.length, onAdvance, latestSegText]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dialog, dialogKey, charKey, isInfo, isReaction, isQuestion, hasChoices, allRevealed, allSegments.length, onAdvance, latestSegText]);
 
   // Number keys select choices (only after all segments revealed).
   useEffect(() => {
@@ -421,7 +420,7 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
               onClick={() => {
                 clearTimeout(revealTimerRef.current);
                 clearTimeout(charTimerRef.current);
-                setCharCount(latestSegText.length);
+                setCharState({ key: charKey, count: latestSegText.length });
                 setRevealState({ key: dialogKey, count: allSegments.length });
               }}
             >
