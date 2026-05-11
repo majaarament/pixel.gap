@@ -541,7 +541,7 @@ const styles = {
   // ── Main game card — RPG dialog box at the bottom ─────────────────────────
   gameCard: {
     width: "100%",
-    maxHeight: "min(74%, calc(100% - 16px))",
+    maxHeight: "min(62%, calc(100% - 16px))",
     minHeight: 0,
     overflow: "hidden",
     display: "flex",
@@ -654,7 +654,8 @@ const styles = {
   // ── Pinned recap (shown during reaction) ─────────────────────────────────
   dialogScroll: {
     minHeight: 0,
-    flex: "1 1 auto",
+    flex: "0 1 auto",
+    maxHeight: "min(34vh, 280px)",
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
