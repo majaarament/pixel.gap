@@ -56,10 +56,10 @@ export default function PrivacyModal({ onAccept, onExit }) {
             <div style={styles.item}>
               <div style={styles.itemIcon}>⬡</div>
               <div>
-                <div style={styles.itemTitle}>Session ID, not a personal profile</div>
+                <div style={styles.itemTitle}>Anonymous ID, not a personal profile</div>
                 <div style={styles.itemDetail}>
-                  A random session ID is stored in this browser tab so one playthrough
-                  stays together. Draft progress is cached on this device during the session.
+                  A random browser ID and session ID are stored on this device so responses
+                  can be grouped without asking for your name or email address.
                 </div>
               </div>
             </div>

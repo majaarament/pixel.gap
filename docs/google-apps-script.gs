@@ -1,5 +1,5 @@
 const SPREADSHEET_ID = "1xaDTwzQklHjr9fdTwynUB4_wWTmxx3wE3qRFe7nRsEU";
-const SHEET_NAME = "gap_report_answers";
+const SHEET_NAME = "responses";
 const HEADERS = [
   "receivedAt",
   "timestamp",
@@ -19,6 +19,14 @@ const HEADERS = [
   "text",
   "roleLevel",
   "branch",
+  "team",
+  "department",
+  "departmentPrimaryEntities",
+  "departmentSupportingEntities",
+  "entity",
+  "entityCity",
+  "entityOfficeType",
+  "entityLabel",
   "country",
   "userAgent",
 ];

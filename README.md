@@ -49,7 +49,7 @@ SHEETS_ENDPOINT="https://script.google.com/macros/s/your-script-id/exec"
 Also update `docs/google-apps-script.gs` before deployment:
 
 - set `SPREADSHEET_ID` to your target Google Sheet ID
-- keep `SHEET_NAME` as `gap_report_answers`
+- keep `SHEET_NAME` as `responses` if you are using the provided Apps Script
 - deploy the web app with
   - `Execute as: Me`
   - `Who has access: Anyone, even anonymous`
@@ -60,7 +60,7 @@ The app now logs:
 - `question_answer` for every in-game question response
 - `council_message` for every player and council turn in the debate
 
-Each row includes a per-session `sessionId`. The `userId` field is left blank so playthroughs are not tied to a persistent browser identifier. A starter Apps Script receiver is included at [docs/google-apps-script.gs](/Users/majaarament/Desktop/pixel.gaps/docs/google-apps-script.gs).
+Each row includes an anonymous persistent browser `userId` plus a per-tab `sessionId`, so events can be grouped without asking for a name or email. A starter Apps Script receiver is included at [docs/google-apps-script.gs](/Users/majaarament/Desktop/pixel.gaps/docs/google-apps-script.gs).
 
 Vercel + OpenAI setup
 

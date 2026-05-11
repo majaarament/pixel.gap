@@ -1,9 +1,11 @@
-// Structured gameplay logging with a per-tab session id.
+// Structured gameplay logging with an anonymous browser id and per-tab session id.
 // Events are posted to our own backend, which can forward them to Google Sheets.
 
 const LOG_ENDPOINT = "/api/log-event";
+const USER_ID_KEY = "pixel-gap-user-id";
 const SESSION_ID_KEY = "pixel-gap-session-id";
 
+let cachedUserId = null;
 let cachedSessionId = null;
 
 function createId(prefix) {
@@ -67,6 +69,28 @@ export function getSessionId() {
   return cachedSessionId;
 }
 
+export function getUserId() {
+  if (cachedUserId) return cachedUserId;
+
+  if (typeof window === "undefined") {
+    cachedUserId = createId("user");
+    return cachedUserId;
+  }
+
+  const localStorage = window.localStorage;
+  const stored = localStorage ? readStoredValue(localStorage, USER_ID_KEY) : "";
+  if (stored) {
+    cachedUserId = stored;
+    return cachedUserId;
+  }
+
+  cachedUserId = createId("user");
+  if (localStorage) {
+    writeStoredValue(localStorage, USER_ID_KEY, cachedUserId);
+  }
+  return cachedUserId;
+}
+
 export function logEvent(eventType, payload = {}) {
   if (typeof window === "undefined") return;
 
@@ -75,7 +99,7 @@ export function logEvent(eventType, payload = {}) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       eventType,
-      userId: "",
+      userId: getUserId(),
       sessionId: getSessionId(),
       timestamp: new Date().toISOString(),
       ...payload,

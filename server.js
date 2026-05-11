@@ -315,6 +315,8 @@ function extractResponseText(payload) {
 
 function normalizeLogPayload(body, req) {
   const data = body && typeof body === "object" && !Array.isArray(body) ? body : {};
+  const team = firstString(data.team, data.branch, data.department);
+  const department = firstString(data.department, data.team, data.branch);
 
   return {
     receivedAt: new Date().toISOString(),
@@ -334,14 +336,22 @@ function normalizeLogPayload(body, req) {
     choiceLabel: typeof data.choiceLabel === "string" ? data.choiceLabel : "",
     text: typeof data.text === "string" ? data.text : "",
     roleLevel: typeof data.roleLevel === "string" ? data.roleLevel : "",
-    team: typeof data.team === "string"
-      ? data.team
-      : typeof data.branch === "string"
-        ? data.branch
-        : "",
+    team,
+    branch: team,
+    department,
+    departmentPrimaryEntities: typeof data.departmentPrimaryEntities === "string" ? data.departmentPrimaryEntities : "",
+    departmentSupportingEntities: typeof data.departmentSupportingEntities === "string" ? data.departmentSupportingEntities : "",
+    entity: typeof data.entity === "string" ? data.entity : "",
+    entityCity: typeof data.entityCity === "string" ? data.entityCity : "",
+    entityOfficeType: typeof data.entityOfficeType === "string" ? data.entityOfficeType : "",
+    entityLabel: typeof data.entityLabel === "string" ? data.entityLabel : "",
     country: typeof data.country === "string" ? data.country : "",
     userAgent: req.headers["user-agent"] || "",
   };
+}
+
+function firstString(...values) {
+  return values.find((value) => typeof value === "string" && value.trim()) || "";
 }
 
 async function synthesizeCouncilSpeech(apiKey, parsed) {

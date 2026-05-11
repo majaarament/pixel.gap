@@ -167,7 +167,7 @@ export default function ProfileScreen({ onSubmit }) {
             <h1 style={styles.heading}>set your starting point</h1>
             <p style={styles.body}>
               a few quick details help make the experience feel more relevant. answers are
-              anonymous and only used in aggregate.
+              linked to an anonymous browser id and used for aggregate analysis.
             </p>
           </div>
 
@@ -262,7 +262,7 @@ export default function ProfileScreen({ onSubmit }) {
 
             <div style={styles.footerRow}>
               <p style={styles.notice}>
-                anonymous and aggregated. no individual responses are visible to management.
+                no names or emails are collected. responses are reviewed at group level.
               </p>
               <button type="submit" style={styles.submitButton}>
                 start the journey
