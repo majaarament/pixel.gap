@@ -402,7 +402,7 @@ const styles = {
   },
   insightGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
     gap: 6,
   },
   insightCard: {
@@ -437,7 +437,7 @@ const styles = {
   },
   actionGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
     gap: 6,
   },
   actionCard: {
@@ -458,10 +458,8 @@ const styles = {
     lineHeight: 1.3,
     color: "#4f6157",
     fontWeight: 700,
-    overflow: "hidden",
-    display: "-webkit-box",
-    WebkitLineClamp: 3,
-    WebkitBoxOrient: "vertical",
+    overflow: "visible",
+    overflowWrap: "anywhere",
   },
   statCard: {
     padding: "7px 8px",

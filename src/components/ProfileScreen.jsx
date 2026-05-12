@@ -25,6 +25,8 @@ const ROLE_OPTIONS = [
   },
 ];
 
+const OTHER_DEPARTMENT_NAME = "Other";
+
 const DEPARTMENT_OPTIONS = [
   { name: "Application Managed Services (Microsoft)", primary: "Netherlands, Belgium", supporting: "India" },
   { name: "Application Managed Services (SAP)", primary: "Belgium, Netherlands, France", supporting: "India, Hungary" },
@@ -48,6 +50,12 @@ const DEPARTMENT_OPTIONS = [
   { name: "Support HR", primary: "all entities", supporting: "-" },
   { name: "Support IT", primary: "all entities", supporting: "-" },
   { name: "Support Office/Facility", primary: "all entities", supporting: "-" },
+  {
+    name: OTHER_DEPARTMENT_NAME,
+    primary: "not department-specific",
+    supporting: "not applicable",
+    detail: "for cross-functional, organisation-wide, partner, or other roles not tied to one solution.",
+  },
 ];
 
 const ENTITY_GROUPS = [
@@ -125,23 +133,28 @@ function findEntity(value) {
 export default function ProfileScreen({ onSubmit }) {
   const [roleLevel, setRoleLevel] = useState("");
   const [team, setTeam] = useState("");
+  const [otherDepartment, setOtherDepartment] = useState("");
   const [entity, setEntity] = useState("");
   const [error, setError] = useState("");
-  const canSubmit = Boolean(roleLevel && team && entity);
+  const isOtherDepartment = team === OTHER_DEPARTMENT_NAME;
+  const cleanOtherDepartment = otherDepartment.trim().replace(/\s+/g, " ");
+  const canSubmit = Boolean(roleLevel && team && entity && (!isOtherDepartment || cleanOtherDepartment));
   const selectedDepartment = findDepartment(team);
   const selectedEntity = findEntity(entity);
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!canSubmit) {
-      setError("please select all three options to continue.");
+      setError(isOtherDepartment && !cleanOtherDepartment
+        ? "please type your department or role area for Other."
+        : "please select all three options to continue.");
       return;
     }
     setError("");
     onSubmit({
       roleLevel,
       team,
-      department: team,
+      department: isOtherDepartment ? cleanOtherDepartment : team,
       departmentPrimaryEntities: selectedDepartment?.primary || "",
       departmentSupportingEntities: selectedDepartment?.supporting || "",
       entity: selectedEntity?.entity || entity,
@@ -204,13 +217,18 @@ export default function ProfileScreen({ onSubmit }) {
                   <div style={styles.questionNumber}>2</div>
                   <div>
                     <label style={styles.label} htmlFor="team">department / solution</label>
-                    <p style={styles.helper}>select the solution or support function you work in most closely.</p>
+                    <p style={styles.helper}>select the solution or support function you work in most closely, or choose Other.</p>
                   </div>
                 </div>
                 <select
                   id="team"
                   value={team}
-                  onChange={(e) => setTeam(e.target.value)}
+                  onChange={(e) => {
+                    setTeam(e.target.value);
+                    if (e.target.value !== OTHER_DEPARTMENT_NAME) {
+                      setOtherDepartment("");
+                    }
+                  }}
                   style={styles.select}
                 >
                   <option value="">select a team...</option>
@@ -220,8 +238,27 @@ export default function ProfileScreen({ onSubmit }) {
                 </select>
                 {selectedDepartment && (
                   <p style={styles.selectionMeta}>
-                    primary: {selectedDepartment.primary} · support: {selectedDepartment.supporting}
+                    {selectedDepartment.detail || `primary: ${selectedDepartment.primary} · support: ${selectedDepartment.supporting}`}
                   </p>
+                )}
+                {isOtherDepartment && (
+                  <div style={styles.otherField}>
+                    <label style={styles.subLabel} htmlFor="other-department">
+                      type your department or role area
+                    </label>
+                    <input
+                      id="other-department"
+                      type="text"
+                      value={otherDepartment}
+                      onChange={(e) => setOtherDepartment(e.target.value)}
+                      maxLength={64}
+                      placeholder="e.g. Sustainability, Partner, Legal..."
+                      style={styles.textInput}
+                    />
+                    <p style={styles.selectionMeta}>
+                      avoid names, email addresses, or anything personally identifying.
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -459,6 +496,33 @@ const styles = {
     boxShadow: "inset 0 2px 0 #fffef8",
     cursor: "pointer",
     appearance: "auto",
+  },
+  otherField: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 5,
+    marginTop: 2,
+  },
+  subLabel: {
+    fontFamily: '"Courier New", "Lucida Console", monospace',
+    fontSize: 10,
+    lineHeight: 1.2,
+    color: "#46563f",
+    fontWeight: 900,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+  },
+  textInput: {
+    padding: "9px 10px",
+    background: "#fff9ea",
+    border: "3px solid #ccb993",
+    fontFamily: '"Courier New", "Lucida Console", monospace',
+    fontSize: "clamp(12px, 1.15vw, 15px)",
+    color: "#20301d",
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
+    boxShadow: "inset 0 2px 0 #fffef8",
   },
   selectionMeta: {
     margin: "4px 0 0",

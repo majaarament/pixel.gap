@@ -1240,7 +1240,7 @@ const styles = {
   avatarLabel: {
     position: "absolute",
     left: "50%",
-    top: 1,
+    top: 18,
     transform: "translateX(-50%)",
     fontSize: 13,
     fontWeight: 800,
@@ -1248,7 +1248,7 @@ const styles = {
     color: "#d8e8b7",
     textShadow: "0 1px 2px rgba(20, 28, 23, 0.95), 0 0 5px rgba(20, 28, 23, 0.5)",
     whiteSpace: "nowrap",
-    zIndex: 3,
+    zIndex: 5,
     pointerEvents: "none",
   },
   avatarLabelActive: {
@@ -1672,8 +1672,8 @@ if (typeof document !== "undefined" && !document.getElementById("council-anim"))
       50%       { opacity: 1; }
     }
     @keyframes council-gather-in {
-      0%   { opacity: 0; transform: translate(-50%, calc(-50% + 10px)); }
-      100% { opacity: 1; transform: translate(-50%, -50%); }
+      0%   { opacity: 0; }
+      100% { opacity: 1; }
     }
   `;
   document.head.appendChild(style);

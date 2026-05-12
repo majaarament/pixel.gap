@@ -25,6 +25,8 @@ export default function InfoRow() {
 
 const styles = {
   strip: {
+    flexShrink: 0,
+    width: "100%",
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "center",
@@ -35,7 +37,7 @@ const styles = {
     border: "3px solid #172012",
     fontFamily: '"Courier New", "Lucida Console", monospace',
     boxSizing: "border-box",
-    maxWidth: "100vw",
+    maxWidth: "none",
     maxHeight: 56,
     overflow: "hidden",
   },

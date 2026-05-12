@@ -44,16 +44,18 @@ export function drawScene(ctx, {
   objectiveTarget,
   viewportWidth,
   viewportHeight,
+  viewportCols = VIEW_COLS,
+  viewportRows = VIEW_ROWS,
 }) {
   ctx.clearRect(0, 0, viewportWidth, viewportHeight);
 
   const sceneData = SCENES[scene];
-  const camX = clamp(player.x - Math.floor(VIEW_COLS / 2), 0, Math.max(0, sceneData.w - VIEW_COLS));
-  const camY = clamp(player.y - Math.floor(VIEW_ROWS / 2), 0, Math.max(0, sceneData.h - VIEW_ROWS));
+  const camX = clamp(player.x - Math.floor(viewportCols / 2), 0, Math.max(0, sceneData.w - viewportCols));
+  const camY = clamp(player.y - Math.floor(viewportRows / 2), 0, Math.max(0, sceneData.h - viewportRows));
 
   // ── Ground layer ──────────────────────────────────────────────────────────
-  for (let y = 0; y < VIEW_ROWS; y++) {
-    for (let x = 0; x < VIEW_COLS; x++) {
+  for (let y = 0; y < viewportRows; y++) {
+    for (let x = 0; x < viewportCols; x++) {
       const wx = camX + x, wy = camY + y;
       if (wx < sceneData.w && wy < sceneData.h)
         drawGround(ctx, scene, wx, wy, x * TILE, y * TILE);

@@ -1,5 +1,7 @@
 const SPREADSHEET_ID = "1xaDTwzQklHjr9fdTwynUB4_wWTmxx3wE3qRFe7nRsEU";
 const SHEET_NAME = "responses";
+const CSV_FOLDER_ID = "1Zfk2W0w6jTGQBPkSHJ0zfbuF54R-bQnd";
+const CSV_FILE_NAME = "raw_telemetry_export.csv";
 const HEADERS = [
   "receivedAt",
   "timestamp",
@@ -79,4 +81,28 @@ function doPost(e) {
       .createTextOutput(JSON.stringify({ ok: false, error: String(error) }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+function exportSheetToCsv() {
+  const sheet = getSheet();
+  const data = sheet.getDataRange().getValues();
+  const csvContent = data
+    .map((row) => row.map(csvEscape).join(","))
+    .join("\r\n") + "\r\n";
+
+  const folder = DriveApp.getFolderById(CSV_FOLDER_ID);
+  const files = folder.getFilesByName(CSV_FILE_NAME);
+  if (files.hasNext()) {
+    files.next().setContent(csvContent);
+  } else {
+    folder.createFile(CSV_FILE_NAME, csvContent, MimeType.CSV);
+  }
+}
+
+function csvEscape(cell) {
+  const cellStr = String(cell);
+  if (cellStr.includes(",") || cellStr.includes("\"") || cellStr.includes("\n")) {
+    return `"${cellStr.replace(/"/g, '""')}"`;
+  }
+  return cellStr;
 }

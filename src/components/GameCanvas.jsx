@@ -44,14 +44,17 @@ export default function GameCanvas({
   onLeaveGame,
 }) {
   const canvasRef      = useRef(null);
-  const viewportWidth  = VIEW_COLS * TILE;
-  const viewportHeight = VIEW_ROWS * TILE;
+  const canvasFrameRef = useRef(null);
+  const [viewSize, setViewSize] = useState({ cols: VIEW_COLS, rows: VIEW_ROWS });
+  const viewportWidth  = viewSize.cols * TILE;
+  const viewportHeight = viewSize.rows * TILE;
   const [displayScale, setDisplayScale] = useState(SCALE);
   const [viewport, setViewport] = useState({ width: 1024, height: 768 });
   const [showTutorial, setShowTutorial] = useState(true);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const layoutFrozen = councilOpen || learningHouseOpen || reportOpen;
   const isTight = viewport.width < 820 || viewport.height < 700 || displayScale < 2.25;
-  const npcLabels = getNpcLabels({ scene, player, townNpcs, officeNpcs, displayScale, viewportWidth });
+  const npcLabels = getNpcLabels({ scene, player, townNpcs, officeNpcs, displayScale, viewportWidth, viewSize });
   const chapterProgress = getChapterProgress(quest);
 
   const dismissTutorial = useCallback(() => setShowTutorial(false), []);
@@ -64,22 +67,43 @@ export default function GameCanvas({
   }, [showTutorial]);
 
   useEffect(() => {
-    function updateScale() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const horizontalChrome = width < 820 ? 56 : 88;
-      const verticalChrome = height < 700 ? 236 : 274;
-      const widthScale = (width - horizontalChrome) / viewportWidth;
-      const heightScale = (height - verticalChrome) / viewportHeight;
-      const nextScale = Math.max(0.65, Math.min(SCALE, widthScale, heightScale));
-      setViewport({ width, height });
-      setDisplayScale(nextScale);
+    const frame = canvasFrameRef.current;
+    if (!frame) return undefined;
+
+    function updateScale(entry) {
+      const rect = entry?.contentRect || frame.getBoundingClientRect();
+      const availableWidth = Math.max(240, rect.width);
+      const availableHeight = Math.max(180, rect.height);
+      setViewport((prev) => (
+        prev.width === window.innerWidth && prev.height === window.innerHeight
+          ? prev
+          : { width: window.innerWidth, height: window.innerHeight }
+      ));
+      if (layoutFrozen) return;
+      const nextView = chooseResponsiveViewport({
+        availableWidth,
+        availableHeight,
+        scene,
+      });
+      setViewSize((prev) => (
+        prev.cols === nextView.cols && prev.rows === nextView.rows
+          ? prev
+          : { cols: nextView.cols, rows: nextView.rows }
+      ));
+      setDisplayScale((prev) => (
+        Math.abs(prev - nextView.scale) < 0.005 ? prev : nextView.scale
+      ));
     }
 
     updateScale();
+    const observer = new ResizeObserver((entries) => updateScale(entries[0]));
+    observer.observe(frame);
     window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
-  }, [viewportHeight, viewportWidth]);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateScale);
+    };
+  }, [scene, layoutFrozen]);
 
   // The draw loop restarts whenever these state values change so the RAF
   // closure always captures their latest versions.
@@ -100,12 +124,14 @@ export default function GameCanvas({
         objectiveTarget,
         viewportWidth,
         viewportHeight,
+        viewportCols: viewSize.cols,
+        viewportRows: viewSize.rows,
       });
       raf = requestAnimationFrame(draw);
     }
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
-  }, [scene, nearbyTarget, objectiveTarget, player, townNpcs, officeNpcs]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [scene, nearbyTarget, objectiveTarget, player, townNpcs, officeNpcs, viewportWidth, viewportHeight, viewSize.cols, viewSize.rows]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   return (
@@ -164,7 +190,7 @@ export default function GameCanvas({
       </div>
 
       <div style={styles.canvasShell}>
-        <div style={styles.canvasInnerFrame}>
+        <div ref={canvasFrameRef} style={styles.canvasInnerFrame}>
           <canvas
             ref={canvasRef}
             width={viewportWidth}
@@ -182,7 +208,13 @@ export default function GameCanvas({
               <div style={styles.bannerText}>{banner.message}</div>
             </div>
           )}
-          <div style={styles.labelLayer}>
+          <div
+            style={{
+              ...styles.labelLayer,
+              width: viewportWidth * displayScale,
+              height: viewportHeight * displayScale,
+            }}
+          >
             {npcLabels.map((label) => (
               <div
                 key={`${label.name}-${label.left}-${label.top}`}
@@ -300,13 +332,17 @@ export default function GameCanvas({
 
 const styles = {
   stageCard: {
+    flex: "1 1 auto",
+    width: "100%",
+    minWidth: 0,
+    minHeight: 0,
     display: "flex",
     flexDirection: "column",
     gap: 8,
     padding: 10,
     boxSizing: "border-box",
-    maxWidth: "100vw",
-    maxHeight: "100vh",
+    maxWidth: "none",
+    maxHeight: "none",
     borderRadius: 0,
     background: "#eadfbc",
     border: "4px solid #26341f",
@@ -314,6 +350,7 @@ const styles = {
     fontFamily: '"Courier New", "Lucida Console", monospace',
   },
   topHud: {
+    flexShrink: 0,
     display: "grid",
     gridTemplateColumns: "150px minmax(0, 1fr) auto",
     gap: 10,
@@ -332,6 +369,7 @@ const styles = {
     minHeight: 63,
   },
   progressRail: {
+    flexShrink: 0,
     display: "grid",
     gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
     gap: 5,
@@ -489,18 +527,31 @@ const styles = {
     boxShadow: "none",
   },
   canvasShell: {
+    flex: "1 1 auto",
+    minWidth: 0,
+    minHeight: 0,
+    width: "100%",
+    display: "flex",
     padding: 6,
     borderRadius: 0,
     background: "#4f6648",
     border: "4px solid #172012",
     boxShadow: "inset 0 0 0 3px #8ca36f",
+    boxSizing: "border-box",
+    overflow: "hidden",
   },
   canvasInnerFrame: {
+    flex: "1 1 auto",
+    minWidth: 0,
+    minHeight: 0,
+    width: "100%",
     position: "relative",
     padding: 5,
     borderRadius: 0,
     background: "#26341f",
     boxShadow: "none",
+    boxSizing: "border-box",
+    overflow: "hidden",
   },
   objectiveBanner: {
     position: "absolute",
@@ -524,10 +575,9 @@ const styles = {
     position: "absolute",
     top: 5,
     left: 5,
-    width: "calc(100% - 10px)",
-    height: "calc(100% - 10px)",
     zIndex: 18,
     pointerEvents: "none",
+    overflow: "hidden",
   },
   npcLabel: {
     position: "absolute",
@@ -767,14 +817,57 @@ const styles = {
   },
 };
 
-function getNpcLabels({ scene, player, townNpcs, officeNpcs, displayScale, viewportWidth }) {
+function chooseResponsiveViewport({ availableWidth, availableHeight, scene }) {
+  const sceneData = SCENES[scene] || SCENES.town;
+  const aspect = availableWidth / Math.max(1, availableHeight);
+  const minCols = Math.min(VIEW_COLS, sceneData.w);
+  const minRows = Math.min(VIEW_ROWS, sceneData.h);
+  const maxCols = Math.min(sceneData.w, Math.max(minCols, 42));
+  const maxRows = Math.min(sceneData.h, Math.max(minRows, 22));
+  const targetScale = availableWidth >= 960 ? 2.85 : availableWidth >= 760 ? 2.7 : 2.55;
+
+  let best = {
+    cols: minCols,
+    rows: minRows,
+    scale: Math.min(SCALE, availableWidth / (minCols * TILE), availableHeight / (minRows * TILE)),
+    score: Number.POSITIVE_INFINITY,
+  };
+
+  for (let rows = minRows; rows <= maxRows; rows += 1) {
+    for (let cols = minCols; cols <= maxCols; cols += 1) {
+      const scale = Math.min(SCALE, availableWidth / (cols * TILE), availableHeight / (rows * TILE));
+      const displayWidth = cols * TILE * scale;
+      const displayHeight = rows * TILE * scale;
+      const gapWidth = Math.max(0, availableWidth - displayWidth);
+      const gapHeight = Math.max(0, availableHeight - displayHeight);
+      const aspectMiss = Math.abs((cols / rows) - aspect);
+      const scaleMiss = Math.abs(scale - targetScale);
+      const visibleTiles = cols * rows;
+      const score = gapWidth * 22 + gapHeight * 0.45 + aspectMiss * 8 + scaleMiss * 6 - visibleTiles * 0.003;
+
+      if (score < best.score) {
+        best = { cols, rows, scale, score };
+      }
+    }
+  }
+
+  return {
+    cols: best.cols,
+    rows: best.rows,
+    scale: best.scale,
+  };
+}
+
+function getNpcLabels({ scene, player, townNpcs, officeNpcs, displayScale, viewportWidth, viewSize }) {
   if (!player) return [];
 
   const sceneData = SCENES[scene];
   if (!sceneData) return [];
 
-  const camX = Math.max(0, Math.min(player.x - Math.floor(VIEW_COLS / 2), Math.max(0, sceneData.w - VIEW_COLS)));
-  const camY = Math.max(0, Math.min(player.y - Math.floor(VIEW_ROWS / 2), Math.max(0, sceneData.h - VIEW_ROWS)));
+  const viewportCols = viewSize?.cols || VIEW_COLS;
+  const viewportRows = viewSize?.rows || VIEW_ROWS;
+  const camX = Math.max(0, Math.min(player.x - Math.floor(viewportCols / 2), Math.max(0, sceneData.w - viewportCols)));
+  const camY = Math.max(0, Math.min(player.y - Math.floor(viewportRows / 2), Math.max(0, sceneData.h - viewportRows)));
 
   const npcs = scene === "town"
     ? townNpcs
@@ -789,8 +882,8 @@ function getNpcLabels({ scene, player, townNpcs, officeNpcs, displayScale, viewp
       const screenY = (npc.y - camY) * TILE;
       return {
         name: npc.name.split(" ")[0],
-        left: (screenX + 8) * displayScale,
-        top: Math.max(2, (screenY - 11) * displayScale),
+        left: Math.round((screenX + 8) * displayScale),
+        top: Math.round(Math.max(2, (screenY - 11) * displayScale)),
       };
     })
     .filter((label) => label.left >= -40 && label.left <= viewportWidth * displayScale + 40);

@@ -41,7 +41,21 @@ export default async function handler(req, res) {
       return sendJson(res, 502, { error: `Google Sheets logging failed: ${details}` });
     }
 
-    return sendJson(res, 200, { ok: true });
+    if (responsePayload && responsePayload.ok === false) {
+      const details =
+        responsePayload.error ||
+        responsePayload.message ||
+        rawText ||
+        "Apps Script returned ok:false.";
+      return sendJson(res, 502, { error: `Google Sheets logging failed: ${details}` });
+    }
+
+    return sendJson(res, 200, {
+      ok: true,
+      sheets: responsePayload && typeof responsePayload === "object"
+        ? responsePayload
+        : undefined,
+    });
   } catch (error) {
     return sendJson(res, 500, {
       error: error.message || "Log event request failed.",

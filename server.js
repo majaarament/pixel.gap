@@ -255,7 +255,20 @@ async function handleLogEvent(req, res) {
     return;
   }
 
-  sendJson(res, 200, { ok: true });
+  if (responsePayload && responsePayload.ok === false) {
+    const details =
+      responsePayload.error ||
+      responsePayload.message ||
+      rawResponse ||
+      "Apps Script returned ok:false.";
+    sendJson(res, 502, { error: `Google Sheets logging failed: ${details}` });
+    return;
+  }
+
+  sendJson(res, 200, {
+    ok: true,
+    sheets: responsePayload && typeof responsePayload === "object" ? responsePayload : undefined,
+  });
 }
 
 function mapConversationHistory(conversationHistory) {
