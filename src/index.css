@@ -57,6 +57,7 @@ body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
 }
 
 #root {
@@ -116,4 +117,9 @@ code {
 *:focus-visible {
   outline: 3px solid #f0c94a;
   outline-offset: 2px;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }

@@ -340,6 +340,8 @@ const styles = {
     boxShadow: "0 16px 0 #273320, 0 32px 48px rgba(15, 24, 18, 0.28)",
     position: "relative",
     zIndex: 1,
+    display: "flex",
+    flexDirection: "column",
   },
   panelTopBar: {
     height: 12,
@@ -347,11 +349,15 @@ const styles = {
     borderBottom: "4px solid #33442f",
   },
   inner: {
+    flex: "1 1 auto",
+    minHeight: 0,
     padding: "clamp(12px, 2.2vh, 22px)",
     display: "flex",
     flexDirection: "column",
     gap: 0,
     background: "#eadfbc",
+    overflowY: "auto",
+    boxSizing: "border-box",
   },
   kickerRow: {
     display: "flex",

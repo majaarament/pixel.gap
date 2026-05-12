@@ -10,13 +10,22 @@ const CONTROLS = [
   { key: "warp", label: "jump near objective" },
 ];
 
-export default function InfoRow() {
+const TOUCH_CONTROLS = [
+  { key: "arrows", label: "tap to move" },
+  { key: "E", label: "talk" },
+  { key: "tap choices", label: "answer" },
+  { key: "warp", label: "objective" },
+];
+
+export default function InfoRow({ compact = false }) {
+  const controls = compact ? TOUCH_CONTROLS : CONTROLS;
+
   return (
-    <div style={styles.strip}>
-      {CONTROLS.map(({ key, label }, i) => (
+    <div style={{ ...styles.strip, ...(compact ? styles.stripCompact : null) }}>
+      {controls.map(({ key, label }, i) => (
         <div key={i} style={styles.item}>
-          <span style={styles.key}>{key}</span>
-          <span style={styles.label}>{label}</span>
+          <span style={{ ...styles.key, ...(compact ? styles.keyCompact : null) }}>{key}</span>
+          <span style={{ ...styles.label, ...(compact ? styles.labelCompact : null) }}>{label}</span>
         </div>
       ))}
     </div>
@@ -41,6 +50,12 @@ const styles = {
     maxHeight: 56,
     overflow: "hidden",
   },
+  stripCompact: {
+    gap: "3px 7px",
+    padding: "3px 6px",
+    borderWidth: 2,
+    maxHeight: 34,
+  },
   item: {
     display: "flex",
     alignItems: "center",
@@ -57,9 +72,17 @@ const styles = {
     whiteSpace: "nowrap",
     letterSpacing: 0,
   },
+  keyCompact: {
+    fontSize: 8,
+    padding: "1px 4px",
+    borderWidth: 1,
+  },
   label: {
     fontSize: "clamp(8px, 1.1vw, 10px)",
     color: "#e8ecd7",
     whiteSpace: "nowrap",
+  },
+  labelCompact: {
+    fontSize: 8,
   },
 };

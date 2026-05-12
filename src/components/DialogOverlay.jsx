@@ -32,7 +32,7 @@ const SEGMENT_DELAY_MS = 400;
 const CHAR_TICK_MS   = 28;  // ms between ticks
 const CHARS_PER_TICK = 2;   // characters revealed per tick (~70 chars/sec)
 
-export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitReflection }) {
+export default function DialogOverlay({ compact = false, dialog, onChoice, onAdvance, onSubmitReflection }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
   const [values, setValues]         = useState(() => (
     dialog?.phase === "reflection" ? dialog.initialValues || {} : {}
@@ -251,23 +251,23 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
   // ── RPG dialog box — always at the bottom of the canvas ──────────────────
   return (
     <div style={styles.backdrop}>
-      <div style={{ ...styles.gameCard, borderTopColor: accent }}>
-        <div style={{ ...styles.activeSpeakerBar, borderColor: `${activeSpeaker.accent}88` }}>
-          <PixelPortrait speakerId={activeSpeaker.id} accent={activeSpeaker.accent} size={42} active />
+      <div style={{ ...styles.gameCard, ...(compact ? styles.gameCardCompact : null), borderTopColor: accent }}>
+        <div style={{ ...styles.activeSpeakerBar, ...(compact ? styles.activeSpeakerBarCompact : null), borderColor: `${activeSpeaker.accent}88` }}>
+          <PixelPortrait speakerId={activeSpeaker.id} accent={activeSpeaker.accent} size={compact ? 30 : 42} active />
           <div style={styles.activeSpeakerText}>
-            <div style={{ ...styles.activeSpeakerName, color: activeSpeaker.accent }}>
+            <div style={{ ...styles.activeSpeakerName, ...(compact ? styles.activeSpeakerNameCompact : null), color: activeSpeaker.accent }}>
               {activeSpeaker.label}
             </div>
-            <div style={styles.activeSpeakerRole}>{activeSpeaker.role}</div>
+            <div style={{ ...styles.activeSpeakerRole, ...(compact ? styles.activeSpeakerRoleCompact : null) }}>{activeSpeaker.role}</div>
           </div>
           {showProgress && (
-            <div style={{ ...styles.stepBadge, borderColor: activeSpeaker.accent, color: activeSpeaker.accent }}>
+            <div style={{ ...styles.stepBadge, ...(compact ? styles.stepBadgeCompact : null), borderColor: activeSpeaker.accent, color: activeSpeaker.accent }}>
               {currentStep + 1} / {totalSteps}
             </div>
           )}
         </div>
 
-        <div ref={dialogScrollRef} style={styles.dialogScroll} onScroll={handleDialogScroll}>
+        <div ref={dialogScrollRef} style={{ ...styles.dialogScroll, ...(compact ? styles.dialogScrollCompact : null) }} onScroll={handleDialogScroll}>
           {/* Pinned recap during reaction: show the question and the player's answer */}
           {isReaction && (lastNpcEntry || lastPlayerEntry) && (
             <div style={{ ...styles.pinnedRecap, borderColor: `${accent}44` }}>
@@ -326,11 +326,11 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
                   const display  = isLast ? stripped.slice(0, charCount) : stripped;
                   return (
                     <div key={i} style={{ ...styles.segmentRow, ...(isPlayer ? styles.segmentRowPlayer : {}) }}>
-                      {!isNote && (
+                      {!isNote && !compact && (
                         <PixelPortrait speakerId={speaker.id} accent={speaker.accent} size={24} active={isLast} />
                       )}
                       <div style={{ ...styles.segmentBlock, ...(isPlayer ? styles.segmentPlayer : {}) }}>
-                        <p style={{ ...styles.message, ...(isPlayer ? styles.messagePlayer : isNote ? styles.messageNote : {}) }}>
+                        <p style={{ ...styles.message, ...(compact ? styles.messageCompact : null), ...(isPlayer ? styles.messagePlayer : isNote ? styles.messageNote : {}) }}>
                           {display}
                         </p>
                       </div>
@@ -349,9 +349,9 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
 
           if (openChoice) {
             return (
-              <div style={styles.openEndedArea}>
+              <div style={{ ...styles.openEndedArea, ...(compact ? styles.openEndedAreaCompact : null) }}>
                 <textarea
-                  style={styles.openTextarea}
+                  style={{ ...styles.openTextarea, ...(compact ? styles.openTextareaCompact : null) }}
                   placeholder="type your response here..."
                   value={openText}
                   onChange={(e) => setOpenText(e.target.value)}
@@ -373,6 +373,7 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
                     disabled={!openText.trim()}
                     style={{
                       ...styles.continueBtn,
+                      ...(compact ? styles.continueBtnCompact : null),
                       borderColor: openText.trim() ? accent : "rgba(180,210,175,0.2)",
                       color: openText.trim() ? accent : "rgba(180,210,175,0.3)",
                     }}
@@ -387,12 +388,13 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
 
           return (
             <>
-              <div style={styles.choices}>
+              <div style={{ ...styles.choices, ...(compact ? styles.choicesCompact : null) }}>
                 {dialog.choices.map((c, i) => (
                   <button
                     key={c.key}
                     style={{
                       ...styles.choice,
+                      ...(compact ? styles.choiceCompact : null),
                       ...(hoveredIdx === i
                         ? { ...styles.choiceHover, borderColor: accent }
                         : {}),
@@ -401,12 +403,12 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
                     onMouseLeave={() => setHoveredIdx(null)}
                     onClick={() => { setHoveredIdx(null); onChoice(c); }}
                   >
-                    <span style={{ ...styles.choiceNum, background: accent }}>{i + 1}</span>
-                    <span style={styles.choiceLabel}>{cleanChoiceLabel(c.label, i)}</span>
+                    <span style={{ ...styles.choiceNum, ...(compact ? styles.choiceNumCompact : null), background: accent }}>{i + 1}</span>
+                    <span style={{ ...styles.choiceLabel, ...(compact ? styles.choiceLabelCompact : null) }}>{cleanChoiceLabel(c.label, i)}</span>
                   </button>
                 ))}
               </div>
-              <div style={styles.choiceHint}>press 1–{dialog.choices.length} or click to answer</div>
+              {!compact && <div style={styles.choiceHint}>press 1–{dialog.choices.length} or click to answer</div>}
             </>
           );
         })()}
@@ -416,7 +418,7 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
           <div style={styles.continueRow}>
             <button
               type="button"
-              style={{ ...styles.continueBtn, borderColor: `${accent}99`, color: `${accent}bb` }}
+              style={{ ...styles.continueBtn, ...(compact ? styles.continueBtnCompact : null), borderColor: `${accent}99`, color: `${accent}bb` }}
               onClick={() => {
                 clearTimeout(revealTimerRef.current);
                 clearTimeout(charTimerRef.current);
@@ -434,7 +436,7 @@ export default function DialogOverlay({ dialog, onChoice, onAdvance, onSubmitRef
           <div style={styles.continueRow}>
             <button
               type="button"
-              style={{ ...styles.continueBtn, borderColor: accent, color: accent }}
+              style={{ ...styles.continueBtn, ...(compact ? styles.continueBtnCompact : null), borderColor: accent, color: accent }}
               onClick={onAdvance}
             >
               continue ▶
@@ -552,6 +554,11 @@ const styles = {
     borderTop: "3px solid",
     pointerEvents: "auto",
   },
+  gameCardCompact: {
+    maxHeight: "calc(100% - 8px)",
+    gap: 4,
+    padding: "5px 7px 7px",
+  },
   activeSpeakerBar: {
     display: "flex",
     alignItems: "center",
@@ -560,6 +567,11 @@ const styles = {
     background: "rgba(255,255,255,0.035)",
     border: "2px solid",
     flexShrink: 0,
+  },
+  activeSpeakerBarCompact: {
+    gap: 6,
+    padding: "3px 5px",
+    borderWidth: 1,
   },
   activeSpeakerText: {
     minWidth: 0,
@@ -575,6 +587,10 @@ const styles = {
     textTransform: "uppercase",
     letterSpacing: 1.2,
   },
+  activeSpeakerNameCompact: {
+    fontSize: 9,
+    letterSpacing: 0.5,
+  },
   activeSpeakerRole: {
     fontSize: 9,
     lineHeight: 1.1,
@@ -584,6 +600,10 @@ const styles = {
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
+  },
+  activeSpeakerRoleCompact: {
+    fontSize: 7,
+    letterSpacing: 0.2,
   },
   portraitFrame: {
     flexShrink: 0,
@@ -650,6 +670,10 @@ const styles = {
     opacity: 0.75,
     flexShrink: 0,
   },
+  stepBadgeCompact: {
+    fontSize: 8,
+    padding: "1px 5px",
+  },
 
   // ── Pinned recap (shown during reaction) ─────────────────────────────────
   dialogScroll: {
@@ -663,6 +687,11 @@ const styles = {
     paddingRight: 6,
     scrollbarWidth: "thin",
     scrollbarColor: "rgba(122,176,104,0.65) rgba(255,255,255,0.06)",
+  },
+  dialogScrollCompact: {
+    maxHeight: "min(28vh, 74px)",
+    gap: 4,
+    paddingRight: 4,
   },
   pinnedRecap: {
     display: "flex",
@@ -784,6 +813,10 @@ const styles = {
     color: "#ddeedd",
     whiteSpace: "pre-line",
   },
+  messageCompact: {
+    fontSize: 10,
+    lineHeight: 1.24,
+  },
   messagePlayer: {
     color: "rgba(210,235,205,0.9)",
     fontSize: "clamp(11px, 1.5vh, 13px)",
@@ -803,6 +836,13 @@ const styles = {
     marginTop: 4,
     flexShrink: 0,
   },
+  choicesCompact: {
+    gap: 3,
+    marginTop: 2,
+    maxHeight: "min(42vh, 132px)",
+    overflowY: "auto",
+    paddingRight: 2,
+  },
   choice: {
     display: "flex",
     alignItems: "center",
@@ -820,6 +860,13 @@ const styles = {
     width: "100%",
     transition: "background 0.1s, border-color 0.1s",
   },
+  choiceCompact: {
+    gap: 6,
+    padding: "4px 6px",
+    fontSize: 10,
+    minHeight: 26,
+    touchAction: "manipulation",
+  },
   choiceHover: {
     background: "rgba(122,176,104,0.18)",
     color: "#e8f5e4",
@@ -836,8 +883,16 @@ const styles = {
     fontSize: 11,
     fontWeight: 900,
   },
+  choiceNumCompact: {
+    width: 17,
+    height: 17,
+    fontSize: 9,
+  },
   choiceLabel: {
     lineHeight: 1.25,
+  },
+  choiceLabelCompact: {
+    lineHeight: 1.18,
   },
   choiceHint: {
     fontSize: 10,
@@ -866,6 +921,12 @@ const styles = {
     letterSpacing: 1,
     cursor: "pointer",
     textTransform: "uppercase",
+  },
+  continueBtnCompact: {
+    padding: "5px 10px",
+    fontSize: 10,
+    letterSpacing: 0.4,
+    touchAction: "manipulation",
   },
 
   // ── Reflection (centered overlay) ─────────────────────────────────────────
@@ -927,6 +988,10 @@ const styles = {
     marginTop: 4,
     flexShrink: 0,
   },
+  openEndedAreaCompact: {
+    gap: 4,
+    marginTop: 2,
+  },
   openTextarea: {
     resize: "vertical",
     minHeight: 52,
@@ -939,6 +1004,11 @@ const styles = {
     fontSize: 13,
     outline: "none",
     fontFamily: '"Courier New", "Lucida Console", monospace',
+  },
+  openTextareaCompact: {
+    minHeight: 42,
+    padding: 7,
+    fontSize: 11,
   },
   submitBtn: {
     alignSelf: "flex-end",

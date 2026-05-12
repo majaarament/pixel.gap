@@ -13,6 +13,7 @@ import CouncilMeeting from "./CouncilMeeting";
 import LearningHouse from "./LearningHouse";
 
 export default function GameCanvas({
+  mobileLandscape = false,
   scene,
   player,
   townNpcs,
@@ -53,7 +54,9 @@ export default function GameCanvas({
   const [showTutorial, setShowTutorial] = useState(true);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const layoutFrozen = councilOpen || learningHouseOpen || reportOpen;
-  const isTight = viewport.width < 820 || viewport.height < 700 || displayScale < 2.25;
+  const isPhoneLandscape = mobileLandscape || (viewport.width > viewport.height && viewport.height <= 520 && viewport.width <= 980);
+  const isTight = isPhoneLandscape || viewport.width < 820 || viewport.height < 700 || displayScale < 2.25;
+  const canvasInset = isPhoneLandscape ? 3 : 5;
   const npcLabels = getNpcLabels({ scene, player, townNpcs, officeNpcs, displayScale, viewportWidth, viewSize });
   const chapterProgress = getChapterProgress(quest);
 
@@ -84,6 +87,7 @@ export default function GameCanvas({
         availableWidth,
         availableHeight,
         scene,
+        mobileLandscape: isPhoneLandscape,
       });
       setViewSize((prev) => (
         prev.cols === nextView.cols && prev.rows === nextView.rows
@@ -103,7 +107,7 @@ export default function GameCanvas({
       observer.disconnect();
       window.removeEventListener("resize", updateScale);
     };
-  }, [scene, layoutFrozen]);
+  }, [scene, layoutFrozen, isPhoneLandscape]);
 
   // The draw loop restarts whenever these state values change so the RAF
   // closure always captures their latest versions.
@@ -135,18 +139,18 @@ export default function GameCanvas({
 
 
   return (
-    <div style={styles.stageCard}>
-      <div style={{ ...styles.topHud, ...(isTight ? styles.topHudTight : null) }}>
+    <div style={{ ...styles.stageCard, ...(isPhoneLandscape ? styles.stageCardPhone : null) }}>
+      <div style={{ ...styles.topHud, ...(isTight ? styles.topHudTight : null), ...(isPhoneLandscape ? styles.topHudPhone : null) }}>
         <div>
-          <div style={{ ...styles.gameTitle, ...(isTight ? styles.gameTitleTight : null) }}>PIXEL GAP</div>
-          <div style={{ ...styles.sceneLine, ...(isTight ? styles.sceneLineTight : null) }}>{scene === "office" ? "DELAWARE BUILDING" : scene === "owlhouse" ? "LEARNING HOUSE" : "CAMPUS ROUTE"}</div>
+          <div style={{ ...styles.gameTitle, ...(isTight ? styles.gameTitleTight : null), ...(isPhoneLandscape ? styles.gameTitlePhone : null) }}>PIXEL GAP</div>
+          <div style={{ ...styles.sceneLine, ...(isTight ? styles.sceneLineTight : null), ...(isPhoneLandscape ? styles.sceneLinePhone : null) }}>{scene === "office" ? "DELAWARE BUILDING" : scene === "owlhouse" ? "LEARNING HOUSE" : "CAMPUS ROUTE"}</div>
         </div>
-        <div style={{ ...styles.objectivePanel, ...(isTight ? styles.objectivePanelTight : null) }}>
-          <span style={styles.objectiveTag}>OBJECTIVE</span>
-          <span style={{ ...styles.objectiveText, ...(isTight ? styles.objectiveTextTight : null) }}>{status}</span>
+        <div style={{ ...styles.objectivePanel, ...(isTight ? styles.objectivePanelTight : null), ...(isPhoneLandscape ? styles.objectivePanelPhone : null) }}>
+          {!isPhoneLandscape && <span style={styles.objectiveTag}>OBJECTIVE</span>}
+          <span style={{ ...styles.objectiveText, ...(isTight ? styles.objectiveTextTight : null), ...(isPhoneLandscape ? styles.objectiveTextPhone : null) }}>{status}</span>
         </div>
-        <div style={{ ...styles.hudActions, ...(isTight ? styles.hudActionsTight : null) }}>
-          <button type="button" style={{ ...styles.pixelButton, ...(isTight ? styles.pixelButtonTight : null) }} onClick={onSkipToObjective}>
+        <div style={{ ...styles.hudActions, ...(isTight ? styles.hudActionsTight : null), ...(isPhoneLandscape ? styles.hudActionsPhone : null) }}>
+          <button type="button" style={{ ...styles.pixelButton, ...(isTight ? styles.pixelButtonTight : null), ...(isPhoneLandscape ? styles.pixelButtonPhone : null) }} onClick={onSkipToObjective}>
             warp
           </button>
           <button
@@ -154,6 +158,7 @@ export default function GameCanvas({
             style={{
               ...styles.pixelButton,
               ...(isTight ? styles.pixelButtonTight : null),
+              ...(isPhoneLandscape ? styles.pixelButtonPhone : null),
               ...(interactionLabel ? styles.pixelButtonActive : styles.pixelButtonDisabled),
             }}
             onClick={onInteract}
@@ -163,7 +168,7 @@ export default function GameCanvas({
           </button>
           <button
             type="button"
-            style={{ ...styles.pixelButton, ...styles.leavePixelBtn, ...(isTight ? styles.pixelButtonTight : null) }}
+            style={{ ...styles.pixelButton, ...styles.leavePixelBtn, ...(isTight ? styles.pixelButtonTight : null), ...(isPhoneLandscape ? styles.pixelButtonPhone : null) }}
             onClick={() => setShowLeaveConfirm(true)}
           >
             leave
@@ -171,7 +176,7 @@ export default function GameCanvas({
         </div>
       </div>
 
-      <div style={{ ...styles.progressRail, ...(isTight ? styles.progressRailTight : null) }} aria-label="journey progress">
+      <div style={{ ...styles.progressRail, ...(isTight ? styles.progressRailTight : null), ...(isPhoneLandscape ? styles.progressRailPhone : null) }} aria-label="journey progress">
         {chapterProgress.map((chapter) => (
           <div
             key={chapter.id}
@@ -189,8 +194,8 @@ export default function GameCanvas({
         ))}
       </div>
 
-      <div style={styles.canvasShell}>
-        <div ref={canvasFrameRef} style={styles.canvasInnerFrame}>
+      <div style={{ ...styles.canvasShell, ...(isPhoneLandscape ? styles.canvasShellPhone : null) }}>
+        <div ref={canvasFrameRef} style={{ ...styles.canvasInnerFrame, ...(isPhoneLandscape ? styles.canvasInnerFramePhone : null) }}>
           <canvas
             ref={canvasRef}
             width={viewportWidth}
@@ -211,6 +216,8 @@ export default function GameCanvas({
           <div
             style={{
               ...styles.labelLayer,
+              top: canvasInset,
+              left: canvasInset,
               width: viewportWidth * displayScale,
               height: viewportHeight * displayScale,
             }}
@@ -257,6 +264,7 @@ export default function GameCanvas({
           )}
           <DialogOverlay
             key={dialog ? `${dialog.npcId || "dialog"}-${dialog.stepId || ""}-${dialog.phase || ""}-${dialog.stepIndex ?? 0}` : "no-dialog"}
+            compact={isPhoneLandscape}
             dialog={dialog}
             onChoice={onChoice}
             onAdvance={onAdvance}
@@ -294,6 +302,7 @@ export default function GameCanvas({
           )}
           {learningHouseOpen && !councilOpen && !reportOpen && (
             <LearningHouse
+              compact={isPhoneLandscape}
               quest={quest}
               onClose={onCloseLearningHouse}
             />
@@ -315,12 +324,12 @@ export default function GameCanvas({
             </button>
           )}
           {!dialog && !reportOpen && !councilOpen && !learningHouseOpen && (
-            <div style={{ ...styles.dpad, ...(isTight ? styles.dpadTight : null) }} aria-label="movement controls">
-              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), gridColumn: 2 }} onClick={() => onMove("up")}>▲</button>
-              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), gridColumn: 1, gridRow: 2 }} onClick={() => onMove("left")}>◀</button>
-              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), gridColumn: 2, gridRow: 2 }} onClick={() => onInteract()}>E</button>
-              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), gridColumn: 3, gridRow: 2 }} onClick={() => onMove("right")}>▶</button>
-              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), gridColumn: 2, gridRow: 3 }} onClick={() => onMove("down")}>▼</button>
+            <div style={{ ...styles.dpad, ...(isTight ? styles.dpadTight : null), ...(isPhoneLandscape ? styles.dpadPhone : null) }} aria-label="movement controls">
+              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), ...(isPhoneLandscape ? styles.dpadBtnPhone : null), gridColumn: 2 }} onClick={() => onMove("up")}>▲</button>
+              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), ...(isPhoneLandscape ? styles.dpadBtnPhone : null), gridColumn: 1, gridRow: 2 }} onClick={() => onMove("left")}>◀</button>
+              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), ...(isPhoneLandscape ? styles.dpadBtnPhone : null), gridColumn: 2, gridRow: 2 }} onClick={() => onInteract()}>E</button>
+              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), ...(isPhoneLandscape ? styles.dpadBtnPhone : null), gridColumn: 3, gridRow: 2 }} onClick={() => onMove("right")}>▶</button>
+              <button type="button" style={{ ...styles.dpadBtn, ...(isTight ? styles.dpadBtnTight : null), ...(isPhoneLandscape ? styles.dpadBtnPhone : null), gridColumn: 2, gridRow: 3 }} onClick={() => onMove("down")}>▼</button>
             </div>
           )}
         </div>
@@ -349,6 +358,12 @@ const styles = {
     boxShadow: "0 10px 0 #1a2616, 0 20px 0 rgba(18, 26, 16, 0.28)",
     fontFamily: '"Courier New", "Lucida Console", monospace',
   },
+  stageCardPhone: {
+    gap: 4,
+    padding: 4,
+    borderWidth: 3,
+    boxShadow: "0 4px 0 #1a2616",
+  },
   topHud: {
     flexShrink: 0,
     display: "grid",
@@ -368,6 +383,13 @@ const styles = {
     borderWidth: 3,
     minHeight: 63,
   },
+  topHudPhone: {
+    gridTemplateColumns: "76px minmax(0, 1fr) auto",
+    gap: 4,
+    padding: 4,
+    borderWidth: 2,
+    minHeight: 46,
+  },
   progressRail: {
     flexShrink: 0,
     display: "grid",
@@ -381,6 +403,10 @@ const styles = {
     gap: 3,
     padding: 3,
     borderWidth: 2,
+  },
+  progressRailPhone: {
+    gap: 2,
+    padding: 2,
   },
   progressStep: {
     minWidth: 0,
@@ -443,6 +469,10 @@ const styles = {
   gameTitleTight: {
     fontSize: 16,
   },
+  gameTitlePhone: {
+    fontSize: 13,
+    letterSpacing: 0,
+  },
   sceneLine: {
     marginTop: 5,
     color: "#9ecf8a",
@@ -453,6 +483,11 @@ const styles = {
   sceneLineTight: {
     fontSize: 8,
     marginTop: 3,
+  },
+  sceneLinePhone: {
+    fontSize: 7,
+    marginTop: 2,
+    letterSpacing: 0.4,
   },
   objectivePanel: {
     display: "flex",
@@ -466,6 +501,9 @@ const styles = {
   objectivePanelTight: {
     padding: "4px 6px",
     borderWidth: 2,
+  },
+  objectivePanelPhone: {
+    padding: "3px 5px",
   },
   objectiveTag: {
     color: "#5d6b48",
@@ -487,6 +525,11 @@ const styles = {
     fontSize: 10,
     lineHeight: 1.2,
   },
+  objectiveTextPhone: {
+    fontSize: 9,
+    lineHeight: 1.15,
+    WebkitLineClamp: 2,
+  },
   hudActions: {
     display: "flex",
     gap: 8,
@@ -494,6 +537,9 @@ const styles = {
   },
   hudActionsTight: {
     gap: 5,
+  },
+  hudActionsPhone: {
+    gap: 3,
   },
   pixelButton: {
     border: "3px solid #10180e",
@@ -515,6 +561,12 @@ const styles = {
     fontSize: 10,
     borderWidth: 2,
     boxShadow: "0 2px 0 #7c6020",
+  },
+  pixelButtonPhone: {
+    minWidth: 42,
+    padding: "4px 5px",
+    fontSize: 9,
+    touchAction: "manipulation",
   },
   pixelButtonActive: {
     background: "#9ecf8a",
@@ -540,6 +592,11 @@ const styles = {
     boxSizing: "border-box",
     overflow: "hidden",
   },
+  canvasShellPhone: {
+    padding: 3,
+    borderWidth: 3,
+    boxShadow: "inset 0 0 0 2px #8ca36f",
+  },
   canvasInnerFrame: {
     flex: "1 1 auto",
     minWidth: 0,
@@ -552,6 +609,9 @@ const styles = {
     boxShadow: "none",
     boxSizing: "border-box",
     overflow: "hidden",
+  },
+  canvasInnerFramePhone: {
+    padding: 3,
   },
   objectiveBanner: {
     position: "absolute",
@@ -660,6 +720,14 @@ const styles = {
     padding: 4,
     borderWidth: 2,
   },
+  dpadPhone: {
+    left: 6,
+    bottom: 6,
+    gridTemplateColumns: "30px 30px 30px",
+    gridTemplateRows: "30px 30px 30px",
+    gap: 3,
+    padding: 4,
+  },
   dpadBtn: {
     width: 32,
     height: 32,
@@ -681,6 +749,12 @@ const styles = {
     borderWidth: 2,
     fontSize: 11,
     boxShadow: "0 1px 0 #7c6020",
+  },
+  dpadBtnPhone: {
+    width: 30,
+    height: 30,
+    fontSize: 11,
+    touchAction: "manipulation",
   },
   tutorialOverlay: {
     position: "absolute",
@@ -817,14 +891,16 @@ const styles = {
   },
 };
 
-function chooseResponsiveViewport({ availableWidth, availableHeight, scene }) {
+function chooseResponsiveViewport({ availableWidth, availableHeight, scene, mobileLandscape = false }) {
   const sceneData = SCENES[scene] || SCENES.town;
   const aspect = availableWidth / Math.max(1, availableHeight);
-  const minCols = Math.min(VIEW_COLS, sceneData.w);
-  const minRows = Math.min(VIEW_ROWS, sceneData.h);
-  const maxCols = Math.min(sceneData.w, Math.max(minCols, 42));
-  const maxRows = Math.min(sceneData.h, Math.max(minRows, 22));
-  const targetScale = availableWidth >= 960 ? 2.85 : availableWidth >= 760 ? 2.7 : 2.55;
+  const minCols = Math.min(mobileLandscape ? 18 : VIEW_COLS, sceneData.w);
+  const minRows = Math.min(mobileLandscape ? 10 : VIEW_ROWS, sceneData.h);
+  const maxCols = Math.min(sceneData.w, Math.max(minCols, mobileLandscape ? 44 : 42));
+  const maxRows = Math.min(sceneData.h, Math.max(minRows, mobileLandscape ? 16 : 22));
+  const targetScale = mobileLandscape
+    ? (availableHeight <= 240 ? 1.15 : 1.35)
+    : availableWidth >= 960 ? 2.85 : availableWidth >= 760 ? 2.7 : 2.55;
 
   let best = {
     cols: minCols,

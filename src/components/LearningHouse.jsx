@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { callESGGuideAI } from "../engine/esgGuideAI";
 
@@ -10,11 +10,22 @@ const INITIAL_MESSAGES = [
   },
 ];
 
-export default function LearningHouse({ quest, onClose }) {
+export default function LearningHouse({ quest, onClose, compact = false }) {
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const chatScrollerRef = useRef(null);
+  const shouldAutoScrollRef = useRef(true);
+
+  useEffect(() => {
+    const node = chatScrollerRef.current;
+    if (!node || !shouldAutoScrollRef.current) return undefined;
+    const frame = requestAnimationFrame(() => {
+      node.scrollTop = node.scrollHeight;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [messages.length, busy, error]);
 
   async function handleSend() {
     const text = draft.trim();
@@ -49,30 +60,41 @@ export default function LearningHouse({ quest, onClose }) {
     }
   }
 
+  function handleChatScroll(event) {
+    const node = event.currentTarget;
+    const distanceFromBottom = node.scrollHeight - node.scrollTop - node.clientHeight;
+    shouldAutoScrollRef.current = distanceFromBottom < 40;
+  }
+
   return (
-    <div style={styles.overlay}>
-      <div style={styles.panel}>
-        <div style={styles.header}>
+    <div style={{ ...styles.overlay, ...(compact ? styles.overlayCompact : null) }}>
+      <div style={{ ...styles.panel, ...(compact ? styles.panelCompact : null) }}>
+        <div style={{ ...styles.header, ...(compact ? styles.headerCompact : null) }}>
           <div>
-            <div style={styles.kicker}>olive's learning house</div>
-            <h2 style={styles.title}>learn more about esg</h2>
-            <p style={styles.subtitle}>
+            <div style={{ ...styles.kicker, ...(compact ? styles.kickerCompact : null) }}>olive's learning house</div>
+            <h2 style={{ ...styles.title, ...(compact ? styles.titleCompact : null) }}>learn more about esg</h2>
+            <p style={{ ...styles.subtitle, ...(compact ? styles.subtitleCompact : null) }}>
               ask questions and explore examples.
             </p>
           </div>
-          <button type="button" onClick={onClose} style={styles.closeButton}>
+          <button type="button" onClick={onClose} style={{ ...styles.closeButton, ...(compact ? styles.closeButtonCompact : null) }}>
             leave house
           </button>
         </div>
 
-        <div style={styles.learnGrid}>
+        <div style={{ ...styles.learnGrid, ...(compact ? styles.learnGridCompact : null) }}>
           <div style={styles.chatCard}>
-            <div style={styles.chatScroller}>
+            <div
+              ref={chatScrollerRef}
+              style={styles.chatScroller}
+              onScroll={handleChatScroll}
+            >
               {messages.map((message, index) => (
                 <div
                   key={`${message.role}-${index}`}
                   style={{
                     ...styles.message,
+                    ...(compact ? styles.messageCompact : null),
                     ...(message.role === "user" ? styles.userMessage : styles.assistantMessage),
                   }}
                 >
@@ -87,17 +109,17 @@ export default function LearningHouse({ quest, onClose }) {
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={handleDraftKeyDown}
                 placeholder="ask about esg, ethics, sustainability, or workplace questions..."
-                style={styles.textarea}
-                rows={3}
+                style={{ ...styles.textarea, ...(compact ? styles.textareaCompact : null) }}
+                rows={compact ? 2 : 3}
               />
-              <button type="button" onClick={handleSend} disabled={busy || !draft.trim()} style={styles.sendButton}>
+              <button type="button" onClick={handleSend} disabled={busy || !draft.trim()} style={{ ...styles.sendButton, ...(compact ? styles.sendButtonCompact : null) }}>
                 send
               </button>
             </div>
             {error ? <div style={styles.errorText}>{error}</div> : null}
           </div>
 
-          <div style={styles.sideCard}>
+          <div style={{ ...styles.sideCard, ...(compact ? styles.sideCardCompact : null) }}>
             <div style={styles.sideTitle}>good topics to ask about</div>
             <ul style={styles.promptList}>
               <li>what does esg actually mean in simple terms?</li>
@@ -124,6 +146,9 @@ const styles = {
     padding: 10,
     boxSizing: "border-box",
   },
+  overlayCompact: {
+    padding: 4,
+  },
   panel: {
     width: "min(980px, calc(100% - 24px))",
     height: "calc(100% - 20px)",
@@ -137,12 +162,29 @@ const styles = {
     background: "#eadfbc",
     boxShadow: "0 10px 0 #172012",
     fontFamily: '"Courier New", "Lucida Console", monospace',
+    minHeight: 0,
+    boxSizing: "border-box",
+    overflow: "hidden",
+  },
+  panelCompact: {
+    width: "calc(100% - 4px)",
+    height: "calc(100% - 4px)",
+    maxHeight: "calc(100% - 4px)",
+    gap: 5,
+    padding: 7,
+    borderWidth: 3,
+    boxShadow: "0 4px 0 #172012",
   },
   header: {
     display: "flex",
     justifyContent: "space-between",
     gap: 10,
     alignItems: "flex-start",
+    flexShrink: 0,
+    minWidth: 0,
+  },
+  headerCompact: {
+    gap: 6,
   },
   kicker: {
     fontSize: 11,
@@ -151,11 +193,19 @@ const styles = {
     color: "#6a7c45",
     fontWeight: 800,
   },
+  kickerCompact: {
+    fontSize: 8,
+    letterSpacing: 0.8,
+  },
   title: {
     margin: "4px 0 4px",
     fontSize: "clamp(18px, 4vh, 30px)",
     lineHeight: 1,
     color: "#3e4b21",
+  },
+  titleCompact: {
+    margin: "2px 0",
+    fontSize: 15,
   },
   subtitle: {
     margin: 0,
@@ -163,6 +213,9 @@ const styles = {
     color: "#5e5b47",
     lineHeight: 1.25,
     fontSize: 12,
+  },
+  subtitleCompact: {
+    display: "none",
   },
   closeButton: {
     border: "3px solid #2f4a2e",
@@ -173,6 +226,13 @@ const styles = {
     fontWeight: 800,
     cursor: "pointer",
     textTransform: "lowercase",
+    touchAction: "manipulation",
+    flexShrink: 0,
+  },
+  closeButtonCompact: {
+    padding: "5px 7px",
+    fontSize: 10,
+    borderWidth: 2,
   },
   learnGrid: {
     display: "grid",
@@ -180,6 +240,10 @@ const styles = {
     gap: 10,
     minHeight: 0,
     flex: 1,
+  },
+  learnGridCompact: {
+    gridTemplateColumns: "minmax(0, 1fr)",
+    gap: 5,
   },
   chatCard: {
     display: "flex",
@@ -190,15 +254,21 @@ const styles = {
     background: "#fffaf0",
     border: "3px solid #cfbf93",
     boxShadow: "none",
+    minWidth: 0,
+    overflow: "hidden",
   },
   chatScroller: {
     flex: 1,
     minHeight: 0,
-    overflow: "hidden",
+    overflowY: "auto",
+    overflowX: "hidden",
     display: "flex",
     flexDirection: "column",
     gap: 6,
-    paddingRight: 0,
+    paddingRight: 6,
+    overscrollBehavior: "contain",
+    scrollbarWidth: "thin",
+    scrollbarColor: "rgba(47,74,46,0.55) rgba(255,250,240,0.4)",
   },
   message: {
     maxWidth: "88%",
@@ -207,6 +277,14 @@ const styles = {
     lineHeight: 1.25,
     fontSize: 12,
     whiteSpace: "pre-wrap",
+    flexShrink: 0,
+    overflowWrap: "anywhere",
+  },
+  messageCompact: {
+    maxWidth: "94%",
+    padding: "6px 8px",
+    fontSize: 10,
+    lineHeight: 1.22,
   },
   assistantMessage: {
     alignSelf: "flex-start",
@@ -232,6 +310,7 @@ const styles = {
     gap: 8,
     marginTop: 8,
     alignItems: "end",
+    flexShrink: 0,
   },
   textarea: {
     width: "100%",
@@ -245,6 +324,11 @@ const styles = {
     color: "#3b3a2f",
     outline: "none",
   },
+  textareaCompact: {
+    padding: "6px 8px",
+    fontSize: 11,
+    borderWidth: 2,
+  },
   sendButton: {
     border: "3px solid #35532b",
     background: "#87b65d",
@@ -255,6 +339,13 @@ const styles = {
     cursor: "pointer",
     textTransform: "lowercase",
     minWidth: 110,
+    touchAction: "manipulation",
+  },
+  sendButtonCompact: {
+    minWidth: 68,
+    padding: "6px 8px",
+    fontSize: 11,
+    borderWidth: 2,
   },
   errorText: {
     marginTop: 10,
@@ -268,6 +359,11 @@ const styles = {
     background: "#f4ecd5",
     border: "3px solid #ceb982",
     color: "#54472e",
+    minHeight: 0,
+    overflowY: "auto",
+  },
+  sideCardCompact: {
+    display: "none",
   },
   sideTitle: {
     fontSize: 16,

@@ -1,7 +1,7 @@
 // Thin orchestrator — wires the hook to the component tree.
 // Should contain no game logic, no canvas code, no data definitions.
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGameState } from "./hooks/useGameState";
 import GameCanvas     from "./components/GameCanvas";
 import IntroScreen    from "./components/IntroScreen";
@@ -9,6 +9,7 @@ import PrivacyScreen  from "./components/PrivacyScreen";
 import PrivacyModal   from "./components/PrivacyModal";
 import ProfileScreen  from "./components/ProfileScreen";
 import InfoRow        from "./components/InfoRow";
+import OrientationPrompt from "./components/OrientationPrompt";
 
 const PROGRESS_KEY = "pixel-gap-progress";
 
@@ -24,16 +25,23 @@ function hasSavedProgress() {
 export default function App() {
   const [screen, setScreen] = useState("start");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const viewport = useViewportSize();
   const game = useGameState();
+  const needsPhoneLandscape = isPhonePortrait(viewport);
+  const isPhoneLandscape = isPhoneLandscapeViewport(viewport);
 
   function handlePrivacyAccept() { setPrivacyAccepted(true); }
   function handlePrivacyExit()   { window.location.href = "about:blank"; }
+
+  function enterGame() {
+    setScreen(needsPhoneLandscape ? "orientation" : "game");
+  }
 
   function handleConsent() {
     if (!privacyAccepted) return;
     // Skip intro + profile if there's a saved session to resume
     if (hasSavedProgress()) {
-      setScreen("game");
+      enterGame();
     } else {
       setScreen("intro");
     }
@@ -43,6 +51,12 @@ export default function App() {
     game.leaveGame();
     setScreen("thanks");
   }
+
+  useEffect(() => {
+    if (screen !== "orientation" || needsPhoneLandscape) return undefined;
+    const timer = window.setTimeout(() => setScreen("game"), 450);
+    return () => window.clearTimeout(timer);
+  }, [screen, needsPhoneLandscape]);
 
   if (screen === "start") {
     return (
@@ -65,8 +79,18 @@ export default function App() {
       <ProfileScreen
         onSubmit={(profile) => {
           game.setPlayerProfile(profile);
-          setScreen("game");
+          enterGame();
         }}
+      />
+    );
+  }
+
+  if (screen === "orientation") {
+    return (
+      <OrientationPrompt
+        ready={!needsPhoneLandscape}
+        onContinue={() => setScreen("game")}
+        onContinueAnyway={() => setScreen("game")}
       />
     );
   }
@@ -84,9 +108,10 @@ export default function App() {
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.gameWrap}>
+    <div style={{ ...styles.page, ...(isPhoneLandscape ? styles.pagePhoneLandscape : null) }}>
+      <div style={{ ...styles.gameWrap, ...(isPhoneLandscape ? styles.gameWrapPhoneLandscape : null) }}>
         <GameCanvas
+          mobileLandscape={isPhoneLandscape}
           scene={game.scene}
           player={game.player}
           townNpcs={game.townNpcs}
@@ -118,10 +143,46 @@ export default function App() {
           onCloseLearningHouse={game.closeLearningHouse}
           onLeaveGame={handleLeaveGame}
         />
-        <InfoRow />
+        <InfoRow compact={isPhoneLandscape} />
       </div>
     </div>
   );
+}
+
+function getViewportSize() {
+  if (typeof window === "undefined") return { width: 1024, height: 768 };
+  return {
+    width: window.innerWidth || 1024,
+    height: window.innerHeight || 768,
+  };
+}
+
+function useViewportSize() {
+  const [viewport, setViewport] = useState(getViewportSize);
+
+  useEffect(() => {
+    function handleResize() {
+      setViewport(getViewportSize());
+    }
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+    };
+  }, []);
+
+  return viewport;
+}
+
+function isPhonePortrait(viewport) {
+  return viewport.width <= 740 && viewport.height > viewport.width;
+}
+
+function isPhoneLandscapeViewport(viewport) {
+  return viewport.width > viewport.height && viewport.height <= 520 && viewport.width <= 980;
 }
 
 const styles = {
@@ -139,6 +200,12 @@ const styles = {
     overflow: "hidden",
     boxSizing: "border-box",
   },
+  pagePhoneLandscape: {
+    minHeight: "100svh",
+    height: "100svh",
+    padding: 4,
+    alignItems: "center",
+  },
   gameWrap: {
     display: "flex",
     flexDirection: "column",
@@ -152,6 +219,13 @@ const styles = {
     zIndex: 1,
     overflow: "hidden",
     boxSizing: "border-box",
+  },
+  gameWrapPhoneLandscape: {
+    width: "calc(100vw - 8px)",
+    height: "calc(100svh - 8px)",
+    maxWidth: "none",
+    maxHeight: "none",
+    gap: 3,
   },
   thanksScreen: {
     minHeight: "100vh",
