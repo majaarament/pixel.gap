@@ -38,7 +38,7 @@ function colorForGround(type) {
   }
 }
 
-export default function MiniMap({ scene, player, objectiveTarget }) {
+export default function MiniMap({ scene, player, objectiveTarget, compact = false, viewSize }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -76,15 +76,17 @@ export default function MiniMap({ scene, player, objectiveTarget }) {
       }
     }
 
+    const viewportCols = viewSize?.cols || VIEW_COLS;
+    const viewportRows = viewSize?.rows || VIEW_ROWS;
     const camX = clamp(
-      player.x - Math.floor(VIEW_COLS / 2),
+      player.x - Math.floor(viewportCols / 2),
       0,
-      Math.max(0, sceneData.w - VIEW_COLS)
+      Math.max(0, sceneData.w - viewportCols)
     );
     const camY = clamp(
-      player.y - Math.floor(VIEW_ROWS / 2),
+      player.y - Math.floor(viewportRows / 2),
       0,
-      Math.max(0, sceneData.h - VIEW_ROWS)
+      Math.max(0, sceneData.h - viewportRows)
     );
 
     ctx.strokeStyle = "rgba(52, 68, 58, 0.7)";
@@ -92,8 +94,8 @@ export default function MiniMap({ scene, player, objectiveTarget }) {
     ctx.strokeRect(
       offsetX + camX * scale + 0.5,
       offsetY + camY * scale + 0.5,
-      VIEW_COLS * scale,
-      VIEW_ROWS * scale
+      viewportCols * scale,
+      viewportRows * scale
     );
 
     if (objectiveTarget && (!objectiveTarget.scene || objectiveTarget.scene === scene)) {
@@ -116,15 +118,15 @@ export default function MiniMap({ scene, player, objectiveTarget }) {
 
     ctx.strokeStyle = "rgba(74, 84, 76, 0.6)";
     ctx.strokeRect(0.5, 0.5, WIDTH - 1, HEIGHT - 1);
-  }, [objectiveTarget, player, scene]);
+  }, [objectiveTarget, player, scene, viewSize]);
 
   return (
-    <div style={styles.wrap}>
+    <div style={{ ...styles.wrap, ...(compact ? styles.wrapCompact : null) }}>
       <canvas
         ref={canvasRef}
         width={WIDTH}
         height={HEIGHT}
-        style={styles.canvas}
+        style={{ ...styles.canvas, ...(compact ? styles.canvasCompact : null) }}
       />
     </div>
   );
@@ -143,10 +145,20 @@ const styles = {
     zIndex: 22,
     pointerEvents: "none",
   },
+  wrapCompact: {
+    right: 6,
+    bottom: 6,
+    padding: 3,
+    boxShadow: "0 4px 10px rgba(34, 46, 37, 0.14)",
+  },
   canvas: {
     display: "block",
     width: WIDTH,
     height: HEIGHT,
     imageRendering: "pixelated",
+  },
+  canvasCompact: {
+    width: 104,
+    height: 71,
   },
 };

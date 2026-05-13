@@ -240,25 +240,27 @@ export default function GameCanvas({
               scene={scene}
               player={player}
               objectiveTarget={objectiveTarget}
+              compact={isPhoneLandscape}
+              viewSize={viewSize}
             />
           )}
           {showTutorial && (
-            <div style={styles.tutorialOverlay} onClick={dismissTutorial}>
-              <div style={styles.tutorialCard}>
-                <div style={styles.tutorialTitle}>how to play</div>
-                <div style={styles.tutorialGrid}>
-                  <span style={styles.tutorialKey}>↑ ↓ ← →</span>
-                  <span style={styles.tutorialDesc}>move around (or W A S D)</span>
-                  <span style={styles.tutorialKey}>E / Space</span>
-                  <span style={styles.tutorialDesc}>talk when the prompt is visible</span>
-                  <span style={styles.tutorialKey}>Enter / Tab</span>
-                  <span style={styles.tutorialDesc}>continue dialogue</span>
-                  <span style={styles.tutorialKey}>1 · 2 · 3 · 4 · 5</span>
-                  <span style={styles.tutorialDesc}>choose an answer (or click)</span>
-                  <span style={styles.tutorialKey}>warp</span>
-                  <span style={styles.tutorialDesc}>jump near the current objective</span>
+            <div style={{ ...styles.tutorialOverlay, ...(isPhoneLandscape ? styles.tutorialOverlayPhone : null) }} onClick={dismissTutorial}>
+              <div style={{ ...styles.tutorialCard, ...(isPhoneLandscape ? styles.tutorialCardPhone : null) }}>
+                <div style={{ ...styles.tutorialTitle, ...(isPhoneLandscape ? styles.tutorialTitlePhone : null) }}>how to play</div>
+                <div style={{ ...styles.tutorialGrid, ...(isPhoneLandscape ? styles.tutorialGridPhone : null) }}>
+                  <span style={{ ...styles.tutorialKey, ...(isPhoneLandscape ? styles.tutorialKeyPhone : null) }}>↑ ↓ ← →</span>
+                  <span style={{ ...styles.tutorialDesc, ...(isPhoneLandscape ? styles.tutorialDescPhone : null) }}>move around</span>
+                  <span style={{ ...styles.tutorialKey, ...(isPhoneLandscape ? styles.tutorialKeyPhone : null) }}>E / Space</span>
+                  <span style={{ ...styles.tutorialDesc, ...(isPhoneLandscape ? styles.tutorialDescPhone : null) }}>talk when the prompt is visible</span>
+                  <span style={{ ...styles.tutorialKey, ...(isPhoneLandscape ? styles.tutorialKeyPhone : null) }}>Enter / Tab</span>
+                  <span style={{ ...styles.tutorialDesc, ...(isPhoneLandscape ? styles.tutorialDescPhone : null) }}>continue dialogue</span>
+                  <span style={{ ...styles.tutorialKey, ...(isPhoneLandscape ? styles.tutorialKeyPhone : null) }}>1 · 2 · 3 · 4 · 5</span>
+                  <span style={{ ...styles.tutorialDesc, ...(isPhoneLandscape ? styles.tutorialDescPhone : null) }}>choose an answer</span>
+                  <span style={{ ...styles.tutorialKey, ...(isPhoneLandscape ? styles.tutorialKeyPhone : null) }}>warp</span>
+                  <span style={{ ...styles.tutorialDesc, ...(isPhoneLandscape ? styles.tutorialDescPhone : null) }}>jump near the objective</span>
                 </div>
-                <div style={styles.tutorialDismiss}>press any key or click to start</div>
+                <div style={{ ...styles.tutorialDismiss, ...(isPhoneLandscape ? styles.tutorialDismissPhone : null) }}>tap to start</div>
               </div>
             </div>
           )}
@@ -721,12 +723,13 @@ const styles = {
     borderWidth: 2,
   },
   dpadPhone: {
-    left: 6,
-    bottom: 6,
-    gridTemplateColumns: "30px 30px 30px",
-    gridTemplateRows: "30px 30px 30px",
-    gap: 3,
-    padding: 4,
+    left: 5,
+    bottom: 5,
+    gridTemplateColumns: "24px 24px 24px",
+    gridTemplateRows: "24px 24px 24px",
+    gap: 2,
+    padding: 3,
+    background: "rgba(14, 22, 16, 0.68)",
   },
   dpadBtn: {
     width: 32,
@@ -751,9 +754,9 @@ const styles = {
     boxShadow: "0 1px 0 #7c6020",
   },
   dpadBtnPhone: {
-    width: 30,
-    height: 30,
-    fontSize: 11,
+    width: 24,
+    height: 24,
+    fontSize: 10,
     touchAction: "manipulation",
   },
   tutorialOverlay: {
@@ -768,6 +771,13 @@ const styles = {
     cursor: "pointer",
     fontFamily: '"Courier New", "Lucida Console", monospace',
   },
+  tutorialOverlayPhone: {
+    alignItems: "flex-start",
+    padding: 6,
+    boxSizing: "border-box",
+    overflowY: "auto",
+    WebkitOverflowScrolling: "touch",
+  },
   tutorialCard: {
     width: "min(420px, calc(100% - 32px))",
     background: "rgba(14, 22, 16, 0.98)",
@@ -779,6 +789,14 @@ const styles = {
     gap: 16,
     boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
   },
+  tutorialCardPhone: {
+    width: "min(520px, calc(100% - 12px))",
+    maxHeight: "calc(100% - 12px)",
+    padding: "8px 10px",
+    gap: 7,
+    overflowY: "auto",
+    boxShadow: "0 10px 24px rgba(0,0,0,0.42)",
+  },
   tutorialTitle: {
     fontSize: 12,
     fontWeight: 900,
@@ -787,11 +805,18 @@ const styles = {
     color: "#7ab068",
     textAlign: "center",
   },
+  tutorialTitlePhone: {
+    fontSize: 9,
+    letterSpacing: 1.4,
+  },
   tutorialGrid: {
     display: "grid",
     gridTemplateColumns: "auto 1fr",
     gap: "10px 16px",
     alignItems: "start",
+  },
+  tutorialGridPhone: {
+    gap: "5px 8px",
   },
   tutorialKey: {
     fontSize: 12,
@@ -804,11 +829,21 @@ const styles = {
     whiteSpace: "nowrap",
     lineHeight: 1.4,
   },
+  tutorialKeyPhone: {
+    fontSize: 9,
+    padding: "2px 5px",
+    lineHeight: 1.15,
+  },
   tutorialDesc: {
     fontSize: 13,
     color: "rgba(190, 220, 185, 0.85)",
     lineHeight: 1.5,
     paddingTop: 4,
+  },
+  tutorialDescPhone: {
+    fontSize: 10,
+    lineHeight: 1.2,
+    paddingTop: 1,
   },
   tutorialDismiss: {
     textAlign: "center",
@@ -889,17 +924,21 @@ const styles = {
     textTransform: "uppercase",
     cursor: "pointer",
   },
+  tutorialDismissPhone: {
+    fontSize: 9,
+    marginTop: 0,
+  },
 };
 
 function chooseResponsiveViewport({ availableWidth, availableHeight, scene, mobileLandscape = false }) {
   const sceneData = SCENES[scene] || SCENES.town;
   const aspect = availableWidth / Math.max(1, availableHeight);
-  const minCols = Math.min(mobileLandscape ? 18 : VIEW_COLS, sceneData.w);
-  const minRows = Math.min(mobileLandscape ? 10 : VIEW_ROWS, sceneData.h);
-  const maxCols = Math.min(sceneData.w, Math.max(minCols, mobileLandscape ? 44 : 42));
-  const maxRows = Math.min(sceneData.h, Math.max(minRows, mobileLandscape ? 16 : 22));
+  const minCols = Math.min(mobileLandscape ? 16 : VIEW_COLS, sceneData.w);
+  const minRows = Math.min(mobileLandscape ? 8 : VIEW_ROWS, sceneData.h);
+  const maxCols = Math.min(sceneData.w, Math.max(minCols, mobileLandscape ? 30 : 42));
+  const maxRows = Math.min(sceneData.h, Math.max(minRows, mobileLandscape ? 10 : 22));
   const targetScale = mobileLandscape
-    ? (availableHeight <= 240 ? 1.15 : 1.35)
+    ? (availableHeight <= 240 ? 1.65 : 2)
     : availableWidth >= 960 ? 2.85 : availableWidth >= 760 ? 2.7 : 2.55;
 
   let best = {
