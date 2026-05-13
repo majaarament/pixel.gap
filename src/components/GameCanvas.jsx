@@ -725,8 +725,8 @@ const styles = {
   dpadPhone: {
     left: 5,
     bottom: 5,
-    gridTemplateColumns: "24px 24px 24px",
-    gridTemplateRows: "24px 24px 24px",
+    gridTemplateColumns: "27px 27px 27px",
+    gridTemplateRows: "27px 27px 27px",
     gap: 2,
     padding: 3,
     background: "rgba(14, 22, 16, 0.68)",
@@ -754,9 +754,9 @@ const styles = {
     boxShadow: "0 1px 0 #7c6020",
   },
   dpadBtnPhone: {
-    width: 24,
-    height: 24,
-    fontSize: 10,
+    width: 27,
+    height: 27,
+    fontSize: 11,
     touchAction: "manipulation",
   },
   tutorialOverlay: {
@@ -933,12 +933,12 @@ const styles = {
 function chooseResponsiveViewport({ availableWidth, availableHeight, scene, mobileLandscape = false }) {
   const sceneData = SCENES[scene] || SCENES.town;
   const aspect = availableWidth / Math.max(1, availableHeight);
-  const minCols = Math.min(mobileLandscape ? 14 : VIEW_COLS, sceneData.w);
-  const minRows = Math.min(mobileLandscape ? 7 : VIEW_ROWS, sceneData.h);
-  const maxCols = Math.min(sceneData.w, Math.max(minCols, mobileLandscape ? 26 : 42));
-  const maxRows = Math.min(sceneData.h, Math.max(minRows, mobileLandscape ? 8 : 22));
+  const minCols = Math.min(mobileLandscape ? 13 : VIEW_COLS, sceneData.w);
+  const minRows = Math.min(mobileLandscape ? 6 : VIEW_ROWS, sceneData.h);
+  const maxCols = Math.min(sceneData.w, Math.max(minCols, mobileLandscape ? 24 : 42));
+  const maxRows = Math.min(sceneData.h, Math.max(minRows, mobileLandscape ? 7 : 22));
   const targetScale = mobileLandscape
-    ? (availableHeight <= 240 ? 1.95 : 2.45)
+    ? (availableHeight <= 240 ? 2.25 : 2.85)
     : availableWidth >= 960 ? 2.85 : availableWidth >= 760 ? 2.7 : 2.55;
 
   let best = {
