@@ -165,7 +165,7 @@ export default function PrivacyScreen({ canStart = false, onConsent }) {
           <PixelCanvas
             width={26}
             height={28}
-            scale={isPhonePortrait ? 6.8 : 9}
+            scale={isPhonePortrait ? 7.8 : 9}
             draw={drawStartBeaver}
             button
             onClick={onConsent}
@@ -181,7 +181,7 @@ export default function PrivacyScreen({ canStart = false, onConsent }) {
             <PixelCanvas
               width={12}
               height={14}
-              scale={isPhonePortrait ? 3.1 : 4}
+              scale={isPhonePortrait ? 3.2 : 4}
               draw={drawCursor}
               style={{ ...styles.cursor, ...(isPhonePortrait ? styles.cursorPhone : null) }}
             />
@@ -269,7 +269,7 @@ const styles = {
     height: "auto",
   },
   titleCanvasPhone: {
-    top: "clamp(28px, 6svh, 52px)",
+    top: "clamp(52px, 10svh, 84px)",
     width: "min(364px, calc(100% - 42px))",
   },
   cloud: {
@@ -301,7 +301,7 @@ const styles = {
     cursor: "pointer",
   },
   beaverButtonPhone: {
-    top: "55%",
+    top: "58%",
     transform: "translate(-50%, -18%)",
   },
   beaverCanvas: {
@@ -321,7 +321,7 @@ const styles = {
   },
   startPromptPhone: {
     left: "50%",
-    top: "calc(55% + 150px)",
+    top: "calc(58% + 170px)",
     transform: "translateX(-50%)",
     gap: 6,
     maxWidth: "calc(100% - 24px)",
@@ -331,7 +331,7 @@ const styles = {
     transform: "rotate(-16deg)",
   },
   cursorPhone: {
-    transform: "rotate(-16deg)",
+    transform: "translate(-10px, -38px) rotate(-16deg)",
     flexShrink: 0,
   },
   startText: {
