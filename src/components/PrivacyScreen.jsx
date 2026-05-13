@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { drawTree } from "../renderer/props";
 import { drawHeroBeaverSprite } from "../renderer/beaverSprite";
 
@@ -14,7 +14,7 @@ const TITLE_GLYPHS = {
   V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
 };
 
-function PixelCanvas({ width, height, scale, draw, style, button = false, onClick, label }) {
+function PixelCanvas({ width, height, scale, draw, style, button = false, onClick, label, buttonStyle }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ function PixelCanvas({ width, height, scale, draw, style, button = false, onClic
       type="button"
       aria-label={label}
       onClick={onClick}
-      style={styles.beaverButton}
+      style={{ ...styles.beaverButton, ...buttonStyle }}
     >
       {canvas}
     </button>
@@ -127,6 +127,9 @@ function drawCursor(ctx) {
 }
 
 export default function PrivacyScreen({ canStart = false, onConsent }) {
+  const viewport = useViewportSize();
+  const isPhonePortrait = viewport.width <= 740 && viewport.height > viewport.width;
+
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.key === "2" || e.key === "Enter" || e.key === " " || e.key === "Tab") {
@@ -140,45 +143,51 @@ export default function PrivacyScreen({ canStart = false, onConsent }) {
   }, [canStart, onConsent]);
 
   return (
-    <div style={styles.screen}>
-      <div style={styles.panel}>
+    <div style={{ ...styles.screen, ...(isPhonePortrait ? styles.screenPhone : null) }}>
+      <div style={{ ...styles.panel, ...(isPhonePortrait ? styles.panelPhone : null) }}>
         <PixelCanvas
           width={26}
           height={10}
-          scale={8}
+          scale={isPhonePortrait ? 6 : 8}
           draw={drawCloud}
-          style={styles.cloud}
+          style={{ ...styles.cloud, ...(isPhonePortrait ? styles.cloudPhone : null) }}
         />
 
         <PixelCanvas
           width={65}
           height={9}
-          scale={8}
+          scale={isPhonePortrait ? 5.6 : 8}
           draw={drawTitle}
-          style={styles.titleCanvas}
+          style={{ ...styles.titleCanvas, ...(isPhonePortrait ? styles.titleCanvasPhone : null) }}
         />
 
         <div style={styles.centerArea}>
           <PixelCanvas
             width={26}
             height={28}
-            scale={9}
+            scale={isPhonePortrait ? 6.8 : 9}
             draw={drawStartBeaver}
             button
             onClick={onConsent}
             label="Start game"
-            style={styles.beaverCanvas}
+            style={{
+              ...styles.beaverCanvas,
+              ...(isPhonePortrait ? styles.beaverCanvasPhone : null),
+            }}
+            buttonStyle={isPhonePortrait ? styles.beaverButtonPhone : null}
           />
 
-          <div style={styles.startPrompt}>
+          <div style={{ ...styles.startPrompt, ...(isPhonePortrait ? styles.startPromptPhone : null) }}>
             <PixelCanvas
               width={12}
               height={14}
-              scale={4}
+              scale={isPhonePortrait ? 3.1 : 4}
               draw={drawCursor}
-              style={styles.cursor}
+              style={{ ...styles.cursor, ...(isPhonePortrait ? styles.cursorPhone : null) }}
             />
-            <div style={styles.startText}>{canStart ? "Press 2 start" : "Read notice first"}</div>
+            <div style={{ ...styles.startText, ...(isPhonePortrait ? styles.startTextPhone : null) }}>
+              {canStart ? (isPhonePortrait ? "Tap to start" : "Press 2 start") : "Read notice first"}
+            </div>
           </div>
         </div>
       </div>
@@ -186,12 +195,40 @@ export default function PrivacyScreen({ canStart = false, onConsent }) {
       <PixelCanvas
         width={16}
         height={17}
-        scale={8}
+        scale={isPhonePortrait ? 6 : 8}
         draw={(ctx) => drawTree(ctx, 0, 0, "pine")}
-        style={styles.tree}
+        style={{ ...styles.tree, ...(isPhonePortrait ? styles.treePhone : null) }}
       />
     </div>
   );
+}
+
+function getViewportSize() {
+  if (typeof window === "undefined") return { width: 1024, height: 768 };
+  return {
+    width: window.innerWidth || 1024,
+    height: window.innerHeight || 768,
+  };
+}
+
+function useViewportSize() {
+  const [viewport, setViewport] = useState(getViewportSize);
+
+  useEffect(() => {
+    function handleResize() {
+      setViewport(getViewportSize());
+    }
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+    };
+  }, []);
+
+  return viewport;
 }
 
 const styles = {
@@ -205,6 +242,11 @@ const styles = {
     position: "relative",
     overflow: "hidden",
   },
+  screenPhone: {
+    height: "100svh",
+    padding: 10,
+    alignItems: "center",
+  },
   panel: {
     position: "relative",
     width: "min(1000px, calc(100vw - 56px))",
@@ -212,6 +254,11 @@ const styles = {
     background: "#e8ecd7",
     overflow: "hidden",
     boxSizing: "border-box",
+  },
+  panelPhone: {
+    width: "min(430px, calc(100vw - 32px))",
+    height: "min(620px, calc(100svh - 128px))",
+    minHeight: 430,
   },
   titleCanvas: {
     position: "absolute",
@@ -221,10 +268,19 @@ const styles = {
     width: "min(520px, 68vw)",
     height: "auto",
   },
+  titleCanvasPhone: {
+    top: "clamp(28px, 6svh, 52px)",
+    width: "min(364px, calc(100% - 42px))",
+  },
   cloud: {
     position: "absolute",
     right: -8,
     top: -16,
+  },
+  cloudPhone: {
+    right: -18,
+    top: -8,
+    opacity: 0.9,
   },
   centerArea: {
     position: "absolute",
@@ -244,8 +300,16 @@ const styles = {
     margin: 0,
     cursor: "pointer",
   },
+  beaverButtonPhone: {
+    top: "55%",
+    transform: "translate(-50%, -18%)",
+  },
   beaverCanvas: {
     filter: "drop-shadow(0 0 0 rgba(0,0,0,0))",
+  },
+  beaverCanvasPhone: {
+    maxWidth: "calc(100vw - 96px)",
+    height: "auto",
   },
   startPrompt: {
     position: "absolute",
@@ -255,8 +319,20 @@ const styles = {
     alignItems: "center",
     gap: 8,
   },
+  startPromptPhone: {
+    left: "50%",
+    top: "calc(55% + 150px)",
+    transform: "translateX(-50%)",
+    gap: 6,
+    maxWidth: "calc(100% - 24px)",
+    justifyContent: "center",
+  },
   cursor: {
     transform: "rotate(-16deg)",
+  },
+  cursorPhone: {
+    transform: "rotate(-16deg)",
+    flexShrink: 0,
   },
   startText: {
     fontFamily: '"Courier New", "Lucida Console", monospace',
@@ -266,9 +342,16 @@ const styles = {
     color: "#000000",
     whiteSpace: "nowrap",
   },
+  startTextPhone: {
+    fontSize: "clamp(15px, 4.3vw, 19px)",
+  },
   tree: {
     position: "absolute",
     left: 10,
     bottom: 8,
+  },
+  treePhone: {
+    left: 18,
+    bottom: 16,
   },
 };
