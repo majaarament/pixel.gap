@@ -263,7 +263,7 @@ export default function GameCanvas({
               >
                 -
               </button>
-              <span style={styles.zoomLevel}>{mobileZoom + 2}</span>
+              <span style={styles.zoomLabel}>zoom</span>
               <button
                 type="button"
                 style={{
@@ -827,14 +827,14 @@ const styles = {
     cursor: "default",
     boxShadow: "none",
   },
-  zoomLevel: {
-    width: 16,
+  zoomLabel: {
     textAlign: "center",
     color: "#e8ecd7",
     fontFamily: '"Courier New", "Lucida Console", monospace',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: 900,
     lineHeight: 1,
+    textTransform: "uppercase",
   },
   tutorialOverlay: {
     position: "absolute",
