@@ -933,12 +933,12 @@ const styles = {
 function chooseResponsiveViewport({ availableWidth, availableHeight, scene, mobileLandscape = false }) {
   const sceneData = SCENES[scene] || SCENES.town;
   const aspect = availableWidth / Math.max(1, availableHeight);
-  const minCols = Math.min(mobileLandscape ? 16 : VIEW_COLS, sceneData.w);
-  const minRows = Math.min(mobileLandscape ? 8 : VIEW_ROWS, sceneData.h);
-  const maxCols = Math.min(sceneData.w, Math.max(minCols, mobileLandscape ? 30 : 42));
-  const maxRows = Math.min(sceneData.h, Math.max(minRows, mobileLandscape ? 10 : 22));
+  const minCols = Math.min(mobileLandscape ? 14 : VIEW_COLS, sceneData.w);
+  const minRows = Math.min(mobileLandscape ? 7 : VIEW_ROWS, sceneData.h);
+  const maxCols = Math.min(sceneData.w, Math.max(minCols, mobileLandscape ? 26 : 42));
+  const maxRows = Math.min(sceneData.h, Math.max(minRows, mobileLandscape ? 8 : 22));
   const targetScale = mobileLandscape
-    ? (availableHeight <= 240 ? 1.65 : 2)
+    ? (availableHeight <= 240 ? 1.95 : 2.45)
     : availableWidth >= 960 ? 2.85 : availableWidth >= 760 ? 2.7 : 2.55;
 
   let best = {
