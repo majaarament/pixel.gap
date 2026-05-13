@@ -12,6 +12,9 @@ import ResultsOverlay from "./ResultsOverlay";
 import CouncilMeeting from "./CouncilMeeting";
 import LearningHouse from "./LearningHouse";
 
+const MOBILE_ZOOM_MIN = -1;
+const MOBILE_ZOOM_MAX = 2;
+
 export default function GameCanvas({
   mobileLandscape = false,
   scene,
@@ -53,6 +56,7 @@ export default function GameCanvas({
   const [viewport, setViewport] = useState({ width: 1024, height: 768 });
   const [showTutorial, setShowTutorial] = useState(true);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [mobileZoom, setMobileZoom] = useState(0);
   const layoutFrozen = councilOpen || learningHouseOpen || reportOpen;
   const isPhoneLandscape = mobileLandscape || (viewport.width > viewport.height && viewport.height <= 520 && viewport.width <= 980);
   const isTight = isPhoneLandscape || viewport.width < 820 || viewport.height < 700 || displayScale < 2.25;
@@ -88,6 +92,7 @@ export default function GameCanvas({
         availableHeight,
         scene,
         mobileLandscape: isPhoneLandscape,
+        mobileZoom,
       });
       setViewSize((prev) => (
         prev.cols === nextView.cols && prev.rows === nextView.rows
@@ -107,7 +112,7 @@ export default function GameCanvas({
       observer.disconnect();
       window.removeEventListener("resize", updateScale);
     };
-  }, [scene, layoutFrozen, isPhoneLandscape]);
+  }, [scene, layoutFrozen, isPhoneLandscape, mobileZoom]);
 
   // The draw loop restarts whenever these state values change so the RAF
   // closure always captures their latest versions.
@@ -243,6 +248,35 @@ export default function GameCanvas({
               compact={isPhoneLandscape}
               viewSize={viewSize}
             />
+          )}
+          {isPhoneLandscape && !reportOpen && !councilOpen && !learningHouseOpen && (
+            <div style={styles.zoomControls} aria-label="zoom controls">
+              <button
+                type="button"
+                style={{
+                  ...styles.zoomButton,
+                  ...(mobileZoom <= MOBILE_ZOOM_MIN ? styles.zoomButtonDisabled : null),
+                }}
+                onClick={() => setMobileZoom((zoom) => Math.max(MOBILE_ZOOM_MIN, zoom - 1))}
+                disabled={mobileZoom <= MOBILE_ZOOM_MIN}
+                aria-label="zoom out"
+              >
+                -
+              </button>
+              <span style={styles.zoomLevel}>{mobileZoom + 2}</span>
+              <button
+                type="button"
+                style={{
+                  ...styles.zoomButton,
+                  ...(mobileZoom >= MOBILE_ZOOM_MAX ? styles.zoomButtonDisabled : null),
+                }}
+                onClick={() => setMobileZoom((zoom) => Math.min(MOBILE_ZOOM_MAX, zoom + 1))}
+                disabled={mobileZoom >= MOBILE_ZOOM_MAX}
+                aria-label="zoom in"
+              >
+                +
+              </button>
+            </div>
           )}
           {showTutorial && (
             <div style={{ ...styles.tutorialOverlay, ...(isPhoneLandscape ? styles.tutorialOverlayPhone : null) }} onClick={dismissTutorial}>
@@ -759,6 +793,49 @@ const styles = {
     fontSize: 11,
     touchAction: "manipulation",
   },
+  zoomControls: {
+    position: "absolute",
+    right: 6,
+    top: 6,
+    zIndex: 27,
+    display: "flex",
+    alignItems: "center",
+    gap: 2,
+    padding: 3,
+    background: "rgba(14, 22, 16, 0.68)",
+    border: "2px solid #172012",
+  },
+  zoomButton: {
+    width: 27,
+    height: 27,
+    border: "2px solid #10180e",
+    borderRadius: 0,
+    background: "#f0c94a",
+    color: "#11180e",
+    fontFamily: '"Courier New", "Lucida Console", monospace',
+    fontSize: 16,
+    fontWeight: 900,
+    lineHeight: 1,
+    padding: 0,
+    cursor: "pointer",
+    boxShadow: "0 1px 0 #7c6020",
+    touchAction: "manipulation",
+  },
+  zoomButtonDisabled: {
+    background: "#7f866f",
+    color: "#3e4738",
+    cursor: "default",
+    boxShadow: "none",
+  },
+  zoomLevel: {
+    width: 16,
+    textAlign: "center",
+    color: "#e8ecd7",
+    fontFamily: '"Courier New", "Lucida Console", monospace',
+    fontSize: 10,
+    fontWeight: 900,
+    lineHeight: 1,
+  },
   tutorialOverlay: {
     position: "absolute",
     inset: 0,
@@ -930,15 +1007,23 @@ const styles = {
   },
 };
 
-function chooseResponsiveViewport({ availableWidth, availableHeight, scene, mobileLandscape = false }) {
+function chooseResponsiveViewport({ availableWidth, availableHeight, scene, mobileLandscape = false, mobileZoom = 0 }) {
   const sceneData = SCENES[scene] || SCENES.town;
   const aspect = availableWidth / Math.max(1, availableHeight);
-  const minCols = Math.min(mobileLandscape ? 13 : VIEW_COLS, sceneData.w);
-  const minRows = Math.min(mobileLandscape ? 6 : VIEW_ROWS, sceneData.h);
-  const maxCols = Math.min(sceneData.w, Math.max(minCols, mobileLandscape ? 24 : 42));
-  const maxRows = Math.min(sceneData.h, Math.max(minRows, mobileLandscape ? 7 : 22));
+  const zoom = Math.max(MOBILE_ZOOM_MIN, Math.min(MOBILE_ZOOM_MAX, mobileZoom));
+  const mobileProfiles = {
+    "-1": { minCols: 16, minRows: 7, maxCols: 30, maxRows: 9, shortScale: 1.95, scale: 2.45 },
+    0: { minCols: 13, minRows: 6, maxCols: 24, maxRows: 7, shortScale: 2.25, scale: 2.85 },
+    1: { minCols: 11, minRows: 5, maxCols: 21, maxRows: 6, shortScale: 2.55, scale: 3.25 },
+    2: { minCols: 10, minRows: 5, maxCols: 18, maxRows: 6, shortScale: 2.85, scale: 3.7 },
+  };
+  const mobileProfile = mobileProfiles[zoom] || mobileProfiles[0];
+  const minCols = Math.min(mobileLandscape ? mobileProfile.minCols : VIEW_COLS, sceneData.w);
+  const minRows = Math.min(mobileLandscape ? mobileProfile.minRows : VIEW_ROWS, sceneData.h);
+  const maxCols = Math.min(sceneData.w, Math.max(minCols, mobileLandscape ? mobileProfile.maxCols : 42));
+  const maxRows = Math.min(sceneData.h, Math.max(minRows, mobileLandscape ? mobileProfile.maxRows : 22));
   const targetScale = mobileLandscape
-    ? (availableHeight <= 240 ? 2.25 : 2.85)
+    ? (availableHeight <= 240 ? mobileProfile.shortScale : mobileProfile.scale)
     : availableWidth >= 960 ? 2.85 : availableWidth >= 760 ? 2.7 : 2.55;
 
   let best = {
