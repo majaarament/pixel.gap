@@ -10,6 +10,8 @@ import PrivacyModal   from "./components/PrivacyModal";
 import ProfileScreen  from "./components/ProfileScreen";
 import InfoRow        from "./components/InfoRow";
 import OrientationPrompt from "./components/OrientationPrompt";
+import FeedbackScreen from "./components/FeedbackScreen";
+import { QUEST_STAGES } from "./data/npcs";
 
 const PROGRESS_KEY = "pixel-gap-progress";
 
@@ -48,7 +50,17 @@ export default function App() {
   }
 
   function handleLeaveGame() {
+    if (![QUEST_STAGES.POST_GAME, QUEST_STAGES.COMPLETE].includes(game.quest.stage)) {
+      setScreen("feedback");
+      return;
+    }
+
     game.leaveGame();
+    setScreen("thanks");
+  }
+
+  function handleFeedbackSubmit(feedbackAnswers) {
+    game.leaveGame(feedbackAnswers);
     setScreen("thanks");
   }
 
@@ -93,6 +105,10 @@ export default function App() {
         onContinueAnyway={() => setScreen("game")}
       />
     );
+  }
+
+  if (screen === "feedback") {
+    return <FeedbackScreen onSubmit={handleFeedbackSubmit} />;
   }
 
   if (screen === "thanks") {

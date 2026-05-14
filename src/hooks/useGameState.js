@@ -305,13 +305,37 @@ export function useGameState() {
     setQuest(syncStatus({ ...INITIAL_QUEST, playerProfile: profile }));
   }
 
-  function leaveGame() {
+  function leaveGame(feedbackAnswers = []) {
+    const feedbackChoices = Array.isArray(feedbackAnswers)
+      ? feedbackAnswers.map((answer) => ({
+          npcId: "player",
+          npcName: "Player Beaver",
+          npcRole: "Early Exit Feedback",
+          stepId: answer.stepId || "",
+          prompt: answer.prompt || "",
+          choiceKey: answer.choiceKey || "",
+          choiceLabel: answer.choiceLabel || "",
+        }))
+      : [];
+
+    feedbackChoices.forEach((answer) => {
+      logChoice({
+        ...answer,
+        questStage: quest.stage,
+        playerProfile: quest.playerProfile,
+      });
+    });
+
+    const exitChoices = [...quest.choices, ...feedbackChoices];
+    const exitReport = buildResultsReport({ ...quest, choices: exitChoices });
+
     logEarlyExit({
-      report: resultsReport,
+      report: exitReport,
       questStage: quest.stage,
       playerProfile: quest.playerProfile,
-      choices: quest.choices,
+      choices: exitChoices,
       reflections: quest.reflections,
+      feedbackAnswers: feedbackChoices,
     });
     clearSavedProgress();
   }

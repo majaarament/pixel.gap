@@ -143,10 +143,10 @@ export function logFinalReport({ report, questStage, playerProfile, choices, ref
   });
 }
 
-export function logEarlyExit({ report, questStage, playerProfile, choices, reflections }) {
+export function logEarlyExit({ report, questStage, playerProfile, choices, reflections, feedbackAnswers }) {
   logEvent("early_exit", {
     questStage: questStage || "",
-    text: JSON.stringify({ report, choices, reflections }),
+    text: JSON.stringify({ report, choices, reflections, feedbackAnswers: feedbackAnswers || [] }),
     ...profileFields(playerProfile),
   });
 }
