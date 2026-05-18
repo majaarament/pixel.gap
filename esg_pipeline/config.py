@@ -12,15 +12,11 @@ GAP_I_WEIGHTS = {
 }
 
 RISK_TRIGGERS = [
-    "afraid",
-    "harassed", 
-    "uncomfortable",
-    "burnout",
-    "ignored",
-    "retaliation"
+    "afraid", "harass", "unsafe", "pressured", "discriminated", "micro-manage",
+    "whistleblow", "violated", "exploit", "abuse", "hostile", "toxic"
 ]
-
-RISK_SENTIMENT_THRESHOLD = -0.4
+RISK_MULTIWORD = ["sexual harassment", "human rights", "psychological safety"]
+RISK_SENTIMENT_THRESHOLD = -0.5
 
 N_CLUSTERS = 4
 PCA_COMPONENTS = 2
