@@ -1,4 +1,4 @@
-// Structured gameplay logging with a persistent user id and a per-tab session id.
+// Structured gameplay logging with an anonymous browser id and per-tab session id.
 // Events are posted to our own backend, which can forward them to Google Sheets.
 
 const LOG_ENDPOINT = "/api/log-event";
@@ -7,10 +7,6 @@ const SESSION_ID_KEY = "pixel-gap-session-id";
 
 let cachedUserId = null;
 let cachedSessionId = null;
-
-function canUseBrowserStorage() {
-  return typeof window !== "undefined" && !!window.localStorage;
-}
 
 function createId(prefix) {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -39,28 +35,16 @@ function writeStoredValue(storage, key, value) {
 function profileFields(playerProfile = {}) {
   return {
     roleLevel: playerProfile?.roleLevel || "",
-    team: playerProfile?.team || playerProfile?.branch || "",
+    team: playerProfile?.team || playerProfile?.department || playerProfile?.branch || "",
+    department: playerProfile?.department || playerProfile?.team || "",
+    departmentPrimaryEntities: playerProfile?.departmentPrimaryEntities || "",
+    departmentSupportingEntities: playerProfile?.departmentSupportingEntities || "",
+    entity: playerProfile?.entity || "",
+    entityCity: playerProfile?.entityCity || "",
+    entityOfficeType: playerProfile?.entityOfficeType || "",
+    entityLabel: playerProfile?.entityLabel || "",
     country: playerProfile?.country || "",
   };
-}
-
-export function getUserId() {
-  if (cachedUserId) return cachedUserId;
-
-  if (!canUseBrowserStorage()) {
-    cachedUserId = createId("user");
-    return cachedUserId;
-  }
-
-  const stored = readStoredValue(window.localStorage, USER_ID_KEY);
-  if (stored) {
-    cachedUserId = stored;
-    return cachedUserId;
-  }
-
-  cachedUserId = createId("user");
-  writeStoredValue(window.localStorage, USER_ID_KEY, cachedUserId);
-  return cachedUserId;
 }
 
 export function getSessionId() {
@@ -83,6 +67,28 @@ export function getSessionId() {
     writeStoredValue(sessionStorage, SESSION_ID_KEY, cachedSessionId);
   }
   return cachedSessionId;
+}
+
+export function getUserId() {
+  if (cachedUserId) return cachedUserId;
+
+  if (typeof window === "undefined") {
+    cachedUserId = createId("user");
+    return cachedUserId;
+  }
+
+  const localStorage = window.localStorage;
+  const stored = localStorage ? readStoredValue(localStorage, USER_ID_KEY) : "";
+  if (stored) {
+    cachedUserId = stored;
+    return cachedUserId;
+  }
+
+  cachedUserId = createId("user");
+  if (localStorage) {
+    writeStoredValue(localStorage, USER_ID_KEY, cachedUserId);
+  }
+  return cachedUserId;
 }
 
 export function logEvent(eventType, payload = {}) {
@@ -133,6 +139,14 @@ export function logFinalReport({ report, questStage, playerProfile, choices, ref
   logEvent("final_report", {
     questStage: questStage || "",
     text: JSON.stringify({ report, choices, reflections }),
+    ...profileFields(playerProfile),
+  });
+}
+
+export function logEarlyExit({ report, questStage, playerProfile, choices, reflections, feedbackAnswers }) {
+  logEvent("early_exit", {
+    questStage: questStage || "",
+    text: JSON.stringify({ report, choices, reflections, feedbackAnswers: feedbackAnswers || [] }),
     ...profileFields(playerProfile),
   });
 }

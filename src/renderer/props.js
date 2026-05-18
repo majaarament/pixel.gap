@@ -191,7 +191,7 @@ export function drawCanalPost(ctx, x, y) {
   rect(ctx, x + 10,y + 4,  1, 10, "#76553b");
 }
 
-export function drawBridge(ctx, x, y, w, _h) {
+export function drawBridge(ctx, x, y, w) {
   rect(ctx, x, y + 4, w * TILE, 8, "#b68863");
   for (let xx = 2; xx < w * TILE; xx += 5)
     rect(ctx, x + xx, y + 5, 2, 6, "#d7ac80");

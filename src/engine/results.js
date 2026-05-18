@@ -68,6 +68,12 @@ function getScale(choices, stepId) {
   return c ? parseInt(c.choiceKey, 10) : null;
 }
 
+function average(values) {
+  const numeric = values.filter((value) => Number.isFinite(value));
+  if (!numeric.length) return null;
+  return numeric.reduce((sum, value) => sum + value, 0) / numeric.length;
+}
+
 // Determine whether personal choice differs from Delaware perception choice for a pillar
 function hasGap(choices, prefix) {
   const personal = getChoice(choices, `${prefix}_scenario_personal`);
@@ -114,6 +120,42 @@ function buildPillarScores(pillars) {
   };
 }
 
+function buildRecommendedActions(pillars, finalReflection) {
+  const pillarEntries = Object.entries(pillars).sort((a, b) => (a[1].visibility || 0) - (b[1].visibility || 0));
+  const lowestVisible = pillarEntries[0]?.[1] || null;
+  const gapEntries = Object.values(pillars).filter((pillar) => pillar.gap);
+  const focusLabel = {
+    visible_action: "make the expected action visible before pressure rises",
+    culture_safety: "make it easier to speak up without social risk",
+    leadership_model: "ask leaders to model the trade-off openly",
+    systems: "turn the value into a concrete check, metric, or decision gate",
+  }[finalReflection?.focusNext];
+
+  return [
+    lowestVisible
+      ? {
+          title: `Make ${lowestVisible.label} easier to spot`,
+          body: `This pillar had the lowest visibility in your answers. Add one clear example, prompt, or decision checkpoint where people currently have to infer what good looks like.`,
+        }
+      : null,
+    gapEntries.length
+      ? {
+          title: "Name the personal-vs-expected gap",
+          body: `${gapEntries.length} pillar${gapEntries.length === 1 ? "" : "s"} showed a difference between what you would do and what you expect the organisation to do. That gap is a strong discussion starter for team reflection.`,
+        }
+      : {
+          title: "Test the alignment",
+          body: "Your personal choices and expected organisational choices were mostly aligned. The next useful step is checking whether teammates read the same situations the same way.",
+        },
+    focusLabel
+      ? {
+          title: "Turn your selected lever into one experiment",
+          body: focusLabel,
+        }
+      : null,
+  ].filter(Boolean);
+}
+
 export function extractQuestionPrompt(message) {
   if (!message) return "";
 
@@ -156,6 +198,7 @@ export function buildResultsReport(quest) {
       personal: getChoice(choices, "env_scenario_personal")?.choiceKey || null,
       delaware: getChoice(choices, "env_scenario_delaware")?.choiceKey || null,
       visibility: getScale(choices, "env_scale"),
+      confidence: getScale(choices, "env_confidence"),
       gap: hasGap(choices, "env"),
       adaptiveAnswer: getChoice(choices, "env_adaptive_gap")?.choiceKey || null,
     },
@@ -165,6 +208,7 @@ export function buildResultsReport(quest) {
       personal: getChoice(choices, "people_scenario_personal")?.choiceKey || null,
       delaware: getChoice(choices, "people_scenario_delaware")?.choiceKey || null,
       visibility: getScale(choices, "people_scale"),
+      confidence: getScale(choices, "people_confidence"),
       gap: hasGap(choices, "people"),
       adaptiveAnswer: getChoice(choices, "people_adaptive_gap")?.choiceKey || null,
     },
@@ -174,6 +218,7 @@ export function buildResultsReport(quest) {
       personal: getChoice(choices, "conduct_scenario_personal")?.choiceKey || null,
       delaware: getChoice(choices, "conduct_scenario_delaware")?.choiceKey || null,
       visibility: getScale(choices, "conduct_scale"),
+      confidence: getScale(choices, "conduct_confidence"),
       gap: hasGap(choices, "conduct"),
       adaptiveAnswer: getChoice(choices, "conduct_adaptive_gap")?.choiceKey || null,
     },
@@ -183,6 +228,7 @@ export function buildResultsReport(quest) {
       personal: getChoice(choices, "chain_scenario_personal")?.choiceKey || null,
       delaware: getChoice(choices, "chain_scenario_delaware")?.choiceKey || null,
       visibility: getScale(choices, "chain_scale"),
+      confidence: getScale(choices, "chain_confidence"),
       gap: hasGap(choices, "chain"),
       adaptiveAnswer: getChoice(choices, "chain_adaptive_gap")?.choiceKey || null,
     },
@@ -211,6 +257,8 @@ export function buildResultsReport(quest) {
 
   const profile = getProfile(openingDilemmaKey, pillars);
   const pillarScores = buildPillarScores(pillars);
+  const confidenceAverage = average(Object.values(pillars).map((pillar) => pillar.confidence));
+  const recommendedActions = buildRecommendedActions(pillars, finalReflection);
 
   // ── Gap count ─────────────────────────────────────────────────────────────
   const gapCount = Object.values(pillars).filter((p) => p.gap).length;
@@ -242,6 +290,7 @@ export function buildResultsReport(quest) {
     pillarOrder: quest.pillarOrder || null,
     choiceAnswers,
     reflectionAnswers: [], // kept for backward compatibility
+    recommendedActions,
     benchmark: buildBenchmarkComparison(choices),
     // Simplified scores for the score bars in ResultsOverlay
     scores: pillarScores,
@@ -255,8 +304,12 @@ export function buildResultsReport(quest) {
           : "—",
       },
       {
-        label: "Baseline confidence",
-        value: baseline.confidence !== null ? `${baseline.confidence}/5` : "—",
+        label: "Starting understanding",
+        value: baseline.understanding !== null ? `${baseline.understanding}/5` : "—",
+      },
+      {
+        label: "Post-game understanding",
+        value: postGame.understanding !== null ? `${postGame.understanding}/5` : "—",
       },
       {
         label: "Post-game learning",
@@ -265,6 +318,10 @@ export function buildResultsReport(quest) {
       {
         label: "Value chain visibility",
         value: pillars.chain.visibility !== null ? `${pillars.chain.visibility}/5` : "—",
+      },
+      {
+        label: "Confidence average",
+        value: confidenceAverage !== null ? `${confidenceAverage.toFixed(1)}/5` : "—",
       },
     ],
   };
