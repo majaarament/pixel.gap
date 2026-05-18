@@ -1,8 +1,6 @@
 """
 Module 2: TRANSFORMATION & PIVOTING
 ===================================
-Transform event-driven log (long format) to wide format (one row per sessionId).
-
 Step 2A: Demographics & JSON Parsing with Ordinal Mapping
 Step 2B: NLP Text Aggregation
 Step 3C: Merge
@@ -24,25 +22,15 @@ ORDINAL_MAP = {
 
 
 def transform_data(df_raw: pd.DataFrame) -> pd.DataFrame:
-    """
-    Transform event log to wide format.
-    
-    Args:
-        df_raw: Raw telemetry DataFrame
-        
-    Returns:
-        pd.DataFrame: Wide format with one row per sessionId
-    """
-    print("\n[MODULE 2] TRANSFORMATION & PIVOTING - Building respondent table...")
+
+    print("\nTRANSFORMATION")
     
     try:
-        # -----------------------------------------------------------------
         # Step 2A: Demographics & JSON Parsing with Ordinal Mapping
-        # -----------------------------------------------------------------
-        print("  → Step 2A: Parsing demographics and JSON from final_report events...")
+        print("Step 2A: Parsing demographics and JSON from final_report events")
         
         final_report_df = df_raw[df_raw["eventType"] == "final_report"].copy()
-        print(f"    → Found {len(final_report_df)} final_report events")
+        print(f"Found {len(final_report_df)} final_report events")
         
         respondent_rows = []
         
@@ -93,7 +81,7 @@ def transform_data(df_raw: pd.DataFrame) -> pd.DataFrame:
                 respondent_rows.append(respondent)
                 
             except (json.JSONDecodeError, KeyError, TypeError) as e:
-                print(f"    ⚠ Skipping row {idx}: {e}")
+                print(f"Skipping row {idx}: {e}")
                 continue
         
         df_demographics = pd.DataFrame(respondent_rows)
@@ -102,39 +90,35 @@ def transform_data(df_raw: pd.DataFrame) -> pd.DataFrame:
             df_demographics = df_demographics.sort_values("timestamp", na_position="first")
         
         df_demographics = df_demographics.drop_duplicates(subset=["sessionId"], keep="last")
-        print(f"    → Parsed and chronologically deduped to {len(df_demographics)} unique respondents")
+        print(f"Parsed and chronologically deduped to {len(df_demographics)} unique respondents")
         
-        # -----------------------------------------------------------------
         # Step 2B: NLP Text Aggregation
-        # -----------------------------------------------------------------
-        print("  → Step 2B: Aggregating council dialogue text...")
+        print("Step 2B: Aggregating council dialogue text")
         
         council_df = df_raw[
             (df_raw["eventType"] == "council_message") & 
             (df_raw["conversationRole"] == "user")
         ].copy()
         
-        print(f"    → Found {len(council_df)} user council messages")
+        print(f"Found {len(council_df)} user council messages")
         
         df_text = council_df.groupby("sessionId")["text"].apply(
             lambda x: " ".join(x.dropna().astype(str))
         ).reset_index()
         
         df_text.columns = ["sessionId", "raw_session_text"]
-        print(f"    → Aggregated into {len(df_text)} unique session texts")
+        print(f"Aggregated into {len(df_text)} unique session texts")
         
-        # -----------------------------------------------------------------
         # Step 2C: Merge
-        # -----------------------------------------------------------------
-        print("  → Step 2C: Merging into final respondent table...")
+        print("Step 2C: Merging into final respondent table")
         
         df_respondents = pd.merge(df_demographics, df_text, on="sessionId", how="left")
         df_respondents["raw_session_text"] = df_respondents["raw_session_text"].fillna("")
         
-        print(f"  ✓ Created df_respondents with {len(df_respondents)} rows and {len(df_respondents.columns)} columns")
+        print(f"Created df_respondents with {len(df_respondents)} rows and {len(df_respondents.columns)} columns")
         
         return df_respondents
         
     except Exception as e:
-        print(f"  ✗ ERROR in transform_data: {e}")
+        print(f"ERROR in transform_data: {e}")
         raise

@@ -28,16 +28,16 @@ def calculate_gap_i(df_respondents: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: df_respondents with added GAP-I columns
     """
-    print("\n[MODULE 3] GAP-I MATH ENGINE - Computing ESG Coherence Index...")
+    print("\nGAP-I MATH")
     
     try:
         gap_weight = GAP_I_WEIGHTS["gap_weight"]
         vis_weight = GAP_I_WEIGHTS["visibility_weight"]
         
-        print(f"  → Using weights: gap={gap_weight}, visibility={vis_weight}")
+        print(f"Using weights: gap={gap_weight}, visibility={vis_weight}")
         
         for pillar in PILLARS:
-            print(f"  → Processing pillar: {pillar}")
+            print(f"Processing pillar: {pillar}")
             
             visibility = df_respondents[f"{pillar}_visibility"].fillna(3)
             gap_abs = df_respondents[f"{pillar}_gap_abs"].fillna(0)
@@ -51,18 +51,18 @@ def calculate_gap_i(df_respondents: pd.DataFrame) -> pd.DataFrame:
             gap_i_pillar = (gap_weight * norm_gap) + (vis_weight * norm_vis)
             df_respondents[f"{pillar}_GAP_I"] = gap_i_pillar
             
-            print(f"    → mean gap_abs: {gap_abs.mean():.2f}")
-            print(f"    → mean norm_gap: {norm_gap.mean():.2f}")
-            print(f"    → mean norm_visibility: {norm_vis.mean():.2f}")
-            print(f"    → mean GAP-I: {gap_i_pillar.mean():.2f}")
+            print(f"mean gap_abs: {gap_abs.mean():.2f}")
+            print(f"mean norm_gap: {norm_gap.mean():.2f}")
+            print(f"mean norm_visibility: {norm_vis.mean():.2f}")
+            print(f"mean GAP-I: {gap_i_pillar.mean():.2f}")
         
         gap_i_columns = [f"{pillar}_GAP_I" for pillar in PILLARS]
         df_respondents["GAP_I_overall"] = df_respondents[gap_i_columns].mean(axis=1)
         
-        print(f"  ✓ Overall GAP-I calculated: mean={df_respondents['GAP_I_overall'].mean():.2f}")
+        print(f"Overall GAP-I: mean={df_respondents['GAP_I_overall'].mean():.2f}")
         
         return df_respondents
         
     except Exception as e:
-        print(f"  ✗ ERROR in calculate_gap_i: {e}")
+        print(f"ERROR in calculate_gap_i: {e}")
         raise

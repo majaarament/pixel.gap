@@ -70,13 +70,11 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: df_respondents with ML columns added
     """
-    print("\n[MODULE 4] HONOURS COMPLEXITY ENGINE - NLP & ML Pipeline...")
+    print("\nNLP & ML Pipeline")
     
     try:
-        # -----------------------------------------------------------------
         # Step 4A: Per-Pillar Sentiment Calibration
-        # -----------------------------------------------------------------
-        print("  → Step 4A: Per-Pillar Sentiment Analysis...")
+        print("Step 4A: Per-Pillar Sentiment Analysis:")
         
         try:
             from transformers import pipeline
@@ -150,7 +148,7 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
                     overall_sentiments.append(sum(all_scores) / len(all_scores) if all_scores else 0.0)
                     
                 except Exception as e:
-                    print(f"    ⚠ Sentiment failed for row {idx}: {e}")
+                    print(f"Sentiment failed for row {idx}: {e}")
                     for pillar in PILLARS:
                         pillar_sentiments_mean[pillar].append(0.0)
                         pillar_sentiments_min[pillar].append(0.0)
@@ -163,24 +161,22 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
             df_respondents["sentiment_score"] = overall_sentiments
             
             for pillar in PILLARS:
-                print(f"    → {pillar}_sentiment_mean: {df_respondents[f'{pillar}_sentiment_mean'].mean():.2f}")
-            print(f"    → sentiment_score mean: {df_respondents['sentiment_score'].mean():.2f}")
+                print(f"{pillar}_sentiment_mean: {df_respondents[f'{pillar}_sentiment_mean'].mean():.2f}")
+            print(f"sentiment_score mean: {df_respondents['sentiment_score'].mean():.2f}")
             
         except Exception as e:
-            print(f"    ⚠ HuggingFace import failed: {e}")
+            print(f"HuggingFace import failed: {e}")
             for pillar in PILLARS:
                 df_respondents[f"{pillar}_sentiment_mean"] = 0.0
                 df_respondents[f"{pillar}_sentiment_min"] = 0.0
             df_respondents["sentiment_score"] = 0.0
         
-        # -----------------------------------------------------------------
         # Step 4B: Risk Flag Logic (Sentence-Isolated Negation Engine)
-        # -----------------------------------------------------------------
-        print("  → Step 4B: Risk Flag Detection (Sentence-Isolated Logic)...")
-        print(f"    → Stemmed risk triggers: {STEMMED_RISK_TRIGGERS}")
-        print(f"    → Multi-word patterns: {RISK_MULTIWORD}")
-        print(f"    → Negation words: {NEGATION_WORDS}")
-        print(f"    → Sentiment threshold: {RISK_SENTIMENT_THRESHOLD}")
+        print("Step 4B: Risk Flag Detection")
+        print(f"Stemmed risk triggers: {STEMMED_RISK_TRIGGERS}")
+        print(f"Multi-word patterns: {RISK_MULTIWORD}")
+        print(f"Negation words: {NEGATION_WORDS}")
+        print(f"Sentiment threshold: {RISK_SENTIMENT_THRESHOLD}")
 
         risk_flags = []
 
@@ -233,12 +229,10 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
         df_respondents["risk_flag"] = risk_flags
 
         risk_count = sum(risk_flags)
-        print(f"    → Risk flags raised: {risk_count} / {len(risk_flags)} ({100*risk_count/len(risk_flags):.1f}%)")
+        print(f"Risk flags raised: {risk_count} / {len(risk_flags)} ({100*risk_count/len(risk_flags):.1f}%)")
         
-        # -----------------------------------------------------------------
         # Step 4C: PCA + Hierarchical Clustering
-        # -----------------------------------------------------------------
-        print("  → Step 4C: PCA + Hierarchical Clustering...")
+        print("Step 4C: PCA + Hierarchical Clustering")
         
         feature_columns = []
         for pillar in PILLARS:
@@ -252,16 +246,16 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
                 default_val = 3.0 if "visibility" in col else 0.0
                 X[col] = X[col].fillna(default_val)
         
-        print(f"    → Feature matrix shape: {X.shape}")
+        print(f"Feature matrix shape: {X.shape}")
         
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
-        print("    → Standardized features")
+        print("Standardized features")
         
         n_samples = X_scaled.shape[0]
 
         if n_samples < 2:
-            print(f"    → Skipping PCA and clustering: only {n_samples} sample(s)")
+            print(f"Skipping PCA and clustering: only {n_samples} sample(s)")
             df_respondents["persona_cluster"] = range(n_samples)
             df_respondents["pca_1"] = 0.0
             df_respondents["pca_2"] = 0.0
@@ -269,7 +263,7 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
             n_pca_components = min(PCA_COMPONENTS, n_samples - 1)
             pca = PCA(n_components=n_pca_components)
             X_pca = pca.fit_transform(X_scaled)
-            print(f"    → PCA: {n_pca_components} components, explained variance = {pca.explained_variance_ratio_.sum():.2%}")
+            print(f"PCA: {n_pca_components} components, explained variance = {pca.explained_variance_ratio_.sum():.2%}")
 
             n_clusters = min(N_CLUSTERS, n_samples)
             clusterer = AgglomerativeClustering(n_clusters=n_clusters, linkage="ward")
@@ -277,16 +271,16 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
             df_respondents["persona_cluster"] = clusters
             df_respondents["pca_1"] = X_pca[:, 0] if X_pca.shape[1] > 0 else 0.0
             df_respondents["pca_2"] = X_pca[:, 1] if X_pca.shape[1] > 1 else 0.0
-            print(f"    → Clustering: {n_clusters} clusters for {n_samples} samples")
-            print(f"    → Cluster distribution:")
+            print(f"Clustering: {n_clusters} clusters for {n_samples} samples")
+            print(f"Cluster distribution:")
             for c in range(n_clusters):
                 count = (clusters == c).sum()
-                print(f"      - Cluster {c}: {count} respondents")
+                print(f"Cluster {c}: {count} respondents")
         
-        print("  ✓ ML pipeline complete")
+        print("ML pipeline complete")
         
         return df_respondents
         
     except Exception as e:
-        print(f"  ✗ ERROR in run_ml_pipeline: {e}")
+        print(f"ERROR in run_ml_pipeline: {e}")
         raise

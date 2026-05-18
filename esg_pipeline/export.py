@@ -19,9 +19,7 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
     print("\n[MODULE 5] EXPORT & LOAD - Writing Power BI CSVs...")
     
     try:
-        # -----------------------------------------------------------------
         # Table 1: Respondents Table
-        # -----------------------------------------------------------------
         respondents_cols = [
             "sessionId",
             "userId",
@@ -60,12 +58,10 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
         
         respondents_path = DATA_DIR / "respondents_table.csv"
         df_respondents_export.to_csv(respondents_path, index=False)
-        print(f"  ✓ Exported: {respondents_path}")
-        print(f"    → Rows: {len(df_respondents_export)}, Columns: {len(df_respondents_export.columns)}")
+        print(f"Exported: {respondents_path}")
+        print(f"Rows: {len(df_respondents_export)}, Columns: {len(df_respondents_export.columns)}")
         
-        # -----------------------------------------------------------------
         # Table 2: Themes Table
-        # -----------------------------------------------------------------
         themes_cols = [
             "sessionId",
             "team",
@@ -87,12 +83,10 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
         
         themes_path = DATA_DIR / "themes_table.csv"
         df_themes_export.to_csv(themes_path, index=False)
-        print(f"  ✓ Exported: {themes_path}")
-        print(f"    → Rows: {len(df_themes_export)}, Columns: {len(df_themes_export.columns)}")
+        print(f"Exported: {themes_path}")
+        print(f"Rows: {len(df_themes_export)}, Columns: {len(df_themes_export.columns)}")
         
-        # -----------------------------------------------------------------
         # Summary Statistics
-        # -----------------------------------------------------------------
         print("\n" + "=" * 70)
         print("PIPELINE COMPLETE - SUMMARY STATISTICS")
         print("=" * 70)
@@ -122,7 +116,7 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
         if "GAP_I_overall" in df_respondents.columns:
             print(f"  Overall: {df_respondents['GAP_I_overall'].mean():.2f}")
         
-        print(f"\nPer-Pillar Sentiment (Hybrid Method):")
+        print(f"\nPer-Pillar Sentiment:")
         for pillar in PILLARS:
             if f"{pillar}_sentiment_mean" in df_respondents.columns:
                 mean_val = df_respondents[f'{pillar}_sentiment_mean'].mean()
@@ -143,5 +137,5 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
         print("=" * 70)
         
     except Exception as e:
-        print(f"  ✗ ERROR in export_for_powerbi: {e}")
+        print(f"ERROR in export_for_powerbi: {e}")
         raise

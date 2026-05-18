@@ -1,7 +1,5 @@
 """
 ESG Pipeline Package
-====================
-Master ETL & Analytics for Master's Thesis
 
 Modules:
 - config: Configuration constants
