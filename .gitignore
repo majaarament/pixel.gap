@@ -27,3 +27,9 @@ dist-ssr
 .env.local
 .env.*
 !.env.example
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+credentials.json

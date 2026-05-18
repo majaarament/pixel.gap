@@ -1,20 +1,88 @@
 import process from "node:process";
+import fs from "node:fs";
+import path from "node:path";
 
 import { readJsonBody, sendJson } from "./_lib/http.js";
+
+const HEADERS = [
+  "receivedAt",
+  "timestamp",
+  "eventType",
+  "userId",
+  "sessionId",
+  "questStage",
+  "turnIndex",
+  "conversationRole",
+  "npcId",
+  "npcName",
+  "npcRole",
+  "stepId",
+  "prompt",
+  "choiceKey",
+  "choiceLabel",
+  "text",
+  "roleLevel",
+  "team",
+  "branch",
+  "department",
+  "departmentPrimaryEntities",
+  "departmentSupportingEntities",
+  "entity",
+  "entityCity",
+  "entityOfficeType",
+  "entityLabel",
+  "country",
+  "userAgent",
+];
+
+const CSV_FILE_PATH = path.join(process.cwd(), "esg_pipeline", "data", "game_results_seed.csv");
+
+function escapeCSV(value) {
+  if (value === null || value === undefined) return '""';
+  const str = String(value);
+  if (str.includes('"') || str.includes(",") || str.includes("\n") || str.includes("\r")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return `"${str}"`;
+}
+
+function ensureDataDirectory() {
+  const dir = path.dirname(CSV_FILE_PATH);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+function writeToCSV(payload) {
+  ensureDataDirectory();
+
+  const fileExists = fs.existsSync(CSV_FILE_PATH);
+  const headerLine = HEADERS.join(",");
+  const dataLine = HEADERS.map((header) => escapeCSV(payload[header] || "")).join(",");
+
+  if (!fileExists) {
+    fs.writeFileSync(CSV_FILE_PATH, headerLine + "\n");
+  }
+
+  fs.appendFileSync(CSV_FILE_PATH, dataLine + "\n");
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return sendJson(res, 405, { error: "Method not allowed." });
   }
 
-  const sheetsEndpoint = process.env.SHEETS_ENDPOINT || "";
-  if (!sheetsEndpoint) {
-    return sendJson(res, 202, { ok: false, disabled: true });
-  }
-
   try {
     const body = await readJsonBody(req);
     const payload = normalizeLogPayload(body, req);
+
+    writeToCSV(payload);
+
+    const sheetsEndpoint = process.env.SHEETS_ENDPOINT || "";
+
+    if (!sheetsEndpoint) {
+      return sendJson(res, 200, { ok: true, skipped: true });
+    }
 
     const sheetsResponse = await fetch(sheetsEndpoint, {
       method: "POST",
@@ -50,12 +118,7 @@ export default async function handler(req, res) {
       return sendJson(res, 502, { error: `Google Sheets logging failed: ${details}` });
     }
 
-    return sendJson(res, 200, {
-      ok: true,
-      sheets: responsePayload && typeof responsePayload === "object"
-        ? responsePayload
-        : undefined,
-    });
+    return sendJson(res, 200, { ok: true });
   } catch (error) {
     return sendJson(res, 500, {
       error: error.message || "Log event request failed.",
