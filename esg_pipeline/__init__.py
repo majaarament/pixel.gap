@@ -4,8 +4,8 @@ ESG Pipeline Package
 Master ETL & Analytics for Master's Thesis
 
 Modules:
-- config: Configuration constants (local file paths)
-- extract: Module 1 - Local Seed CSV ingestion
+- config: Configuration constants
+- extract: Module 1 - Google Sheets ingestion
 - transform: Module 2 - Event log to wide format
 - gap_math: Module 3 - GAP-I calculations
 - ml_pipeline: Module 4 - NLP & Clustering
@@ -17,13 +17,7 @@ Usage:
     from esg_pipeline import run_full_pipeline
 """
 
-from .config import (
-    INPUT_FILE,
-    OUTPUT_FILE,
-    PILLARS,
-    GAP_I_WEIGHTS,
-    RISK_TRIGGERS,
-)
+from .config import PILLARS, GAP_I_WEIGHTS, RISK_TRIGGERS, DATA_DIR
 from .extract import extract_data
 from .transform import transform_data
 from .gap_math import calculate_gap_i
@@ -32,15 +26,19 @@ from .export import export_for_powerbi
 
 
 def run_full_pipeline():
-    """Run the complete ETL pipeline using Local Seed CSV."""
+    """Run the complete ETL pipeline using Google Sheets."""
     print("\n" + "=" * 70)
-    print("ESG Pipeline - Starting (Local Seed CSV Mode)")
+    print("ESG Pipeline - Starting (Google Sheets Mode)")
     print("=" * 70)
-    print(f"Input:  {INPUT_FILE}")
-    print(f"Output: {OUTPUT_FILE}")
+    print(f"Output: {DATA_DIR}")
     print("=" * 70)
     
     df_raw = extract_data()
+    
+    if df_raw.empty:
+        print("No data loaded - check credentials.json and Google Sheets access")
+        return None
+    
     df_respondents = transform_data(df_raw)
     df_respondents = calculate_gap_i(df_respondents)
     df_respondents = run_ml_pipeline(df_respondents)
@@ -51,11 +49,10 @@ def run_full_pipeline():
 
 
 __all__ = [
-    "INPUT_FILE",
-    "OUTPUT_FILE",
     "PILLARS",
     "GAP_I_WEIGHTS",
     "RISK_TRIGGERS",
+    "DATA_DIR",
     "extract_data",
     "transform_data",
     "calculate_gap_i",

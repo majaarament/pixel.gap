@@ -1,17 +1,13 @@
 """
-Module 2: TRANSFORMATION
+Module 2: TRANSFORMATION & PIVOTING
 ===================================
+Transform event-driven log (long format) to wide format (one row per sessionId).
 
-Step 2A: Demographics & JSON Parsing
-- Filter for eventType == 'final_report'
-- Parse JSON blob from 'text' column to extract: team, roleLevel, country
+Step 2A: Demographics & JSON Parsing with Ordinal Mapping
+Step 2B: NLP Text Aggregation
+Step 3C: Merge
 
-Step 2B: NLP Text Aggregation  
-- Filter for eventType == 'council_message' AND conversationRole == 'user'
-- Group by sessionId and concatenate text into raw_session_text
-
-Step 2C: Merge
-- Combine demographics + JSON variables + raw_session_text
+Returns: pd.DataFrame - Wide format with one row per sessionId
 """
 
 import json
@@ -19,121 +15,126 @@ import pandas as pd
 
 from .config import PILLARS
 
+ORDINAL_MAP = {
+    "flag_energy": 3, "full_info": 3, "note_internally": 2, "lighter_model": 2,
+    "raise_now": 3, "check_in": 2, "document": 1, "let_lead": 0,
+    "follow_proper": 3, "flag_up": 3, "suggest_review": 2, "use_workaround": 0,
+    "responsible": 3, "negotiate": 2, "escalate": 1, "cost": 0
+}
+
 
 def transform_data(df_raw: pd.DataFrame) -> pd.DataFrame:
-
-    print("Transformation:")
+    """
+    Transform event log to wide format.
+    
+    Args:
+        df_raw: Raw telemetry DataFrame
+        
+    Returns:
+        pd.DataFrame: Wide format with one row per sessionId
+    """
+    print("\n[MODULE 2] TRANSFORMATION & PIVOTING - Building respondent table...")
     
     try:
-
-        # Step 2A: Demographics & JSON Parsing
-        print("Step 2A: Parsing demographics and JSON from final_report events:")
+        # -----------------------------------------------------------------
+        # Step 2A: Demographics & JSON Parsing with Ordinal Mapping
+        # -----------------------------------------------------------------
+        print("  → Step 2A: Parsing demographics and JSON from final_report events...")
         
         final_report_df = df_raw[df_raw["eventType"] == "final_report"].copy()
-        print(f"Found {len(final_report_df)} final_report events")
+        print(f"    → Found {len(final_report_df)} final_report events")
         
         respondent_rows = []
         
         for idx, row in final_report_df.iterrows():
             try:
-                # Parse JSON from 'text' column
                 json_blob = json.loads(row.get("text", "{}"))
+                report = json_blob.get("report", {})
                 
                 respondent = {
                     "sessionId": row.get("sessionId", ""),
+                    "timestamp": row.get("timestamp", ""),
                     "userId": row.get("userId", ""),
-                    "roleLevel": row.get("roleLevel", ""),
-                    "country": row.get("country", ""),
+                    "roleLevel": report.get("playerProfile", {}).get("roleLevel", "") or row.get("roleLevel", ""),
+                    "country": report.get("playerProfile", {}).get("country", "") or row.get("country", ""),
+                    "team": report.get("playerProfile", {}).get("team", "") or report.get("playerProfile", {}).get("branch", ""),
+                    "department": report.get("playerProfile", {}).get("department", ""),
+                    "entity": report.get("playerProfile", {}).get("entity", ""),
+                    "entityCity": report.get("playerProfile", {}).get("entityCity", ""),
+                    "entityOfficeType": report.get("playerProfile", {}).get("entityOfficeType", ""),
+                    "entityLabel": report.get("playerProfile", {}).get("entityLabel", ""),
+                    "departmentPrimaryEntities": report.get("playerProfile", {}).get("departmentPrimaryEntities", ""),
+                    "departmentSupportingEntities": report.get("playerProfile", {}).get("departmentSupportingEntities", ""),
                 }
                 
-                # Extract nested fields from JSON
-                respondent["team"] = json_blob.get("team", "")
+                respondent["openingDilemma"] = report.get("openingDilemma", "")
+                respondent["final_important"] = report.get("finalReflection", {}).get("mostImportant", "")
+                respondent["final_strongest"] = report.get("finalReflection", {}).get("strongest", "")
+                respondent["final_gap"] = report.get("finalReflection", {}).get("biggestGap", "")
+                pre_val = report.get("baseline", {}).get("understanding")
+                respondent["understanding_pre"] = 3 if pre_val in [None, ""] else int(pre_val)
                 
-                # Extract choices from the JSON blob
-                choices = json_blob.get("choices", [])
+                post_val = report.get("postGame", {}).get("understanding")
+                respondent["understanding_post"] = 3 if post_val in [None, ""] else int(post_val)
                 
-                # Initialize pillar scores
-                pillar_data = {pillar: {} for pillar in PILLARS}
-                
-                for choice in choices:
-                    step_id = choice.get("stepId", "")
-                    choice_key = choice.get("choiceKey", "")
-                    choice_label = choice.get("choiceLabel", "")
-                    
-                    # Parse personal scores
-                    for pillar in PILLARS:
-                        if f"{pillar}_scenario_personal" in step_id:
-                            try:
-                                pillar_data[pillar]["personal_score"] = int(choice_key)
-                            except (ValueError, TypeError):
-                                pillar_data[pillar]["personal_score"] = 0
-                                
-                        elif f"{pillar}_scenario_delaware" in step_id:
-                            try:
-                                pillar_data[pillar]["delaware_score"] = int(choice_key)
-                            except (ValueError, TypeError):
-                                pillar_data[pillar]["delaware_score"] = 0
-                                
-                        elif f"{pillar}_scale" in step_id:
-                            try:
-                                pillar_data[pillar]["visibility"] = int(choice_label)
-                            except (ValueError, TypeError):
-                                pillar_data[pillar]["visibility"] = 3
-                
-                # Add parsed pillar data to respondent
                 for pillar in PILLARS:
-                    respondent[f"{pillar}_personal_score"] = pillar_data[pillar].get("personal_score", 0)
-                    respondent[f"{pillar}_delaware_score"] = pillar_data[pillar].get("delaware_score", 0)
-                    respondent[f"{pillar}_visibility"] = pillar_data[pillar].get("visibility", 3)
+                    pillar_obj = report.get("pillars", {}).get(pillar, {})
                     
-                    # Extract the pre-calculated gap boolean from report.pillars.{pillar}.gap
-                    pillar_obj = json_blob.get("report", {}).get("pillars", {}).get(pillar, {})
-                    respondent[f"{pillar}_gap_raw"] = 1 if pillar_obj.get("gap", False) else 0
-                
-                # Extract understanding scales (pre/post) if available
-                reflections = json_blob.get("reflections", {})
-                respondent["understanding_pre"] = reflections.get("baseline", 3)
-                respondent["understanding_post"] = reflections.get("postGame", 3)
+                    personal_value = pillar_obj.get("personal", "")
+                    delaware_value = pillar_obj.get("delaware", "")
+                    
+                    personal_score = ORDINAL_MAP.get(personal_value, 0)
+                    delaware_score = ORDINAL_MAP.get(delaware_value, 0)
+                    
+                    respondent[f"{pillar}_gap_direction"] = personal_score - delaware_score
+                    respondent[f"{pillar}_gap_abs"] = abs(personal_score - delaware_score)
+                    respondent[f"{pillar}_visibility"] = pillar_obj.get("visibility", 3)
                 
                 respondent_rows.append(respondent)
                 
-            except (json.JSONDecodeError, KeyError) as e:
-                print(f"Skipping row {idx}: {e}")
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                print(f"    ⚠ Skipping row {idx}: {e}")
                 continue
         
         df_demographics = pd.DataFrame(respondent_rows)
-        print(f"Parsed {len(df_demographics)} respondents with complete data")
+        if "timestamp" in df_demographics.columns:
+            df_demographics["timestamp"] = pd.to_datetime(df_demographics["timestamp"], errors="coerce")
+            df_demographics = df_demographics.sort_values("timestamp", na_position="first")
         
+        df_demographics = df_demographics.drop_duplicates(subset=["sessionId"], keep="last")
+        print(f"    → Parsed and chronologically deduped to {len(df_demographics)} unique respondents")
+        
+        # -----------------------------------------------------------------
         # Step 2B: NLP Text Aggregation
-        print("Step 2B: Aggregating council dialogue text:")
+        # -----------------------------------------------------------------
+        print("  → Step 2B: Aggregating council dialogue text...")
         
         council_df = df_raw[
             (df_raw["eventType"] == "council_message") & 
             (df_raw["conversationRole"] == "user")
         ].copy()
         
-        print(f"Found {len(council_df)} user council messages")
+        print(f"    → Found {len(council_df)} user council messages")
         
-        # Group by sessionId and concatenate text
         df_text = council_df.groupby("sessionId")["text"].apply(
             lambda x: " ".join(x.dropna().astype(str))
         ).reset_index()
         
         df_text.columns = ["sessionId", "raw_session_text"]
-        print(f"Aggregated into {len(df_text)} unique session texts")
+        print(f"    → Aggregated into {len(df_text)} unique session texts")
         
+        # -----------------------------------------------------------------
         # Step 2C: Merge
-        print("Step 2C: Merging into final respondent table:")
+        # -----------------------------------------------------------------
+        print("  → Step 2C: Merging into final respondent table...")
         
         df_respondents = pd.merge(df_demographics, df_text, on="sessionId", how="left")
-        
-        # Fill missing text with empty string
         df_respondents["raw_session_text"] = df_respondents["raw_session_text"].fillna("")
         
-        print(f"Created df_respondents with {len(df_respondents)} rows and {len(df_respondents.columns)} columns")
+        print(f"  ✓ Created df_respondents with {len(df_respondents)} rows and {len(df_respondents.columns)} columns")
         
         return df_respondents
         
     except Exception as e:
-        print(f"ERROR in transform_data: {e}")
+        print(f"  ✗ ERROR in transform_data: {e}")
         raise
