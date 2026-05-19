@@ -66,6 +66,7 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
             "sessionId",
             "team",
             "raw_session_text",
+            "themes",
             "sentiment_score",
             "env_sentiment_mean",
             "env_sentiment_min",

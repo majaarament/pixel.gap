@@ -74,6 +74,30 @@ PILLAR_KEYWORDS = {
 }
 
 
+def extract_themes(text: str) -> list:
+    """Extract unique ESG theme keywords from council text. Returns list of themes."""
+    if not text or not text.strip():
+        return []
+
+    detected = set()
+    tokens = re.findall(r'\w+', text.lower())
+    bigrams = build_ngram_set(tokens, 2)
+    trigrams = build_ngram_set(tokens, 3)
+
+    for pillar, keywords in PILLAR_KEYWORDS.items():
+        for kw in keywords:
+            if " " in kw:
+                word_count = len(kw.split())
+                ngram_set = trigrams if word_count == 3 else bigrams
+                if kw in ngram_set:
+                    detected.add(kw)
+            else:
+                if STEMMER.stem(kw) in {STEMMER.stem(t) for t in tokens}:
+                    detected.add(kw)
+
+    return sorted(detected)
+
+
 def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
     """
     Execute NLP and ML pipeline.
@@ -173,7 +197,21 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
                 df_respondents[f"{pillar}_sentiment_min"] = pillar_sentiments_min[pillar]
             
             df_respondents["sentiment_score"] = overall_sentiments
-            
+
+            print(f"sentiment_score mean: {df_respondents['sentiment_score'].mean():.2f}")
+
+            print("Step 4A (continued): Extracting themes...")
+
+            themes_list = []
+            for _, row in df_respondents.iterrows():
+                text = str(row.get("raw_session_text", ""))
+                themes = extract_themes(text)
+                themes_list.append(", ".join(themes) if themes else "")
+
+            df_respondents["themes"] = themes_list
+
+            print(f"Themes extracted: {sum(1 for t in themes_list if t)} / {len(themes_list)} respondents with themes")
+
             for pillar in PILLARS:
                 print(f"{pillar}_sentiment_mean: {df_respondents[f'{pillar}_sentiment_mean'].mean():.2f}")
             print(f"sentiment_score mean: {df_respondents['sentiment_score'].mean():.2f}")
