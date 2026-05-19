@@ -37,7 +37,7 @@ def build_ngram_set(tokens, n):
 
 PILLAR_KEYWORDS = {
     "env": [
-        "carbon", "emission", "sustainab", "environment", "climate",
+        "carbon", "emission", "sustain", "environment", "climate",
         "renewable energy", "green", "waste", "carbon footprint", "co2",
         "carbon neutral", "greenhouse gas", "energy use",
         "e-waste", "flights", "business travel", "company car", "commuting",
@@ -46,7 +46,7 @@ PILLAR_KEYWORDS = {
     ],
     "people": [
         "harass", "burnout", "safe", "voice", "psychological", "inclusion",
-        "belonging", "mental", "toxic", "discriminat", "harassment",
+        "belonging", "mental", "toxic", "discrimin", "harassment",
         "team conflict", "employee wellbeing", "speak up", "unfair", "hostile",
         "uncomfortable", "yell", "bully", "creepy", "boundaries",
         "favoritism", "respect", "micromanage",
@@ -68,7 +68,7 @@ PILLAR_KEYWORDS = {
         "procurement", "subcontract", "outsourcing", "third party", "labor",
         "esg questionnaire", "supply chain management",
         "offshore", "nearshore", "freelancer", "contractor", "software vendor",
-        "cloud provider", "hardware supplier", "partner network", "license",
+        "cloud provider", "hardware supplier", "partner network", "licensing",
         "child labor", "modern slavery"
     ]
 }
