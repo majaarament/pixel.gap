@@ -38,24 +38,38 @@ def build_ngram_set(tokens, n):
 PILLAR_KEYWORDS = {
     "env": [
         "carbon", "emission", "sustainab", "environment", "climate",
-        "renewable", "green", "waste", "pollution", "footprint",
-        "biodiversity", "water", "co2", "carbon neutral", "carbon footprint"
+        "renewable energy", "green", "waste", "carbon footprint", "co2",
+        "carbon neutral", "greenhouse gas", "energy use",
+        "e-waste", "flights", "business travel", "company car", "commuting",
+        "data center", "server power", "hardware disposal", "greenwash",
+        "pollution", "biodiversity", "water", "footprint"
     ],
     "people": [
         "harass", "burnout", "safe", "voice", "psychological", "inclusion",
         "belonging", "mental", "toxic", "discriminat", "harassment",
-        "team conflict", "employee wellbeing", "psychological safety", "speak up",
-        "wellbeing", "unfair", "micro-manage", "hostile"
+        "team conflict", "employee wellbeing", "speak up", "unfair", "hostile",
+        "uncomfortable", "yell", "bully", "creepy", "boundaries",
+        "favoritism", "respect", "micromanage",
+        "overworked", "stress", "billable", "utilization", "bench",
+        "weekend work", "partner", "client pressure", "always on",
+        "stakeholder engagement", "psychological safety", "wellbeing"
     ],
     "conduct": [
         "policy", "ethics", "bribe", "corrupt", "fraud", "integrity",
         "whistleblow", "misconduct", "bias", "confidential", "compliance rules",
-        "data privacy", "nepotism", "discriminat", "obey"
+        "data privacy", "nepotism", "obey", "shady", "loophole",
+        "cover up", "lie", "secret", "anti-corruption", "audit",
+        "business ethics", "internal controls", "transparency", "risk management",
+        "timesheet", "overbilling", "data breach", "shadow it", "nda",
+        "client data", "intellectual property", "information security"
     ],
     "chain": [
         "supply chain", "vendor", "human rights", "supplier", "sourcing",
         "procurement", "subcontract", "outsourcing", "third party", "labor",
-        "child labor", "modern slavery", "esg questionnaire"
+        "esg questionnaire", "supply chain management",
+        "offshore", "nearshore", "freelancer", "contractor", "software vendor",
+        "cloud provider", "hardware supplier", "partner network", "license",
+        "child labor", "modern slavery"
     ]
 }
 
