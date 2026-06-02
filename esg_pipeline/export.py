@@ -47,6 +47,8 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
             respondents_cols.append("learning_gain")
         
         for pillar in PILLARS:
+            respondents_cols.append(f"{pillar}_visibility")
+            respondents_cols.append(f"{pillar}_gap_abs")
             respondents_cols.append(f"{pillar}_gap_direction")
             respondents_cols.append(f"{pillar}_GAP_I")
         
