@@ -1,0 +1,167 @@
+id,country,seniority,partnership_open_binary,personal_importance_norm,org_commitment_norm,importance_commitment_gap,peer_comparison_norm,avg_performance_norm,perf_rating_missing_count,combined_text,sentiment_label,polarity
+3,The Netherlands,Senior,1,100,66.7,33.3,50.0,55.0,0,,neutral,0.0
+4,The Netherlands,Mid,0,75,66.7,8.3,50.0,75.0,0,,neutral,0.0
+5,The Netherlands,Mid,0,75,66.7,8.3,50.0,55.0,0,,neutral,0.0
+6,The Netherlands,Mid,0,100,66.7,33.3,50.0,55.0,0,#. #,neutral,0.0
+9,The Netherlands,Junior,0,75,33.3,41.7,,45.0,0,Offices close to a trainstation so you can take public transport instead a car.,neutral,0.0
+11,The Netherlands,Junior,0,75,,,50.0,40.0,0,Create solutions that will help companies become more sustainable,positive,0.6888206601142883
+12,The Netherlands,Junior,1,100,66.7,33.3,50.0,60.0,0,promoting eating less animals by having solely vegetarian lunches,neutral,0.0
+13,The Netherlands,Junior,0,75,66.7,8.3,50.0,,5,,neutral,0.0
+14,The Netherlands,Junior,0,25,66.7,-41.7,50.0,60.0,0,,neutral,0.0
+20,The Netherlands,Senior,0,100,33.3,66.7,50.0,55.0,0,"working with more sustainable suppliers/locations (events, when rebuilding office etc)",neutral,0.0
+22,Belux,Senior,0,100,33.3,66.7,,45.0,0,,neutral,0.0
+24,Belux,Senior,0,75,66.7,8.3,50.0,40.0,0,"ensure to have more diversity in leadership and actively search for this. this diversity will allow us to look at the reality from a broader perspective and will open up for more sustainable business practices. - report systematically on ESG parameters as well iso only financial metrics
+(ESG parameters and targets are unknown within the organization)
+- include ESG parameters in Hub, Unit, Solution drivers for their management
+(especially diversity related parameters)
+- ensure to report outwards on our ESG accomplishments (into the market), include our ESG improvements in our company presentation and all outbound sales material.",positive,0.6015971302986145
+25,Belux,Mid,0,75,66.7,8.3,50.0,55.0,0,Invest more in mobility budget and flexible options for commuting. It's possible to lease a bike but it remains an additional cost on top of the car (support),neutral,0.0
+26,Belux,Senior,1,75,66.7,8.3,50.0,45.0,0,,neutral,0.0
+27,Belux,Senior,0,100,33.3,66.7,,25.0,0,"Create more awareness with employees, make this",neutral,0.0
+28,Belux,Junior,0,75,66.7,8.3,100.0,,5,"reimbursment of public transportation to work, a lot of times it's more convenient to go buy PT but employees don't because of the costs",neutral,0.0
+31,Belux,Senior,0,75,66.7,8.3,50.0,45.0,0,,neutral,0.0
+33,Belux,Junior,0,75,33.3,41.7,50.0,50.0,0,,neutral,0.0
+34,Belux,Mid,0,75,66.7,8.3,,35.0,0,,neutral,0.0
+35,The Netherlands,Mid,1,100,33.3,66.7,50.0,35.0,0,Carpool initiative,neutral,0.0
+36,The Netherlands,Senior,0,100,66.7,33.3,50.0,75.0,0,Carpool and public transport,neutral,0.0
+37,Belux,Senior,0,75,66.7,8.3,,30.0,0,,neutral,0.0
+38,Belux,Mid,0,50,,,100.0,85.0,0,0,neutral,0.0
+39,Philippines,Mid,0,100,100.0,0.0,50.0,80.0,0,,neutral,0.0
+40,Germany,Mid,0,100,66.7,33.3,50.0,50.0,0,Change used heating too a modern one,neutral,0.0
+41,UK & Ireland,Mid,0,100,66.7,33.3,50.0,45.0,0,,neutral,0.0
+42,Germany,Senior,0,100,66.7,33.3,50.0,31.25,1,,neutral,0.0
+43,Belux,Mid,1,75,66.7,8.3,,45.0,0,,neutral,0.0
+44,Brazil,Senior,0,100,66.7,33.3,50.0,40.0,0,,neutral,0.0
+45,Germany,Mid,0,100,33.3,66.7,50.0,40.0,0,Green offiice,neutral,0.0
+46,Belux,Senior,0,50,66.7,-16.7,50.0,65.0,0,Solar panels in the DLW office buildings. Use of AI is consuming a lot of energy Real non-sense,negative,-0.7268807291984558
+47,The Netherlands,Mid,0,75,66.7,8.3,,20.0,0,Solar panels on roof of Office,neutral,0.0
+48,Belux,Senior,0,50,33.3,16.7,50.0,25.0,0,,neutral,0.0
+49,India,Senior,1,100,66.7,33.3,50.0,50.0,0,"One idea to help Delaware Consulting become more sustainable is to reduce business travel and use online meetings more often. Consultants often travel to meet clients. Instead, many meetings and workshops can be done using video calls and online collaboration tools. This will reduce flights and car travel, which helps lower pollution. It also saves time and money. In simple words, doing more work online and less traveling can help the company protect the environment.",positive,0.5075836181640625
+50,Brazil,Mid,0,100,100.0,0.0,50.0,,5,,neutral,0.0
+51,The Netherlands,Mid,1,100,66.7,33.3,,,5,"More carpooling, actually use reusable dishes",neutral,0.0
+52,North America,Mid,0,100,0.0,100.0,0.0,5.0,0,Hold management partners accountable - don't let them ignore/eliminate initiatives,neutral,0.0
+53,Belux,Senior,0,100,33.3,66.7,,45.0,0,"Schedule consultants living closest to projects and allow more remote work when living more than 50min traffic included from project. What happened to all the planted plants around the offices and forrests, are they growing well?",neutral,0.0
+54,Belux,Senior,0,75,0.0,75.0,50.0,30.0,0,,neutral,0.0
+55,Belux,Junior,0,100,66.7,33.3,50.0,75.0,0,,neutral,0.0
+56,The Netherlands,Senior,1,100,66.7,33.3,50.0,60.0,0,Nice job Florian!!!!,positive,0.9818984866142273
+57,Belux,Senior,0,100,100.0,0.0,50.0,75.0,0,,neutral,0.0
+58,Belux,Senior,0,75,66.7,8.3,50.0,45.0,0,,neutral,0.0
+59,Belux,Mid,0,75,33.3,41.7,50.0,55.0,0,,neutral,0.0
+60,Belux,Mid,0,100,100.0,0.0,50.0,50.0,0,,neutral,0.0
+61,Belux,Senior,0,100,66.7,33.3,50.0,40.0,0,More women at the top of our organization,positive,0.9070751070976257
+62,Belux,Senior,0,100,100.0,0.0,50.0,60.0,0,Offer in person trainings for peopleofdelaware on sustainability and how small things matter.,neutral,0.0
+63,Belux,Mid,0,75,66.7,8.3,50.0,70.0,0,,neutral,0.0
+64,Belux,Senior,0,100,66.7,33.3,100.0,80.0,0,,neutral,0.0
+65,Belux,Senior,0,75,66.7,8.3,50.0,50.0,0,,neutral,0.0
+66,Belux,Mid,0,75,66.7,8.3,,50.0,0,"all consultants get a mandotory car even if it's possible for them to come by bike or public transport, would it be a good idea to have a certain amount of cars ready for people to use to go to clients, etc and and allow people that choose for this to use their mobility budget not on a mandatory car but on public transport or loan or ...",neutral,0.0
+67,Belux,Mid,0,50,100.0,-50.0,50.0,70.0,0,,neutral,0.0
+68,Belux,Mid,0,75,66.7,8.3,50.0,55.0,0,Create more awareness within the delaware offices. Inform employees how they can contribute.,neutral,0.0
+69,France,Senior,0,100,0.0,100.0,0.0,25.0,0,,neutral,0.0
+70,France,Mid,0,100,33.3,66.7,50.0,50.0,0,,neutral,0.0
+71,Belux,Senior,0,75,66.7,8.3,50.0,30.0,0,,neutral,0.0
+72,France,Mid,0,75,33.3,41.7,50.0,55.0,0,,neutral,0.0
+73,France,Mid,0,75,66.7,8.3,,35.0,0,,neutral,0.0
+74,France,Senior,0,75,33.3,41.7,50.0,40.0,0,,neutral,0.0
+75,France,Mid,0,75,33.3,41.7,,35.0,0,I can only encourage further action on diversity and inclusion.,positive,0.8981649279594421
+76,France,Mid,0,75,100.0,-25.0,50.0,100.0,0,,neutral,0.0
+77,Belux,Senior,0,100,66.7,33.3,50.0,65.0,0,,neutral,0.0
+78,France,Mid,0,100,66.7,33.3,25.0,35.0,0,,neutral,0.0
+79,Belux,Senior,0,100,100.0,0.0,,95.0,0,,neutral,0.0
+80,Belux,Junior,0,75,100.0,-25.0,50.0,65.0,0,More diversity in the company,positive,0.7976923584938049
+81,Belux,Senior,0,100,66.7,33.3,50.0,40.0,0,Start from sense of urgency > bimonthly sustainability challenge brainstorm per country to find an actionable solution for a challenge (> challenges can be prioritized by the sustainability team),neutral,0.0
+82,Belux,Mid,0,100,100.0,0.0,,75.0,0,"One idea to make the company more sustainable is to invest more in inclusive communication and cultural awareness. A respectful and psychologically safe work environment helps build long-term employee well-being, retention, and collaboration. Small remarks or jokes may sometimes be made without harmful intent, but they can still affect how included colleagues from different cultural backgrounds feel. Raising awareness around this could help create a more supportive and sustainable workplace for everyone.. Thanks for all the efforts being put into make the world a better place. Keep it up!",positive,0.7501703500747681
+83,The Netherlands,Mid,0,50,100.0,-50.0,100.0,90.0,0,,neutral,0.0
+84,Belux,Senior,0,75,66.7,8.3,50.0,50.0,0,,neutral,0.0
+85,Belux,Senior,0,100,100.0,0.0,50.0,65.0,0,,neutral,0.0
+86,Belux,Senior,0,100,66.7,33.3,50.0,20.0,0,,neutral,0.0
+87,Belux,Mid,0,75,66.7,8.3,50.0,50.0,0,/,neutral,0.0
+88,Belux,Senior,1,100,66.7,33.3,50.0,75.0,0,Responsible use of AI: Consider the impact on energy consumption when asking questions to AI,neutral,0.0
+89,Belux,Senior,0,100,100.0,0.0,50.0,55.0,0,"awareness of employees that we already are serving quite a few customers that have this high on the agenda. would be interesting to compile a global list of customers of ours that we serve already in the space of sustainability, to show that this is also an active and conscious choice. (eg renewable energy players we have in our portfolio in Belux like JeraNexBP, Renner Energies, Perpetum,... or JV we have on water leak detection Hydroware). For more on this customer portfolio don't hesitate to contact our Industry lead in Belgium: Dries Storme.",neutral,0.0
+90,Belux,Senior,0,75,0.0,75.0,50.0,10.0,0,"Solar panels to ""fuel"" our offices",neutral,0.0
+91,Belux,Mid,0,75,,,,,5,,neutral,0.0
+92,Belux,Senior,0,100,100.0,0.0,50.0,75.0,0,,neutral,0.0
+93,Belux,Senior,0,75,66.7,8.3,50.0,60.0,0,,neutral,0.0
+94,Belux,Senior,0,75,66.7,8.3,50.0,70.0,0,,neutral,0.0
+95,Belux,Mid,0,75,33.3,41.7,,25.0,0,,neutral,0.0
+96,Belux,Mid,1,75,100.0,-25.0,50.0,90.0,0,"For delaware entities that offer vehicles to employees, whenever there are work events - offer perks (could be fun, not necessarily monetary, or monetray in the form of coupons, meal voucher bonuses - something like) for carpooling initiatives or organise public transport services by collaborating with public transport insititutions.",neutral,0.0
+97,Belux,Senior,0,100,66.7,33.3,50.0,70.0,0,/,neutral,0.0
+98,Belux,Mid,0,75,33.3,41.7,,,5,,neutral,0.0
+99,Belux,Senior,0,75,100.0,-25.0,50.0,75.0,0,,neutral,0.0
+100,Consulting International,Mid,0,75,100.0,-25.0,50.0,75.0,0,,neutral,0.0
+101,Belux,Mid,0,75,66.7,8.3,50.0,85.0,0,,neutral,0.0
+102,Belux,Senior,0,75,100.0,-25.0,100.0,100.0,0,,neutral,0.0
+103,Belux,Senior,0,75,66.7,8.3,50.0,65.0,0,,neutral,0.0
+104,Belux,Senior,0,100,66.7,33.3,50.0,75.0,0,Keep an eye on our energy-consumption due to the AI-disruption which is currently happening.,neutral,0.0
+105,Belux,Senior,0,50,100.0,-50.0,100.0,90.0,0,,neutral,0.0
+106,Belux,Mid,0,75,100.0,-25.0,50.0,75.0,0,,neutral,0.0
+107,Belux,Senior,0,100,100.0,0.0,100.0,100.0,0,,neutral,0.0
+108,Belux,Senior,0,75,66.7,8.3,50.0,,5,,neutral,0.0
+109,Belux,Senior,1,100,66.7,33.3,50.0,70.0,0,"Today, many of us are experimenting with AI in similar ways. We should accelerate the development of shared AI agents that can be reused across teams, so we can scale knowledge better, avoid duplication, and create greater impact faster. This would also have a positive effect on datacenter usage and therefore on the environment, because it would allow us to use AI more efficiently and less fragmented.. delaware should be careful not to apply a classical sustainability model to a business that is not classical in nature.
+We are a consulting company focused on digital transformation, not a manufacturing or asset-heavy organization.
+Our core activity is delivering services for and with clients, often within their own systems, processes, and working models.
+That means our sustainability approach must reflect the reality of client-driven delivery.
+At the same time, our business model allows a high degree of remote work.
+Physical presence should therefore be used with purpose: for client value, collaboration, team bonding, training, and development.
+Our biggest levers are not factories or supply chains, but mobility, hybrid work, digital infrastructure, cloud usage, and AI efficiency.
+So the goal should not be to copy a standard framework, but to design one that fits who we are.
+A relevant and credible approach will be more effective than a generic one.
+In short, our sustainability strategy should be tailored to our business model, our people, and the reality of our client work.",positive,0.8362936973571777
+110,Belux,Senior,0,100,,,,,5,,neutral,0.0
+111,Belux,Senior,0,75,100.0,-25.0,50.0,75.0,0,,neutral,0.0
+112,Belux,Senior,0,100,33.3,66.7,50.0,45.0,0,,neutral,0.0
+114,Consulting International,Senior,0,100,66.7,33.3,50.0,50.0,0,,neutral,0.0
+115,Consulting International,Mid,0,75,100.0,-25.0,50.0,75.0,0,,neutral,0.0
+116,Belux,Senior,1,75,66.7,8.3,50.0,80.0,0,"Good use of energy: in meeting rooms I see very often lights/TV's still on when no-one is there anymore, so I switch them off. Would be good to auto switch off when people leave the room. Nice presentation material!",positive,0.7174283266067505
+117,Belux,Senior,0,100,66.7,33.3,50.0,75.0,0,,neutral,0.0
+118,Belux,Mid,0,75,66.7,8.3,50.0,70.0,0,,neutral,0.0
+119,Belux,Senior,1,100,66.7,33.3,50.0,75.0,0,Be consistent. E.g. don't promote cycles but penalize the ones who choosed the bicycles by moving the offices 20 km further.. All the best Florian!,neutral,0.0
+120,Belux,Senior,0,100,100.0,0.0,50.0,80.0,0,Promote carpooling,neutral,0.0
+121,Belux,Senior,0,100,66.7,33.3,,55.0,0,Limit AI usage or make users more aware of how much energy a query or lovable vibecoding session is using (e.g. x amount of liters water),neutral,0.0
+122,Belux,Senior,0,75,66.7,8.3,50.0,50.0,0,,neutral,0.0
+123,Belux,Senior,0,100,66.7,33.3,50.0,45.0,0,reporting on our personal footprint,neutral,0.0
+124,Belux,Senior,0,100,66.7,33.3,50.0,70.0,0,Check for which food is being ordered on team events etc,neutral,0.0
+125,Belux,Senior,0,75,66.7,8.3,50.0,55.0,0,,neutral,0.0
+126,Belux,Senior,1,100,66.7,33.3,50.0,70.0,0,,neutral,0.0
+127,Belux,Mid,0,100,100.0,0.0,,95.0,0,offering discounted or free tickets for public transportation on buses and trains,neutral,0.0
+128,Belux,Mid,0,100,66.7,33.3,100.0,80.0,0,,neutral,0.0
+129,Belux,Senior,0,100,66.7,33.3,50.0,25.0,0,,neutral,0.0
+130,Belux,Senior,0,100,100.0,0.0,50.0,65.0,0,,neutral,0.0
+131,Belux,Senior,0,50,66.7,-16.7,50.0,35.0,0,,neutral,0.0
+132,The Netherlands,Mid,1,100,66.7,33.3,50.0,45.0,0,organizaing small events where together with client we do something for the greater good. Like cleaning a park or making lunch packages for the homeless.,positive,0.7443238496780396
+133,Belux,Senior,0,100,100.0,0.0,100.0,100.0,0,,neutral,0.0
+134,Belux,Senior,0,75,66.7,8.3,50.0,50.0,0,,neutral,0.0
+135,Belux,Senior,0,75,100.0,-25.0,50.0,55.0,0,,neutral,0.0
+136,Belux,Senior,0,75,66.7,8.3,50.0,50.0,0,,neutral,0.0
+137,Belux,Senior,0,75,100.0,-25.0,50.0,50.0,0,,neutral,0.0
+138,Belux,Mid,0,100,66.7,33.3,,50.0,0,,neutral,0.0
+139,Belux,Mid,0,75,66.7,8.3,50.0,70.0,0,"Solar panels on office buildings, charging fees for company cars when loading too long, find ways to lower electricity use in office buildings",neutral,0.0
+140,Belux,Senior,0,75,66.7,8.3,50.0,50.0,0,"Educate people on waste triage, and on what really makes a difference in terms of environmental impact. E.g. manually switching lights off is important, but automating this with light sensors could generally reduce energy consumption more.",neutral,0.0
+141,Belux,Senior,1,75,33.3,41.7,50.0,25.0,0,"AI first is the motto, but this results in using AI for every small question. So please adapt the motto: brain first, than AI. Use AI when it is more efficient, but not for every question",neutral,0.0
+142,Belux,Senior,0,100,66.7,33.3,50.0,50.0,0,,neutral,0.0
+143,Belux,Senior,0,50,66.7,-16.7,50.0,55.0,0,,neutral,0.0
+144,Belux,Senior,0,100,100.0,0.0,50.0,60.0,0,,neutral,0.0
+145,Belux,Senior,0,75,66.7,8.3,50.0,50.0,0,,neutral,0.0
+146,Belux,Senior,0,100,66.7,33.3,50.0,55.0,0,,neutral,0.0
+147,Belux,Mid,0,75,66.7,8.3,100.0,55.0,0,,neutral,0.0
+148,Belux,Senior,0,100,66.7,33.3,,40.0,0,,neutral,0.0
+149,Belux,Senior,0,100,100.0,0.0,50.0,65.0,0,,neutral,0.0
+150,Belux,Senior,0,75,33.3,41.7,,,5,,neutral,0.0
+151,Belux,Senior,0,75,66.7,8.3,50.0,55.0,0,,neutral,0.0
+152,Belux,Mid,0,100,100.0,0.0,50.0,55.0,0,,neutral,0.0
+153,Belux,Senior,0,75,66.7,8.3,50.0,55.0,0,,neutral,0.0
+154,Belux,Mid,0,75,100.0,-25.0,50.0,75.0,0,Make meeting virtual by default,neutral,0.0
+155,The Netherlands,Mid,1,75,100.0,-25.0,50.0,45.0,0,,neutral,0.0
+156,Belux,Senior,1,100,100.0,0.0,100.0,100.0,0,continue as we do,neutral,0.0
+157,Belux,Mid,0,100,100.0,0.0,100.0,75.0,0,helping our clients optimize their cloud architecture and data storage,positive,0.5879629254341125
+158,Belux,Mid,0,75,100.0,-25.0,,85.0,0,More efficiënt use of power hungry AI tools,neutral,0.0
+159,Belux,Senior,0,50,33.3,16.7,,35.0,0,,neutral,0.0
+160,Belux,Senior,0,100,100.0,0.0,100.0,90.0,0,,neutral,0.0
+161,Belux,Mid,0,75,100.0,-25.0,50.0,80.0,0,,neutral,0.0
+162,Belux,Senior,0,50,66.7,-16.7,50.0,60.0,0,,neutral,0.0
+163,Belux,Mid,0,75,66.7,8.3,,60.0,0,"Try to measure the impact of our use of AI, with nearly exact figures, on nergy and water consumption, and the impact on the environment.",neutral,0.0
+164,Belux,Senior,0,100,100.0,0.0,100.0,90.0,0,,neutral,0.0
+165,Belux,Senior,0,25,66.7,-41.7,,35.0,0,Extend leasing periods,neutral,0.0
+166,Belux,Mid,0,50,66.7,-16.7,50.0,55.0,0,A better organized mobility budget (not only because it's legally required).,neutral,0.0
+167,Belux,Senior,0,100,100.0,0.0,50.0,90.0,0,,neutral,0.0
+168,The Netherlands,Mid,0,75,100.0,-25.0,50.0,60.0,0,,neutral,0.0
+169,Belux,Senior,0,100,100.0,0.0,100.0,50.0,0,,neutral,0.0
