@@ -3,23 +3,23 @@ import numpy as np
 import sys
 from pathlib import Path
 
-# --- STEP 1: SAFE PATHS & ISOLATION ---
+# STEP 1: SAFE PATHS & ISOLATION
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "output"
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# Safely import only the theme extraction tool
+# importing only the theme extraction tool
 sys.path.insert(0, str(BASE_DIR.parent))
 try:
     from esg_pipeline.ml_pipeline import extract_themes
-    print("Successfully linked to production NLP dictionary.")
+    print("Linked to production NLP dictionary.")
 except ImportError as e:
     print(f"Warning: Could not import ml_pipeline ({e}). Ensure esg_pipeline is in the parent directory.")
     def extract_themes(text): return []
 
-# Setup Sentiment Model
+# Sentiment Model
 try:
     from transformers import pipeline
     sentiment_model = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
@@ -29,11 +29,11 @@ except Exception as e:
     from textblob import TextBlob
     USING_ROBERTA = False
 
-# --- STEP 2: LOAD LEGACY DATA (ISOLATED) ---
-print("Loading data...")
+# STEP 2: LOAD BASELINE DATA
+print("Loading data")
 df_raw = pd.read_csv(DATA_DIR / "delaware_survey_2025.csv", encoding="latin-1")
 
-# --- STEP 3: COLUMN RENAMING & SCHEMA DRIFT GUARDS ---
+# STEP 3: COLUMN RENAMING & SCHEMA GUARDS
 exact_rename_map = {
     "Id": "id",
     "How are you connected to delaware?": "connection_type",
@@ -44,7 +44,7 @@ exact_rename_map = {
 }
 df_raw.rename(columns=lambda x: exact_rename_map.get(x, x), inplace=True)
 
-# peer_comparison handled separately — CSV uses fancy apostrophe (\x92) not standard (')
+# peer_comparison handled separately 
 for col in list(df_raw.columns):
     if 'rate delaware' in col and 'peers' in col.lower():
         df_raw.rename(columns={col: 'peer_comparison'}, inplace=True)
@@ -66,7 +66,7 @@ if not perf_rename:
 else:
     print(f"Performance columns mapped: {list(perf_rename.values())}")
 
-# --- STEP 4: FILTER STRICTLY TO EMPLOYEES ---
+# STEP 4: FILTER TO EMPLOYEES
 if "connection_type" in df_raw.columns:
     df_raw["connection_type"] = df_raw["connection_type"].astype(str).str.strip()
 
@@ -79,7 +79,7 @@ if df_emp.empty:
 df_emp.reset_index(drop=True, inplace=True)
 print(f"Isolated {len(df_emp)} employee records.")
 
-# --- STEP 5: ENTITY PARSING & SENIORITY BUCKETING ---
+# STEP 5: ENTITY PARSING & SENIORITY BUCKETING
 df_emp['country'] = df_emp['entity'].str.replace(r'(?i)^delaware\s+', '', regex=True).str.strip()
 df_emp['country'] = df_emp['country'].replace('', 'Unknown').fillna('Unknown')
 
@@ -92,7 +92,7 @@ def map_seniority(role_str):
 
 df_emp['seniority'] = df_emp['role'].apply(map_seniority)
 
-# --- STEP 6: NORMALIZE SCALES, PILLARS, & BLINDSPOT DETECTION ---
+# STEP 6: NORMALIZE SCALES, PILLARS, & BLINDSPOT DETECTION 
 importance_map = {"Very important": 100, "Somewhat important": 75, "Neutral": 50, "Somewhat not important": 25, "Not important": 0}
 commitment_map = {"Very committed": 100.0, "Somewhat committed": 66.7, "Neutral": 33.3, "Not committed": 0.0}
 perf_val_map = {"Excellent": 100, "Very good": 75, "Good": 50, "Fair": 25, "Poor": 0, "I don't have enough information to answer": np.nan, "I don't have enough information": np.nan}
@@ -117,10 +117,9 @@ df_emp['perf_rating_missing_count'] = df_emp[norm_perf_cols].isna().sum(axis=1)
 df_emp['avg_performance_norm'] = df_emp[norm_perf_cols].mean(axis=1, skipna=True)
 
 # NOTE: Importance uses 5-point intervals (25pts), commitment uses 4-point intervals (33.3pts).
-# The gap is directionally valid but cross-scale step sizes differ.
 df_emp['importance_commitment_gap'] = (df_emp['personal_importance_norm'] - df_emp['org_commitment_norm']).round(2)
 
-# --- STEP 7: NLP SENTIMENT ANALYSIS ---
+# STEP 7: NLP SENTIMENT ANALYSIS
 print("Running Sentiment Analysis...")
 for col in ['idea_text', 'partnership_text', 'feedback_text']:
     if col not in df_emp.columns: df_emp[col] = ''
@@ -162,20 +161,20 @@ for i, text in enumerate(df_emp["combined_text"]):
 
 df_emp[['sentiment_label', 'sentiment_score', 'polarity']] = pd.DataFrame(results, index=df_emp.index)
 
-# --- STEP 8: THEME EXTRACTION ---
-print("Extracting Themes...")
+# STEP 8: THEME EXTRACTION
+print("Extracting Themes")
 df_emp['extracted_themes'] = df_emp['combined_text'].apply(extract_themes)
 
-# Calculate text coverage metric for thesis
+# text coverage metric 
 n_with_text = (df_emp['combined_text'].str.len() >= 5).sum()
 
-# Compute perf_rating_missing_count rate
+# perf_rating_missing_count rate
 perf_rating_missing_rate = (df_emp['perf_rating_missing_count'].sum() / max(1, len(df_emp) * len(norm_perf_cols))) * 100
 
-# --- STEP 9: BUILD THE 2-CSV POWER BI RELATIONAL SCHEMA ---
-print("Building Power BI Relational Schema...")
+# STEP 9: POWER BI RELATIONAL SCHEMA 
+print("Building Power BI Relational Schema")
 
-# CSV 1: The Fact Table (baseline_respondents.csv)
+# CSV 1: Fact Table (baseline_respondents.csv)
 master_cols = ['id', 'country', 'seniority', 'partnership_open_binary',
                'personal_importance_norm', 'org_commitment_norm', 'importance_commitment_gap',
                'avg_performance_norm', 'perf_rating_missing_count',
@@ -183,7 +182,7 @@ master_cols = ['id', 'country', 'seniority', 'partnership_open_binary',
 if 'peer_comparison_norm' in df_emp.columns: master_cols.insert(7, 'peer_comparison_norm')
 df_emp[master_cols].to_csv(OUTPUT_DIR / "baseline_respondents.csv", index=False)
 
-# CSV 2: The Dimension Table (baseline_exploded_items.csv)
+# CSV 2: Dimension Table (baseline_exploded_items.csv)
 TOPIC_PILLAR_MAP = {
     "Climate action": "Environmental", "Clean energy": "Environmental", "Innovative sustainable IT solutions": "Environmental",
     "Shift to renewable energies": "Environmental", "Reduction of greenhouse gas emissions in business travel": "Environmental",
@@ -240,9 +239,9 @@ df_exploded = pd.concat([
 
 df_exploded.to_csv(OUTPUT_DIR / "baseline_exploded_items.csv", index=False)
 
-# --- STEP 10: TERMINAL SUMMARY ---
-print("\n=== BASELINE ANALYSIS COMPLETE ===")
-print(f"Population: {len(df_emp)} employees (6-month collection window, Sept 2025 - Mar 2026)")
+# STEP 10: TERMINAL SUMMARY
+print("BASELINE ANALYSIS COMPLETE")
+print(f"Population: {len(df_emp)} employees")
 print(f"Countries represented: {df_emp['country'].nunique()}")
 print(f"Open to partnership: {df_emp['partnership_open_binary'].mean()*100:.1f}%")
 print()
