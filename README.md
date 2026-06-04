@@ -1,6 +1,6 @@
 # Bridging the ESG Gap — Gamified Diagnostic Tool (Layer 3)
 
-This repository contains the source code for the employee-facing gamified component of the GAPI (Gap Alignment Performance Index) diagnostic tool, developed as the digital intervention for our Capstone Project in collaboration with Delaware.
+This repository contains the source code for the employee-facing gamified component of the GAPI diagnostic tool, developed as the digital intervention for our Capstone Project in collaboration with Delaware.
 
 The tool presents employees with a series of ESG decision scenarios inside an explorable pixel-art world (a town and an office). For each of the four ESG pillars — Environmental Stewardship, People & Culture, Business Conduct, and Responsible Value Chain — the player makes a personal choice, estimates what they believe the organisation would do, and rates how visible that pillar is in their daily work. A short reflection and an AI-driven council dialogue follow. All responses are logged anonymously and feed the GAPI scoring pipeline that powers the management dashboard.
 
