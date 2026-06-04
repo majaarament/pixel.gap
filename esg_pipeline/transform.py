@@ -26,7 +26,7 @@ def transform_data(df_raw: pd.DataFrame) -> pd.DataFrame:
     print("\nTRANSFORMATION")
     
     try:
-        # Step 2A: Demographics & JSON Parsing with Ordinal Mapping
+        # Parse respondent metadata and ordinal choices from final report events.
         print("Step 2A: Parsing demographics and JSON from final_report events")
         
         final_report_df = df_raw[df_raw["eventType"] == "final_report"].copy()
@@ -92,7 +92,7 @@ def transform_data(df_raw: pd.DataFrame) -> pd.DataFrame:
         df_demographics = df_demographics.drop_duplicates(subset=["sessionId"], keep="last")
         print(f"Parsed and chronologically deduped to {len(df_demographics)} unique respondents")
         
-        # Step 2B: NLP Text Aggregation
+        # Combine the user's council dialogue into one text field per session.
         print("Step 2B: Aggregating council dialogue text")
         
         council_df = df_raw[
@@ -109,7 +109,7 @@ def transform_data(df_raw: pd.DataFrame) -> pd.DataFrame:
         df_text.columns = ["sessionId", "raw_session_text"]
         print(f"Aggregated into {len(df_text)} unique session texts")
         
-        # Step 2C: Merge
+        # Join structured survey variables with the aggregated dialogue text.
         print("Step 2C: Merging into final respondent table")
         
         df_respondents = pd.merge(df_demographics, df_text, on="sessionId", how="left")

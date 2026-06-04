@@ -111,7 +111,7 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
     print("\nNLP & ML Pipeline")
     
     try:
-        # Step 4A: Per-Pillar Sentiment Calibration
+        # Estimate sentiment separately for text linked to each ESG pillar.
         print("Step 4A: Per-Pillar Sentiment Analysis:")
         
         try:
@@ -223,7 +223,7 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
                 df_respondents[f"{pillar}_sentiment_min"] = 0.0
             df_respondents["sentiment_score"] = 0.0
         
-        # Step 4B: Risk Flag Logic (Sentence-Isolated Negation Engine)
+        # Flag potentially concerning responses while accounting for nearby negation.
         print("Step 4B: Risk Flag Detection")
         print(f"Stemmed risk triggers: {STEMMED_RISK_TRIGGERS}")
         print(f"Multi-word patterns: {RISK_MULTIWORD}")
@@ -283,7 +283,7 @@ def run_ml_pipeline(df_respondents: pd.DataFrame) -> pd.DataFrame:
         risk_count = sum(risk_flags)
         print(f"Risk flags raised: {risk_count} / {len(risk_flags)} ({100*risk_count/len(risk_flags):.1f}%)")
         
-        # Step 4C: PCA + Hierarchical Clustering
+        # Reduce the GAP-I feature space and group similar respondent profiles.
         print("Step 4C: PCA + Hierarchical Clustering")
         
         feature_columns = []

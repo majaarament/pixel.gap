@@ -17,7 +17,7 @@ loadLocalEnv(path.join(__dirname, ".env.local"));
 loadLocalEnv(path.join(__dirname, ".env"));
 
 const PORT = Number.parseInt(process.env.PORT || "8787", 10);
-const OPENAI_MODEL = "gpt-5.4-mini";
+const OPENAI_MODEL = "gpt-4.1-mini";
 const OPENAI_URL = "https://api.openai.com/v1/responses";
 const OPENAI_TTS_MODEL = "gpt-4o-mini-tts";
 const OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech";

@@ -18,7 +18,7 @@ const PIXEL_OVAL_CLIP =
 //  Component 
 
 export default function CouncilMeeting({ quest, onClose }) {
-  // Gathering transition phase — "gathering" shows the assembly screen; "active" starts the AI conversation
+  // Gathering transition phase 
   const [phase, setPhase]               = useState("gathering");
   const [meetingStarted, setMeetingStarted] = useState(false);
 
@@ -252,7 +252,7 @@ export default function CouncilMeeting({ quest, onClose }) {
     };
   }, []);
 
-  // ── Core AI call ─────────────────────────────────────────────────────────────
+  //  Core AI call
   async function sendToAI(historyForApi, nextHistory, turnIndex = "") {
     isLoadingRef.current = true;
     stopListening(true);

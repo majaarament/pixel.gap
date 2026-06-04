@@ -19,7 +19,7 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
     print("\n[MODULE 5] EXPORT & LOAD - Writing Power BI CSVs...")
     
     try:
-        # Table 1: Respondents Table
+        # Respondent-level table for demographic, reflection, and GAP-I variables.
         respondents_cols = [
             "sessionId",
             "userId",
@@ -63,7 +63,7 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
         print(f"Exported: {respondents_path}")
         print(f"Rows: {len(df_respondents_export)}, Columns: {len(df_respondents_export.columns)}")
         
-        # Table 2: Themes Table
+        # Text-analysis table for themes, sentiment, and risk indicators.
         themes_cols = [
             "sessionId",
             "team",
@@ -89,7 +89,7 @@ def export_for_powerbi(df_respondents: pd.DataFrame):
         print(f"Exported: {themes_path}")
         print(f"Rows: {len(df_themes_export)}, Columns: {len(df_themes_export.columns)}")
         
-        # Summary Statistics
+        # Console summary for checking the exported dataset.
         print("\n" + "=" * 70)
         print("PIPELINE COMPLETE - SUMMARY STATISTICS")
         print("=" * 70)

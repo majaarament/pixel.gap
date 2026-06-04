@@ -3,14 +3,14 @@ import numpy as np
 import sys
 from pathlib import Path
 
-# STEP 1: SAFE PATHS & ISOLATION
+# Set local paths for the baseline analysis.
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "output"
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# importing only the theme extraction tool
+# Reuse the same theme extraction function as the platform pipeline.
 sys.path.insert(0, str(BASE_DIR.parent))
 try:
     from esg_pipeline.ml_pipeline import extract_themes
@@ -19,7 +19,7 @@ except ImportError as e:
     print(f"Warning: Could not import ml_pipeline ({e}). Ensure esg_pipeline is in the parent directory.")
     def extract_themes(text): return []
 
-# Sentiment Model
+# Load the sentiment model, with a simpler fallback for reproducibility.
 try:
     from transformers import pipeline
     sentiment_model = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
@@ -29,11 +29,11 @@ except Exception as e:
     from textblob import TextBlob
     USING_ROBERTA = False
 
-# STEP 2: LOAD BASELINE DATA
+# Load the baseline survey data.
 print("Loading data")
 df_raw = pd.read_csv(DATA_DIR / "delaware_survey_2025.csv", encoding="latin-1")
 
-# STEP 3: COLUMN RENAMING & SCHEMA GUARDS
+# Standardize column names before analysis.
 exact_rename_map = {
     "Id": "id",
     "How are you connected to delaware?": "connection_type",
@@ -44,7 +44,7 @@ exact_rename_map = {
 }
 df_raw.rename(columns=lambda x: exact_rename_map.get(x, x), inplace=True)
 
-# peer_comparison handled separately 
+# The peer comparison question varies slightly in the export, so match it by text.
 for col in list(df_raw.columns):
     if 'rate delaware' in col and 'peers' in col.lower():
         df_raw.rename(columns={col: 'peer_comparison'}, inplace=True)
@@ -66,7 +66,7 @@ if not perf_rename:
 else:
     print(f"Performance columns mapped: {list(perf_rename.values())}")
 
-# STEP 4: FILTER TO EMPLOYEES
+# Limit the baseline sample to employee respondents.
 if "connection_type" in df_raw.columns:
     df_raw["connection_type"] = df_raw["connection_type"].astype(str).str.strip()
 
@@ -79,7 +79,7 @@ if df_emp.empty:
 df_emp.reset_index(drop=True, inplace=True)
 print(f"Isolated {len(df_emp)} employee records.")
 
-# STEP 5: ENTITY PARSING & SENIORITY BUCKETING
+# Derive country and seniority variables used in the dashboard.
 df_emp['country'] = df_emp['entity'].str.replace(r'(?i)^delaware\s+', '', regex=True).str.strip()
 df_emp['country'] = df_emp['country'].replace('', 'Unknown').fillna('Unknown')
 
@@ -92,7 +92,7 @@ def map_seniority(role_str):
 
 df_emp['seniority'] = df_emp['role'].apply(map_seniority)
 
-# STEP 6: NORMALIZE SCALES, PILLARS, & BLINDSPOT DETECTION 
+# Convert ordinal survey responses to comparable numeric scales.
 importance_map = {"Very important": 100, "Somewhat important": 75, "Neutral": 50, "Somewhat not important": 25, "Not important": 0}
 commitment_map = {"Very committed": 100.0, "Somewhat committed": 66.7, "Neutral": 33.3, "Not committed": 0.0}
 perf_val_map = {"Excellent": 100, "Very good": 75, "Good": 50, "Fair": 25, "Poor": 0, "I don't have enough information to answer": np.nan, "I don't have enough information": np.nan}
@@ -116,10 +116,10 @@ norm_perf_cols = [c + '_norm' for c in perf_area_cols]
 df_emp['perf_rating_missing_count'] = df_emp[norm_perf_cols].isna().sum(axis=1)
 df_emp['avg_performance_norm'] = df_emp[norm_perf_cols].mean(axis=1, skipna=True)
 
-# NOTE: Importance uses 5-point intervals (25pts), commitment uses 4-point intervals (33.3pts).
+# Importance has five response levels; commitment has four, so their normalized intervals differ.
 df_emp['importance_commitment_gap'] = (df_emp['personal_importance_norm'] - df_emp['org_commitment_norm']).round(2)
 
-# STEP 7: NLP SENTIMENT ANALYSIS
+# Estimate sentiment for open-ended responses.
 print("Running Sentiment Analysis...")
 for col in ['idea_text', 'partnership_text', 'feedback_text']:
     if col not in df_emp.columns: df_emp[col] = ''
@@ -161,20 +161,20 @@ for i, text in enumerate(df_emp["combined_text"]):
 
 df_emp[['sentiment_label', 'sentiment_score', 'polarity']] = pd.DataFrame(results, index=df_emp.index)
 
-# STEP 8: THEME EXTRACTION
+# Extract recurring sustainability themes from the text fields.
 print("Extracting Themes")
 df_emp['extracted_themes'] = df_emp['combined_text'].apply(extract_themes)
 
-# text coverage metric 
+# Count responses with enough text for qualitative coding.
 n_with_text = (df_emp['combined_text'].str.len() >= 5).sum()
 
-# perf_rating_missing_count rate
+# Track missingness in the performance-rating items.
 perf_rating_missing_rate = (df_emp['perf_rating_missing_count'].sum() / max(1, len(df_emp) * len(norm_perf_cols))) * 100
 
-# STEP 9: POWER BI RELATIONAL SCHEMA 
+# Export the relational tables used by the Power BI dashboard.
 print("Building Power BI Relational Schema")
 
-# CSV 1: Fact Table (baseline_respondents.csv)
+# Respondent-level fact table.
 master_cols = ['id', 'country', 'seniority', 'partnership_open_binary',
                'personal_importance_norm', 'org_commitment_norm', 'importance_commitment_gap',
                'avg_performance_norm', 'perf_rating_missing_count',
@@ -182,7 +182,7 @@ master_cols = ['id', 'country', 'seniority', 'partnership_open_binary',
 if 'peer_comparison_norm' in df_emp.columns: master_cols.insert(7, 'peer_comparison_norm')
 df_emp[master_cols].to_csv(OUTPUT_DIR / "baseline_respondents.csv", index=False)
 
-# CSV 2: Dimension Table (baseline_exploded_items.csv)
+# Long-format table for selected topics, initiatives, certifications, and themes.
 TOPIC_PILLAR_MAP = {
     "Climate action": "Environmental", "Clean energy": "Environmental", "Innovative sustainable IT solutions": "Environmental",
     "Shift to renewable energies": "Environmental", "Reduction of greenhouse gas emissions in business travel": "Environmental",
@@ -201,17 +201,17 @@ def explode_multiselect(col_name, category_name):
     s[col_name] = s[col_name].astype(str).str.split(r';\s*')
     s = s.explode(col_name).dropna()
     s['value'] = s[col_name].str.strip()
-    # Filter out empty strings and the string 'nan' coerced from Pandas
+    # Remove empty values introduced during splitting and type conversion.
     s = s[(s['value'] != '') & (s['value'].str.lower() != 'nan')]
     if s.empty: return pd.DataFrame()
     
-    # Filter out noise phrases from certifications
+    # Exclude non-substantive certification responses.
     if category_name == 'Certification':
         noise_phrases = [
             'i have no clue', 'none of them', 'no clue what these mean',
             'i dont know enough to form an opinion', 'no clue', 'i have no opinion'
         ]
-        # Normalize fancy apostrophes (\x92) and other quote variants before matching
+        # Standardize apostrophes and quote marks before matching.
         s_normalized = s['value'].str.lower().str.replace(r"[\x92\'\"]", '', regex=True)
         s = s[~s_normalized.isin(noise_phrases)]
         if s.empty: return pd.DataFrame()
@@ -239,7 +239,7 @@ df_exploded = pd.concat([
 
 df_exploded.to_csv(OUTPUT_DIR / "baseline_exploded_items.csv", index=False)
 
-# STEP 10: TERMINAL SUMMARY
+# Print a short run summary for the analysis log.
 print("BASELINE ANALYSIS COMPLETE")
 print(f"Population: {len(df_emp)} employees")
 print(f"Countries represented: {df_emp['country'].nunique()}")
